@@ -1,0 +1,56 @@
+{
+  "version": "1.0",
+  "description": "Research reports index for golang-exercises project",
+  "reports": [
+    {
+      "id": "goroutines-comprehensive-2025-03-27",
+      "title": "Goroutines in Go - Comprehensive Deep Dive",
+      "filePath": "research-goroutines-comprehensive-2025-03-27.md",
+      "date": "2025-03-27",
+      "scope": "History, design motivation, internal mechanics, problem-solving approach, and performance characteristics of goroutines",
+      "status": "complete",
+      "tags": [
+        "concurrency",
+        "goroutines",
+        "Go runtime",
+        "CSP",
+        "scheduler",
+        "GMP model",
+        "performance"
+      ],
+      "topics": [
+        "History & Influences (CSP, Newsqueak, Alef, Limbo)",
+        "Problems Goroutines Solve (thread overhead, callback hell, complex APIs)",
+        "Internal Mechanics (GMP model, stack management, scheduler algorithm, preemption)",
+        "Work-Stealing Load Balancing",
+        "Comparative Analysis vs. Java Threads and Async/Await",
+        "Memory and Performance Characteristics"
+      ],
+      "keyFindings": [
+        "CSP theory enabled the design (Hoare, 1978)",
+        "Stack growth is cheaper than overallocation (2KB initial vs 1MB fixed)",
+        "Preemptive scheduling (Go 1.14+) solves fairness with 10ms threshold",
+        "Work-stealing is O(1) lock-free scaling",
+        "Goroutines enable readable concurrent code (eliminates callback hell)",
+        "Network I/O doesn't block OS threads (via epoll)",
+        "Memory model is simpler than traditional threading"
+      ],
+      "targetAudience": "Go developers, systems programmers, people learning concurrency",
+      "appliesTo": [
+        "Exercise 11 (goroutines and channels)",
+        "Exercise 12 (synchronization primitives)",
+        "Exercise 13 (concurrent patterns)",
+        "Exercise 14 (string/rune handling in concurrent context)"
+      ],
+      "verdict": "ACTIONABLE",
+      "unconditionalQuestions": [
+        "Fine-grained preemption interaction with cgo signal handlers",
+        "Stack reallocation overhead for GB-sized heaps",
+        "Work-stealing performance at 1000+ core systems",
+        "Heap memory fragmentation over time",
+        "Formal fairness guarantee specifics (p99, p999 latency)",
+        "Blocking syscall yield optimization"
+      ]
+    }
+  ]
+}
