@@ -1089,11 +1089,105 @@ public synchronized void deposit(double amount) {
 
 **E7** ⭐⭐ — **Producer-Consumer**: Dùng `BlockingQueue` — 2 producer threads tạo tasks, 3 consumer threads xử lý.
 
-**E8** ⭐⭐⭐ — **Structured Concurrency (Preview)**: Dùng `StructuredTaskScope` (Java 21+ preview) — fetch user + posts, cancel remaining nếu 1 fail.
+### E8. Structured Concurrency — Quản lý concurrent tasks an toàn (Java 21+ Preview) ⭐⭐⭐
 
-**E9** ⭐⭐ — **Parallel Streams vs Virtual Threads**: So sánh performance xử lý 1 triệu items: `parallelStream()` vs virtual thread pool. Khi nào dùng cái nào?
+> **Preview feature**: Cần `--enable-preview` khi compile/run. Dự kiến finalize trong Java 25-26.
+> **Tại sao quan trọng**: Virtual Threads giải quyết throughput, nhưng Structured Concurrency giải quyết **quản lý lifecycle** — cancel tasks khi 1 task fail, tránh resource leak.
 
-**E10** ⭐⭐⭐ — **Mini Project: Concurrent Web Crawler**: Crawl website — BFS queue URLs, dùng virtual threads fetch song song, ConcurrentHashMap track visited URLs, giới hạn max depth = 3.
+```java
+// Vấn đề: CompletableFuture không cancel task còn lại khi 1 task fail
+// → resource leak, unnecessary work
+
+// Giải pháp: StructuredTaskScope — tất cả subtasks thuộc về 1 scope
+import java.util.concurrent.StructuredTaskScope;
+
+record UserProfile(String user, List<String> posts, List<String> friends) {}
+
+public UserProfile fetchProfile(Long userId) throws Exception {
+    // ShutdownOnFailure: nếu 1 task fail → cancel tất cả tasks còn lại
+    try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
+
+        // Fork subtasks — mỗi task chạy trên virtual thread
+        var userTask = scope.fork(() -> userService.findById(userId));
+        var postsTask = scope.fork(() -> postService.findByUser(userId));
+        var friendsTask = scope.fork(() -> friendService.findByUser(userId));
+
+        scope.join();            // Đợi tất cả xong (hoặc 1 fail)
+        scope.throwIfFailed();   // Ném exception nếu có task fail
+
+        // Tất cả thành công → lấy kết quả
+        return new UserProfile(
+            userTask.get(),
+            postsTask.get(),
+            friendsTask.get()
+        );
+    }
+    // Scope tự cleanup: nếu 1 fail, các task khác bị cancel
+}
+```
+
+**So sánh:**
+```
+CompletableFuture.allOf(cf1, cf2, cf3)     // Task fail → các task khác VẪN CHẠY (leak!)
+StructuredTaskScope.ShutdownOnFailure()     // Task fail → cancel tất cả → clean!
+
+Promise.all([p1, p2, p3])                  // JS: tương tự ShutdownOnFailure
+Promise.allSettled([p1, p2, p3])            // JS: tương tự ShutdownOnSuccess (chờ hết)
+```
+
+Bài tập:
+1. Fetch user info + posts + notifications song song, dùng `ShutdownOnFailure`
+2. Thử `ShutdownOnSuccess` — lấy kết quả nhanh nhất (tương tự `Promise.race`)
+3. Thêm timeout: `scope.joinUntil(Instant.now().plusSeconds(3))`
+
+---
+
+### E9. Scoped Values — Thay thế ThreadLocal cho Virtual Threads (Java 21+ Preview) ⭐⭐
+
+> **Tại sao quan trọng**: `ThreadLocal` không hợp với Virtual Threads (1 triệu threads = 1 triệu copies). `ScopedValue` là lightweight alternative — immutable, tự cleanup.
+
+```java
+import java.lang.ScopedValue;
+
+// Khai báo scoped value cho current user (thay ThreadLocal)
+private static final ScopedValue<String> CURRENT_USER = ScopedValue.newInstance();
+
+// Bind value cho scope — tất cả code trong scope đều thấy
+public void handleRequest(String userId) {
+    ScopedValue.runWhere(CURRENT_USER, userId, () -> {
+        // Tất cả methods gọi trong đây đều access được CURRENT_USER
+        processOrder();
+        sendNotification();
+    });
+    // Ra ngoài scope → value tự biến mất, không cần cleanup!
+}
+
+// Bất kỳ đâu trong call stack
+private void processOrder() {
+    String user = CURRENT_USER.get();  // "user-123" — không cần truyền parameter
+    System.out.println("Processing order for: " + user);
+}
+```
+
+**So sánh:**
+```
+ThreadLocal:                                ScopedValue:
+- Mutable (set/get/remove)                 - Immutable (bind once per scope)
+- Phải tự remove() → dễ leak              - Tự cleanup khi ra scope
+- 1M threads = 1M copies                   - Shared, lightweight
+- Không compose well                        - Kết hợp tốt với StructuredTaskScope
+```
+
+Bài tập:
+1. Tạo `ScopedValue<RequestContext>` chứa userId + requestId, bind khi nhận request
+2. Access từ service → repository layer mà không truyền qua parameters
+3. So sánh memory usage: ThreadLocal vs ScopedValue với 100.000 virtual threads
+
+---
+
+**E10** ⭐⭐ — **Parallel Streams vs Virtual Threads**: So sánh performance xử lý 1 triệu items: `parallelStream()` vs virtual thread pool. Khi nào dùng cái nào?
+
+**E11** ⭐⭐⭐ — **Mini Project: Concurrent Web Crawler**: Crawl website — BFS queue URLs, dùng virtual threads fetch song song, ConcurrentHashMap track visited URLs, giới hạn max depth = 3.
 
 ---
 
@@ -1105,5 +1199,5 @@ public synchronized void deposit(double amount) {
 | B — Inheritance & Polymorphism | 5 + 5 mở rộng | ☐ |
 | C — Collections Framework | 5 + 5 mở rộng | ☐ |
 | D — Stream API & Lambda | 3 + 7 mở rộng | ☐ |
-| E — Concurrency & Virtual Threads | 5 + 5 mở rộng | ☐ |
-| **Tổng** | **50 bài** | |
+| E — Concurrency & Virtual Threads | 5 + 6 mở rộng | ☐ |
+| **Tổng** | **51 bài** | |

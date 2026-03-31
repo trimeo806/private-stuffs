@@ -20,6 +20,11 @@
 | #  | Bài                          | Thư mục      | File                              |
 |----|------------------------------|--------------|-----------------------------------|
 | 07 | Classes & Objects            | `e07_oop/`   | `E07_ClassesAndObjects.java`      |
+| 07.1 | Access Modifier Matrix     | `e07_oop/`   | `E07_1_AccessModifierMatrix.java` |
+| 07.2 | Cross-Package Inheritance  | `e07_oop/`   | `E07_2_CrossPackageInheritance.java` |
+| 07.3 | Static Members and State   | `e07_oop/`   | `E07_3_StaticMembersAndState.java` |
+| 07.4 | Static Nested vs Inner     | `e07_oop/`   | `E07_4_StaticNestedVsInnerClass.java` |
+| 07.5 | Design Decision Drills     | `e07_oop/`   | `E07_5_DesignDecisionDrills.java` |
 | 08 | Inheritance & Polymorphism   | `e07_oop/`   | `E08_Inheritance.java`            |
 | 09 | Interfaces & Abstract        | `e07_oop/`   | `E09_InterfacesAndAbstract.java`  |
 | 10 | Records, Enums, Sealed       | `e07_oop/`   | `E10_Records.java`                |

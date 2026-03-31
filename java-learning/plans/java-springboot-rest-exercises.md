@@ -86,30 +86,54 @@ Inject cả hai vào 1 controller, gọi endpoint 3 lần → kiểm tra address
 
 ---
 
-### A4. application.properties ⭐
+### A4. application.properties & application.yml ⭐
 
-Cấu hình project qua properties:
+Cấu hình project qua properties hoặc YAML (phần lớn projects dùng YAML):
 
+**Format 1: `application.properties`** (đơn giản, flat):
 ```properties
-# application.properties
 server.port=8080
 spring.application.name=task-manager
-
-# Database
 spring.datasource.url=jdbc:postgresql://localhost:5432/taskdb
 spring.datasource.username=app
 spring.datasource.password=${DB_PASSWORD}
-
-# JPA
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=true
-spring.jpa.properties.hibernate.format_sql=true
-
-# Custom properties
 app.name=Task Manager
 app.version=1.0
 app.max-tasks-per-user=50
 ```
+
+**Format 2: `application.yml`** (phổ biến hơn — hierarchical, dễ đọc):
+```yaml
+server:
+  port: 8080
+
+spring:
+  application:
+    name: task-manager
+  datasource:
+    url: jdbc:postgresql://localhost:5432/taskdb
+    username: app
+    password: ${DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  threads:
+    virtual:
+      enabled: true  # Bật Virtual Threads
+
+app:
+  name: Task Manager
+  version: "1.0"
+  max-tasks-per-user: 50
+```
+
+> **Chọn format nào?** `.yml` phổ biến hơn trong industry, dễ đọc khi config nested. `.properties` đơn giản hơn. Cả hai đều hợp lệ — chọn 1 và dùng nhất quán.
 
 Bài tập: Đọc custom properties bằng `@Value` và `@ConfigurationProperties`:
 
@@ -125,6 +149,8 @@ public class AppInfoController {
     }
 }
 ```
+
+> **Tip**: Thêm `spring-boot-devtools` dependency cho hot-reload khi dev — tự restart app khi code thay đổi, không cần stop/start thủ công.
 
 ---
 
@@ -639,13 +665,79 @@ Bài tập: Refactor `GlobalExceptionHandler` từ B5 sang dùng `ProblemDetail`
 
 ---
 
-### B14-B16: 3 bài tổng hợp
+### B14. HTTP Interface Clients — Declarative HTTP Client (Spring Boot 3.2+) ⭐⭐
 
-**B14** ⭐⭐⭐ — **File Upload**: Endpoint `POST /api/files/upload` nhận multipart file, lưu vào disk, trả URL. Giới hạn 5MB, chỉ jpg/png.
+`@HttpExchange` — khai báo HTTP client bằng interface, Spring tự implement (tương tự Feign, nhưng native):
 
-**B15** ⭐⭐⭐ — **API Versioning**: Implement 2 version API (`/api/v1/products`, `/api/v2/products`) với response format khác nhau.
+```java
+// 1. Khai báo interface — không cần viết implementation
+@HttpExchange(url = "/posts", accept = "application/json")
+public interface JsonPlaceholderClient {
 
-**B16** ⭐⭐⭐ — **Mini Project: Task Management API**: Build đầy đủ API từ plan Tháng 4 — tất cả endpoints, validation, error handling, pagination, CORS, OpenAPI docs, caching, RestClient gọi external service. Đây là capstone project của Tháng 4.
+    @GetExchange
+    List<Post> findAll();
+
+    @GetExchange("/{id}")
+    Post findById(@PathVariable Long id);
+
+    @PostExchange
+    Post create(@RequestBody PostRequest request);
+
+    @DeleteExchange("/{id}")
+    void delete(@PathVariable Long id);
+}
+
+// 2. Đăng ký bean — Spring tự tạo implementation từ interface
+@Configuration
+public class HttpClientConfig {
+    @Bean
+    JsonPlaceholderClient jsonPlaceholderClient(RestClient.Builder builder) {
+        RestClient restClient = builder
+            .baseUrl("https://jsonplaceholder.typicode.com")
+            .build();
+        return HttpServiceProxyFactory
+            .builderFor(RestClientAdapter.create(restClient))
+            .build()
+            .createClient(JsonPlaceholderClient.class);
+    }
+}
+
+// 3. Inject và dùng như bình thường
+@Service
+public class PostService {
+    private final JsonPlaceholderClient client;  // Inject interface
+
+    public List<Post> getAllPosts() {
+        return client.findAll();  // Gọi như method bình thường
+    }
+}
+```
+
+**So sánh 3 HTTP clients trong Spring Boot:**
+```
+RestTemplate (cũ):    restTemplate.getForObject(url, Post.class)     // Imperative, verbose
+RestClient (3.2+):    restClient.get().uri(url).retrieve().body()    // Fluent, sync ✓
+@HttpExchange (3.2+): client.findAll()                               // Declarative, cleanest ✓
+```
+
+> **Khi nào dùng cái nào?** `RestClient` cho ad-hoc calls. `@HttpExchange` cho service-to-service communication có nhiều endpoints — giống Prisma client nhưng cho HTTP.
+
+Bài tập:
+1. Tạo `@HttpExchange` interface cho JSONPlaceholder API (GET/POST/PUT/DELETE)
+2. Inject vào service, gọi từ controller
+3. So sánh code với RestClient từ B10 — cái nào gọn hơn?
+
+---
+
+### B15-B18: 4 bài tổng hợp
+
+**B15** ⭐⭐⭐ — **File Upload**: Endpoint `POST /api/files/upload` nhận multipart file, lưu vào disk, trả URL. Giới hạn 5MB, chỉ jpg/png.
+
+**B16** ⭐⭐⭐ — **API Versioning**: Implement 2 version API (`/api/v1/products`, `/api/v2/products`) với response format khác nhau.
+
+**B17** ⭐⭐ — **@Scheduled & @Async**: Tạo scheduled task chạy mỗi 5 phút cleanup expired tokens. Tạo `@Async` method gửi email notification không block request.
+
+**B18** ⭐⭐⭐ — **Mini Project: Task Management API**: Build đầy đủ API từ plan Tháng 4 — tất cả endpoints, validation, error handling, pagination, CORS, OpenAPI docs, caching, RestClient + @HttpExchange gọi external service. Đây là capstone project của Tháng 4.
 
 ---
 
@@ -654,5 +746,5 @@ Bài tập: Refactor `GlobalExceptionHandler` từ B5 sang dùng `ProblemDetail`
 | Phần | Số bài | Hoàn thành |
 |------|--------|-----------|
 | A — Spring Core & DI | 8 bài | ☐ |
-| B — REST API CRUD + Modern Features | 16 bài | ☐ |
-| **Tổng** | **24 bài** | |
+| B — REST API CRUD + Modern Features | 18 bài | ☐ |
+| **Tổng** | **26 bài** | |

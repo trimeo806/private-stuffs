@@ -52,7 +52,7 @@ Tin vui: bạn không bắt đầu từ số 0. Rất nhiều kiến thức fron
 | TypeScript static typing | Java static typing | **Rất tốt** — Java nghiêm ngặt hơn, không có `any` |
 | React components | Java classes, Spring beans | **Tốt** — cả hai đều là encapsulation |
 | Props/Context API | Dependency Injection (`@Autowired`) | **Tốt** — cùng là truyền dependency |
-| fetch/axios gọi API | `RestTemplate`, `WebClient` | **Tốt** — bạn hiểu HTTP rồi |
+| fetch/axios gọi API | `RestClient`, `@HttpExchange` | **Tốt** — bạn hiểu HTTP rồi |
 | React Router / Next.js routing | `@RequestMapping`, `@GetMapping` | **Tốt** — routing logic tương tự |
 | Zod / io-ts validation | Bean Validation, `@Valid` | **Tốt** — cả hai validate input |
 | Jest / Vitest testing | JUnit, Mockito | **Tốt** — cùng triết lý, khác syntax |
@@ -152,6 +152,247 @@ const greet = (n: string) => ...    public void greet(String n) { ... }
 > nghiêm ngặt hơn. Mọi thứ trong Java đều phải ở trong một class. Không có top-level
 > functions như TypeScript.
 
+### Bảng tổng hợp: Access Modifiers + static + final
+
+#### Phạm vi truy cập (Access Scope)
+
+| Modifier | Cùng Class | Cùng Package | Subclass (khác pkg) | Mọi nơi |
+|----------|:---:|:---:|:---:|:---:|
+| `private` | ✓ | ✗ | ✗ | ✗ |
+| _(default)_ | ✓ | ✓ | ✗ | ✗ |
+| `protected` | ✓ | ✓ | ✓ | ✗ |
+| `public` | ✓ | ✓ | ✓ | ✓ |
+
+#### Cách gọi: Instance vs Class
+
+| Modifier | Qua instance (`obj.method()`) | Qua class (`MyClass.method()`) |
+|----------|:---:|:---:|
+| non-static | ✓ | ✗ |
+| static | ✓* | ✓ |
+
+_*Hoạt động nhưng compiler sẽ cảnh báo — nên gọi qua class._
+
+#### Bảng tổ hợp đầy đủ với ví dụ
+
+| # | Tổ hợp | Truy cập qua | Use Case | Ví dụ |
+|---|--------|-------------|----------|-------|
+| 1 | `public` | instance, mọi nơi | Method API chính | `obj.getName()` |
+| 2 | `public static` | class, mọi nơi | Utility method dùng chung | `Math.abs(-5)` |
+| 3 | `public final` | instance, mọi nơi | API method không cho override | `obj.getClass()` |
+| 4 | `public static final` | class, mọi nơi | Hằng số, utility bất biến | `Math.PI` |
+| 5 | `private` | instance, cùng class | Helper dùng `this` | `this.validateState()` |
+| 6 | `private static` | class, cùng class | Helper không dùng `this` | `parseDate(str)` |
+| 7 | `private final` | instance, cùng class | Giống `private` (thừa `final`) | Hiếm khi viết |
+| 8 | `private static final` | class, cùng class | Hằng số private | `MAX_RETRY = 3` |
+| 9 | `protected` | instance, cùng pkg + subclass | Method cho subclass override | `clone()` |
+| 10 | `protected static` | class, cùng pkg + subclass | Utility cho class hierarchy | Hiếm — thường là code smell |
+| 11 | `protected final` | instance, cùng pkg + subclass | Subclass gọi được, không override | Template method pattern |
+| 12 | `protected static final` | class, cùng pkg + subclass | Hằng số chia sẻ trong hierarchy | `PREFIX = "app_"` |
+| 13 | _(default)_ | instance, cùng package | Method nội bộ package | Service helpers |
+| 14 | _(default)_ `static` | class, cùng package | Utility nội bộ package | Test helpers |
+| 15 | _(default)_ `final` | instance, cùng package | Nội bộ package, không override | Hiếm |
+| 16 | _(default)_ `static final` | class, cùng package | Hằng số nội bộ package | `static final Logger LOG` |
+
+#### Ví dụ code cho từng tổ hợp
+
+```java
+package com.example.school;
+
+public class Student {
+
+    // ── PUBLIC ──────────────────────────────────────────────
+
+    // #1 public — API chính, gọi qua instance từ mọi nơi
+    public String getName() {
+        return this.name;  // dùng instance field
+    }
+
+    // #2 public static — utility dùng chung, gọi qua class
+    //    Student.createId("Tri", 2026) → "TRI-2026"
+    public static String createId(String name, int year) {
+        return name.toUpperCase() + "-" + year;
+    }
+
+    // #3 public final — gọi được nhưng subclass KHÔNG override được
+    public final String getStudentType() {
+        return "REGULAR";
+    }
+
+    // #4 public static final — hằng số công khai
+    //    Student.MAX_CREDITS → 24
+    public static final int MAX_CREDITS = 24;
+
+
+    // ── PRIVATE ─────────────────────────────────────────────
+
+    private String name;
+    private int age;
+
+    // #5 private — helper nội bộ, dùng instance fields (this)
+    private boolean isEligible() {
+        return this.age >= 18 && this.name != null;
+    }
+
+    // #6 private static — helper nội bộ, KHÔNG dùng this (pure function)
+    //    Chỉ làm việc với tham số → nên là static
+    private static boolean isValidAge(int age) {
+        return age > 0 && age < 150;
+    }
+
+    // #7 private final — thừa vì private đã không thể override
+    //    Nhưng vẫn hợp lệ, signaling "sẽ không bao giờ thay đổi logic này"
+    private final String formatName() {
+        return this.name.trim().toLowerCase();
+    }
+
+    // #8 private static final — hằng số private (chỉ class này dùng)
+    private static final int MIN_AGE = 16;
+    private static final String DEFAULT_DEPARTMENT = "Undeclared";
+
+
+    // ── PROTECTED ───────────────────────────────────────────
+
+    protected int credits;
+
+    // #9 protected — subclass có thể override
+    //    GraduateStudent extends Student → override calculateGPA() riêng
+    protected double calculateGPA() {
+        return credits > 0 ? 3.0 : 0.0;
+    }
+
+    // #10 protected static — utility cho hierarchy (hiếm, thường là code smell)
+    protected static String normalizeEmail(String email) {
+        return email.trim().toLowerCase();
+    }
+
+    // #11 protected final — subclass gọi được nhưng KHÔNG override được
+    //     Đảm bảo logic core không bị thay đổi
+    protected final boolean hasMinimumCredits() {
+        return this.credits >= 12;
+    }
+
+    // #12 protected static final — hằng số chia sẻ với subclass
+    protected static final String SCHOOL_NAME = "Java University";
+
+
+    // ── DEFAULT (package-private) ───────────────────────────
+
+    // #13 default — chỉ class trong cùng package truy cập
+    //     CourseService (cùng package) gọi được, ngoài package thì không
+    String getInternalCode() {
+        return "STU-" + this.name.hashCode();
+    }
+
+    // #14 default static — utility nội bộ package
+    static String generateBatchId(int year) {
+        return "BATCH-" + year;
+    }
+
+    // #15 default final — nội bộ package, không cho override
+    final String getRegistrationLabel() {
+        return this.name + " [REG]";
+    }
+
+    // #16 default static final — hằng số nội bộ package
+    static final String INTERNAL_PREFIX = "INT_";
+
+
+    // ── Constructor ─────────────────────────────────────────
+
+    public Student(String name, int age) {
+        if (!isValidAge(age)) {          // gọi #6 private static
+            throw new IllegalArgumentException("Invalid age: " + age);
+        }
+        this.name = name;
+        this.age = age;
+        this.credits = 0;
+    }
+}
+
+// ── Subclass ở cùng package ──────────────────────────────
+class GraduateStudent extends Student {
+
+    public GraduateStudent(String name, int age) {
+        super(name, age);
+    }
+
+    // Override #9 protected — thay đổi cách tính GPA
+    @Override
+    protected double calculateGPA() {
+        return credits > 0 ? 3.5 : 0.0;
+    }
+
+    public void printInfo() {
+        // ✓ Gọi được #11 protected final — gọi nhưng không override
+        System.out.println("Has min credits: " + hasMinimumCredits());
+
+        // ✓ Gọi được #12 protected static final
+        System.out.println("School: " + SCHOOL_NAME);
+
+        // ✓ Gọi được #13 default — cùng package
+        System.out.println("Code: " + getInternalCode());
+
+        // ✗ KHÔNG gọi được private methods (#5, #6, #7)
+        // isEligible();      → compile error
+        // isValidAge(20);    → compile error
+    }
+}
+```
+
+```java
+// ── Class KHÁC package — chỉ thấy public và protected (qua kế thừa) ──
+package com.example.admin;
+
+import com.example.school.Student;
+
+public class AdminService {
+    public void process() {
+        Student s = new Student("Tri", 25);
+
+        // ✓ public
+        s.getName();                    // #1
+        Student.createId("Tri", 2026); // #2
+        s.getStudentType();            // #3
+        Student.MAX_CREDITS;           // #4
+
+        // ✗ private — KHÔNG thấy
+        // s.isEligible();             → compile error
+        // Student.isValidAge(25);     → compile error
+
+        // ✗ protected — KHÔNG thấy (không phải subclass)
+        // s.calculateGPA();           → compile error
+
+        // ✗ default — KHÔNG thấy (khác package)
+        // s.getInternalCode();        → compile error
+    }
+}
+```
+
+#### Cách chọn nhanh
+
+```
+Là hằng số?
+  → static final (chọn access level theo ai cần dùng)
+
+Dùng instance field (this.xxx)?
+  → non-static
+
+KHÔNG dùng instance field?
+  → static (signal: đây là pure function)
+
+Subclass cần override?
+  → KHÔNG dùng final
+
+Cấm override?
+  → final
+
+Ai cần gọi?
+  → mọi nơi: public
+  → subclass: protected
+  → cùng package: default (không viết gì)
+  → chỉ class này: private
+```
+
 ### Tuần 7-8: Collections & Functional Programming
 
 **Việc cần làm:**
@@ -166,6 +407,8 @@ const greet = (n: string) => ...    public void greet(String n) { ... }
 - [ ] Học: Concurrency cơ bản — Thread, Runnable, ExecutorService
 - [ ] Học: CompletableFuture — async operations (tương tự Promise trong JS)
 - [ ] Học: Virtual Threads (Java 21) — tạo triệu threads nhẹ, thay thế async patterns
+- [ ] Học: Structured Concurrency (Java 21+ preview) — `StructuredTaskScope` quản lý concurrent tasks, cancel khi fail
+- [ ] Học: Scoped Values (Java 21+ preview) — thay ThreadLocal, lightweight, immutable, tự cleanup
 - [ ] Học: Thread safety cơ bản — synchronized, ReentrantLock, ConcurrentHashMap
 
 **Bài tập thực hành:**
@@ -186,7 +429,7 @@ await Promise.all([f1(), f2()])          CompletableFuture.allOf(cf1, cf2).join(
 new Promise(resolve => ...)              CompletableFuture.supplyAsync(() -> ...)
 ```
 
-**Exit criteria**: Viết được chương trình multi-class dùng collections, streams, và virtual threads.
+**Exit criteria**: Viết được chương trình multi-class dùng collections, streams, virtual threads, và structured concurrency.
 
 ---
 
@@ -296,9 +539,13 @@ const Component = () => {                      private final UserService service
 - [ ] Học: Pagination với `Pageable`
 - [ ] Học: CORS configuration
 - [ ] Học: `RestClient` (Spring Boot 3.2+) — HTTP client hiện đại thay RestTemplate
+- [ ] Học: `@HttpExchange` (Spring Boot 3.2+) — declarative HTTP client, tương tự Feign
 - [ ] Học: OpenAPI/Swagger documentation với `springdoc-openapi` — tự sinh API docs
 - [ ] Học: Caching với `@Cacheable`, `@CacheEvict` — tăng performance
 - [ ] Học: Problem Details RFC 9457 — chuẩn error response format (Spring Boot 3.x hỗ trợ sẵn)
+- [ ] Học: `@Scheduled` và `@Async` — background tasks và async processing
+- [ ] Học: `application.yml` — YAML config format (phổ biến hơn .properties)
+- [ ] Thêm `spring-boot-devtools` — hot reload khi dev
 - [ ] Bật Virtual Threads: `spring.threads.virtual.enabled=true` — tăng throughput
 
 **Dự án thực hành — Build Task Management API:**
@@ -411,6 +658,9 @@ describe('TaskService', () => {          @ExtendWith(MockitoExtension.class)
 - [ ] Học: Spring Security — FilterChain, SecurityConfig
 - [ ] Học: Password hashing với BCrypt
 - [ ] Học: JWT (JSON Web Token) — tạo token, verify token
+- [ ] Học: Refresh Token flow — access token ngắn hạn + refresh token dài hạn
+- [ ] Học: `spring-boot-starter-oauth2-resource-server` — JWT validation chuẩn Spring
+- [ ] Học: OAuth2 Login (Google/GitHub) — social login với `spring-boot-starter-oauth2-client`
 - [ ] Học: Stateless authentication flow: Login → JWT → Authorize requests
 - [ ] Học: Role-based access control (`@PreAuthorize`, `hasRole()`)
 - [ ] Học: CORS + CSRF configuration cho React frontend
@@ -429,7 +679,7 @@ NextAuth.js:                             Spring Security + JWT:
 4. middleware.ts protect routes          4. SecurityFilterChain protect endpoints
 ```
 
-**Exit criteria**: API có authentication, tests pass, chỉ authenticated users truy cập được protected endpoints.
+**Exit criteria**: API có authentication (access + refresh tokens), tests pass, chỉ authenticated users truy cập được protected endpoints. OAuth2 resource server hoạt động.
 
 ---
 
@@ -478,7 +728,8 @@ NextAuth.js:                             Spring Security + JWT:
 - [ ] Viết `docker-compose.yml` chạy cả 3 services (frontend + backend + database)
 - [ ] Deploy lên cloud (chọn 1): Railway, Render, Fly.io, hoặc AWS
 - [ ] Setup CI/CD cơ bản với GitHub Actions
-- [ ] Monitoring cơ bản: health check endpoint, structured logging
+- [ ] Monitoring: health check endpoint, structured logging (Spring Boot 3.4+)
+- [ ] Distributed tracing: Micrometer Tracing + OpenTelemetry (OTLP) + Jaeger
 
 **docker-compose.yml mẫu:**
 ```yaml
@@ -506,7 +757,7 @@ services:
       NEXT_PUBLIC_API_URL: http://backend:8080
 ```
 
-**Exit criteria**: Full-stack app chạy được trên Docker, deploy được lên cloud, có CI/CD.
+**Exit criteria**: Full-stack app chạy được trên Docker, deploy được lên cloud, có CI/CD, distributed tracing hoạt động.
 
 ---
 
@@ -650,6 +901,11 @@ Frontend mindset:                    Fullstack mindset:
 | `@ExceptionHandler` | Xử lý exception cụ thể | Method |
 | `@ControllerAdvice` | Global exception handler | Class |
 | `@PreAuthorize` | Kiểm tra quyền trước khi chạy method | Method |
+| `@HttpExchange` | Declarative HTTP client interface | Interface |
+| `@Scheduled` | Chạy method theo schedule (cron/fixedRate) | Method |
+| `@Async` | Chạy method trên thread riêng (async) | Method |
+| `@Cacheable` | Cache kết quả method theo key | Method |
+| `@CacheEvict` | Xóa cache khi data thay đổi | Method |
 
 ---
 
@@ -677,6 +933,8 @@ Frontend mindset:                    Fullstack mindset:
 | Template literals `` `${var}` `` | **Text blocks** `"""..."""` | Java 15 |
 | Template literals với expressions | ~~**String templates**~~ (đã bị rút khỏi Java 23, dùng `"".formatted()` hoặc text blocks) | — |
 | async/await (event loop) | **Virtual threads** — triệu threads nhẹ | Java 21 |
+| `Promise.all` + cancel | **Structured Concurrency** — `StructuredTaskScope` | Java 21+ preview |
+| React Context / thread-local state | **Scoped Values** — thay ThreadLocal | Java 21+ preview |
 | `arr[0]`, `arr.at(-1)` | **Sequenced Collections** — `.getFirst()`, `.getLast()` | Java 21 |
 | `_` unused variable | **Unnamed variables** — `_` bỏ qua biến | Java 22 |
 
@@ -1105,7 +1363,67 @@ if (obj instanceof Point(int x, _)) {  // Chỉ cần x, bỏ y
 
 ---
 
-### 8. ~~String Templates~~ — ĐÃ BỊ RÚT (Java 21-22 preview → removed Java 23)
+### 8. Structured Concurrency — Quản lý concurrent tasks (Java 21+ Preview)
+
+**Đi kèm Virtual Threads** — Virtual Threads tạo threads nhẹ, Structured Concurrency quản lý lifecycle:
+
+```java
+// Vấn đề: CompletableFuture.allOf() không cancel task còn lại khi 1 fail → resource leak
+// Giải pháp: StructuredTaskScope — cancel tự động, cleanup sạch
+
+import java.util.concurrent.StructuredTaskScope;
+
+public UserProfile fetchProfile(Long userId) throws Exception {
+    try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
+        var user = scope.fork(() -> userService.findById(userId));
+        var posts = scope.fork(() -> postService.findByUser(userId));
+
+        scope.join();            // Đợi tất cả
+        scope.throwIfFailed();   // Ném exception nếu có task fail
+
+        return new UserProfile(user.get(), posts.get());
+    }
+    // 1 task fail → tất cả bị cancel → không leak!
+}
+```
+
+**So sánh TypeScript:**
+```
+Promise.all([p1, p2])        →  StructuredTaskScope.ShutdownOnFailure  (fail-fast)
+Promise.race([p1, p2])       →  StructuredTaskScope.ShutdownOnSuccess  (first-win)
+Promise.allSettled([p1, p2]) →  Chờ tất cả xong, handle từng result
+```
+
+> **Status**: Preview feature (Java 21-24). Dự kiến finalize Java 25-26. Cần `--enable-preview` khi compile.
+
+---
+
+### 9. Scoped Values — Thay thế ThreadLocal (Java 21+ Preview)
+
+**Vấn đề**: `ThreadLocal` không hợp với Virtual Threads (1 triệu threads = 1 triệu copies, dễ leak).
+
+```java
+// Khai báo scoped value
+private static final ScopedValue<String> CURRENT_USER = ScopedValue.newInstance();
+
+// Bind cho scope — tự cleanup khi ra scope
+ScopedValue.runWhere(CURRENT_USER, "user-123", () -> {
+    processOrder();       // Truy cập CURRENT_USER.get() ở bất kỳ đâu trong call stack
+    sendNotification();
+});
+```
+
+**So sánh:**
+```
+ThreadLocal: mutable, phải tự remove(), nặng với 1M threads
+ScopedValue: immutable, tự cleanup, lightweight, an toàn cho virtual threads
+```
+
+> **Status**: Preview feature (Java 21-24). Dùng kèm Structured Concurrency.
+
+---
+
+### 10. ~~String Templates~~ — ĐÃ BỊ RÚT (Java 21-22 preview → removed Java 23)
 
 > **⚠️ Lưu ý**: `STR."..."` processor đã được giới thiệu trong Java 21 (preview) và Java 22 (2nd preview), nhưng **đã bị rút hoàn toàn khỏi Java 23**. JEP bị withdrawn do thiết kế chưa đạt yêu cầu. **Không nên học tính năng này.**
 
@@ -1146,6 +1464,8 @@ Java:       "User %s có %d tuổi".formatted(name, age)   // Dài hơn nhưng t
 | **Virtual Threads** | Tháng 4 (khi setup Spring Boot) | **Cao** — chỉ cần 1 dòng config |
 | **Sealed Classes** | Tháng 4 (khi thiết kế domain) | **Trung bình** — dùng cho domain phức tạp |
 | **Pattern matching switch** | Tháng 4 (khi viết service) | **Trung bình** — kết hợp sealed classes |
+| **Structured Concurrency** | Tháng 2 (đi kèm Virtual Threads) | **Cao** — quản lý concurrent task lifecycle |
+| **Scoped Values** | Tháng 2 (đi kèm Virtual Threads) | **Cao** — thay ThreadLocal cho virtual threads |
 | **Sequenced Collections** | Tháng 2 (khi học Collections) | **Thấp** — tiện nhưng không bắt buộc |
 | **Unnamed Variables** | Bất kỳ lúc nào | **Thấp** — syntactic sugar |
 | ~~**String Templates**~~ | Không học — đã bị rút | **Bỏ qua** — removed khỏi Java 23, dùng `formatted()` |
@@ -1163,16 +1483,19 @@ Tháng 1          Tháng 2          Tháng 3          Tháng 4          Tháng 5
 └──────────┘    └──────────┘    └──────────┘    └──────────────┘  └──────────────┘  └──────────────┘
   Syntax          Classes        PostgreSQL       Controller        JUnit            React + Spring
   Variables       Interfaces     SQL Queries      Service           Mockito          Docker Compose
-  Methods         Streams        Hibernate        Repository        JWT Auth         CI/CD
-  Exceptions      Lambdas        JPA Entities     Validation        Spring Security  Cloud Deploy
+  Methods         Streams        Hibernate        Repository        Refresh Tokens   CI/CD
+  Exceptions      Lambdas        JPA Entities     @HttpExchange     OAuth2           Observability
+                  Structured     Validation       @Scheduled        Spring Security  Cloud Deploy
+                  Concurrency
 ```
 
 **Sau 6 tháng, bạn có thể:**
-- Build REST API hoàn chỉnh với Spring Boot
+- Build REST API hoàn chỉnh với Spring Boot (RestClient + @HttpExchange)
 - Kết nối React/Next.js frontend với Spring Boot backend
-- Viết tests (unit + integration)
-- Bảo mật API với JWT + Spring Security
-- Deploy full-stack app bằng Docker
+- Viết tests (unit + integration + @RestClientTest)
+- Bảo mật API với JWT (access + refresh tokens) + OAuth2 + Spring Security
+- Observability: health checks, structured logging, distributed tracing
+- Deploy full-stack app bằng Docker + CI/CD
 - Tự tin nhận role Fullstack Developer
 
 ---

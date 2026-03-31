@@ -304,6 +304,32 @@ class ProductRepositoryTest {
 
 **A12** ⭐⭐⭐ — **Test tất cả layers**: Viết test suite đầy đủ cho Task Management API — Controller + Service + Repository. Mỗi layer ít nhất 5 tests.
 
+**A13** ⭐⭐ — **@RestClientTest**: Test HTTP client (RestClient / @HttpExchange) mà không cần external server:
+
+```java
+@RestClientTest(ExternalApiService.class)
+class ExternalApiServiceTest {
+
+    @Autowired
+    private ExternalApiService service;
+
+    @Autowired
+    private MockRestServiceServer server;  // Mock external server
+
+    @Test
+    void shouldFetchPosts() {
+        server.expect(requestTo("/posts"))
+            .andRespond(withSuccess("""
+                [{"id": 1, "title": "Test Post"}]
+                """, MediaType.APPLICATION_JSON));
+
+        List<Post> posts = service.getPosts();
+        assertEquals(1, posts.size());
+        assertEquals("Test Post", posts.get(0).title());
+    }
+}
+```
+
 ---
 
 ## Phần B: Spring Security & JWT (8 bài)
@@ -536,15 +562,157 @@ public List<TaskResponse> getMyTasks(@CurrentUser AppUser user) {
 
 ---
 
-### B8. Capstone — Secure Task Management API ⭐⭐⭐
+### B8. Refresh Token — Production Auth Flow ⭐⭐⭐
+
+Access token ngắn hạn (15 phút) + Refresh token dài hạn (7 ngày):
+
+```java
+// Entity lưu refresh token
+@Entity
+public class RefreshToken {
+    @Id @GeneratedValue
+    private Long id;
+    @Column(unique = true)
+    private String token;
+    @ManyToOne
+    private AppUser user;
+    private Instant expiryDate;  // 7 ngày
+
+    public boolean isExpired() {
+        return Instant.now().isAfter(expiryDate);
+    }
+}
+
+// Login trả về cả access + refresh token
+record AuthResponse(String accessToken, String refreshToken, String type, long expiresIn) {}
+
+// Endpoint refresh token
+@PostMapping("/auth/refresh")
+public ResponseEntity<AuthResponse> refresh(@RequestBody RefreshRequest request) {
+    RefreshToken stored = refreshTokenRepo.findByToken(request.refreshToken())
+        .orElseThrow(() -> new InvalidTokenException("Invalid refresh token"));
+
+    if (stored.isExpired()) {
+        refreshTokenRepo.delete(stored);
+        throw new InvalidTokenException("Refresh token expired — login lại");
+    }
+
+    // Tạo access token mới, giữ refresh token cũ (hoặc rotate)
+    String newAccessToken = jwtService.generateToken(stored.getUser().getEmail());
+    return ResponseEntity.ok(new AuthResponse(newAccessToken, stored.getToken(), "Bearer", 900));
+}
+```
+
+**Flow:**
+```
+1. Login → accessToken (15min) + refreshToken (7 days)
+2. API calls dùng accessToken
+3. accessToken hết hạn → gọi /auth/refresh với refreshToken → accessToken mới
+4. refreshToken hết hạn → phải login lại
+```
+
+Bài tập:
+1. Implement RefreshToken entity + repository
+2. Login trả cả access + refresh token
+3. Endpoint `POST /auth/refresh` tạo access token mới
+4. Endpoint `POST /auth/logout` xóa refresh token
+5. Test: access token hết hạn → refresh → tiếp tục dùng API
+
+---
+
+### B9. OAuth2 Resource Server — JWT Validation chuẩn Spring ⭐⭐⭐
+
+Thay vì tự viết `JwtAuthenticationFilter`, dùng `spring-boot-starter-oauth2-resource-server` — Spring tự validate JWT:
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+</dependency>
+```
+
+```java
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+            .csrf(csrf -> csrf.disable())
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/auth/**").permitAll()
+                .anyRequest().authenticated()
+            )
+            // Thay JwtAuthenticationFilter tự viết → Spring tự handle
+            .oauth2ResourceServer(oauth2 -> oauth2
+                .jwt(jwt -> jwt.decoder(jwtDecoder()))
+            );
+        return http.build();
+    }
+
+    @Bean
+    public JwtDecoder jwtDecoder() {
+        return NimbusJwtDecoder.withSecretKey(
+            new SecretKeySpec(secretKey.getBytes(), "HmacSHA256")
+        ).build();
+    }
+}
+```
+
+> **Tại sao dùng?** Tự viết JWT filter dễ bỏ sót edge cases (token expired, malformed, wrong algorithm). `oauth2-resource-server` handle hết, production-tested.
+
+Bài tập:
+1. Refactor từ custom `JwtAuthenticationFilter` (B5) sang `oauth2-resource-server`
+2. So sánh code lượng trước/sau — gọn hơn bao nhiêu?
+3. Test: token hợp lệ → 200, token sai → 401, token expired → 401
+
+---
+
+### B10. OAuth2 Login — Social Login (Google/GitHub) ⭐⭐⭐
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-oauth2-client</artifactId>
+</dependency>
+```
+
+```yaml
+# application.yml
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope: openid, profile, email
+          github:
+            client-id: ${GITHUB_CLIENT_ID}
+            client-secret: ${GITHUB_CLIENT_SECRET}
+            scope: user:email
+```
+
+Bài tập:
+1. Đăng ký OAuth2 app trên Google Cloud Console
+2. Cấu hình `spring-boot-starter-oauth2-client`
+3. Login bằng Google → tự tạo user trong DB nếu chưa có
+4. Merge account: user đã register bằng email → link Google account
+
+---
+
+### B11. Capstone — Secure Task Management API ⭐⭐⭐
 
 Áp dụng tất cả vào Task Management API:
-1. Register/Login endpoints
-2. JWT authentication
+1. Register/Login endpoints (access + refresh tokens)
+2. JWT authentication (oauth2-resource-server)
 3. Users chỉ thấy tasks của mình
 4. Admin thấy tất cả tasks
 5. CORS cho React frontend
-6. Viết integration tests cho toàn bộ auth flow
+6. (Optional) OAuth2 social login
+7. Viết integration tests cho toàn bộ auth flow
 
 ---
 
@@ -552,6 +720,6 @@ public List<TaskResponse> getMyTasks(@CurrentUser AppUser user) {
 
 | Phần | Số bài | Hoàn thành |
 |------|--------|-----------|
-| A — Testing (JUnit + Mockito) | 12 bài | ☐ |
-| B — Security (JWT + Spring Security) | 8 bài | ☐ |
-| **Tổng** | **20 bài** | |
+| A — Testing (JUnit + Mockito) | 13 bài | ☐ |
+| B — Security (JWT + Spring Security + OAuth2) | 11 bài | ☐ |
+| **Tổng** | **24 bài** | |

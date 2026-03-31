@@ -206,18 +206,18 @@ Bài tập:
 ### B2. Dockerfile cho Next.js ⭐⭐
 
 ```dockerfile
-FROM node:20-alpine AS deps
+FROM node:22-alpine AS deps
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 
-FROM node:20-alpine AS build
+FROM node:22-alpine AS build
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build
 
-FROM node:20-alpine
+FROM node:22-alpine
 WORKDIR /app
 COPY --from=build /app/.next/standalone ./
 COPY --from=build /app/.next/static ./.next/static
@@ -405,16 +405,27 @@ Thêm Spring Boot Actuator + Micrometer:
 </dependency>
 ```
 
-```properties
-# application.properties
-management.endpoints.web.exposure.include=health,info,metrics,prometheus
-management.endpoint.health.show-details=when-authorized
+```yaml
+# application.yml
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
 
-# Bật Virtual Threads (Spring Boot 3.2+) — tăng throughput
-spring.threads.virtual.enabled=true
+spring:
+  threads:
+    virtual:
+      enabled: true  # Bật Virtual Threads (Spring Boot 3.2+)
 
 # Structured logging (Spring Boot 3.4+)
-logging.structured.format.console=ecs
+logging:
+  structured:
+    format:
+      console: ecs  # Elastic Common Schema — JSON format cho log aggregation
 ```
 
 Bài tập:
@@ -426,7 +437,79 @@ Bài tập:
 
 ---
 
-### C5. Capstone — Full Deployment ⭐⭐⭐
+### C5. Distributed Tracing — Micrometer Tracing + OTLP ⭐⭐⭐
+
+> **Tại sao quan trọng**: Khi request đi qua nhiều services (frontend → backend → database → external API), cần trace toàn bộ journey. Đây là kỹ năng production bắt buộc.
+
+```xml
+<!-- pom.xml — thêm Micrometer Tracing + OpenTelemetry -->
+<dependency>
+    <groupId>io.micrometer</groupId>
+    <artifactId>micrometer-tracing-bridge-otel</artifactId>
+</dependency>
+<dependency>
+    <groupId>io.opentelemetry</groupId>
+    <artifactId>opentelemetry-exporter-otlp</artifactId>
+</dependency>
+```
+
+```yaml
+# application.yml
+management:
+  tracing:
+    sampling:
+      probability: 1.0  # 100% sampling cho dev (prod: 0.1 = 10%)
+  otlp:
+    tracing:
+      endpoint: http://localhost:4318/v1/traces  # OTLP collector endpoint
+
+logging:
+  pattern:
+    correlation: "[${spring.application.name:},%X{traceId:-},%X{spanId:-}] "
+```
+
+```java
+// Traces tự động ghi cho:
+// - HTTP requests (RestController)
+// - Database queries (JPA/JDBC)
+// - RestClient / @HttpExchange calls
+// - @Scheduled methods
+
+// Custom span cho business logic quan trọng:
+@Service
+public class OrderService {
+
+    private final ObservationRegistry observationRegistry;
+
+    public OrderResponse createOrder(OrderRequest request) {
+        return Observation.createNotStarted("order.create", observationRegistry)
+            .lowCardinalityKeyValue("order.type", request.type())
+            .observe(() -> {
+                // Business logic — tự động đo thời gian
+                var order = processOrder(request);
+                return toResponse(order);
+            });
+    }
+}
+```
+
+**Stack quan sát:**
+```
+Application → Micrometer Tracing → OTLP Exporter → Collector → Backend
+                                                        ↓
+                                              Jaeger / Zipkin / Grafana Tempo
+```
+
+Bài tập:
+1. Thêm Micrometer Tracing + OTLP dependencies
+2. Chạy Jaeger local: `docker run -p 16686:16686 -p 4318:4318 jaegertracing/all-in-one`
+3. Gọi API → mở Jaeger UI (localhost:16686) → xem trace
+4. Thêm custom span cho business logic quan trọng
+5. Cấu hình traceId + spanId trong log pattern → correlate logs với traces
+
+---
+
+### C6. Capstone — Full Deployment ⭐⭐⭐
 
 Deploy toàn bộ stack:
 1. Backend trên Railway/Render (Spring Boot + PostgreSQL)
@@ -446,6 +529,7 @@ Checklist deploy:
 - [ ] Virtual threads enabled (`spring.threads.virtual.enabled=true`)
 - [ ] OpenAPI docs accessible (`/swagger-ui.html`)
 - [ ] Health check endpoint working (`/actuator/health`)
+- [ ] Distributed tracing working (Jaeger/Zipkin)
 - [ ] CI pipeline passes
 
 ---
@@ -456,8 +540,8 @@ Checklist deploy:
 |------|--------|-----------|
 | A — Full-Stack Integration | 8 bài | ☐ |
 | B — Docker | 7 bài | ☐ |
-| C — CI/CD & Deployment | 5 bài | ☐ |
-| **Tổng** | **20 bài** | |
+| C — CI/CD & Deployment | 6 bài | ☐ |
+| **Tổng** | **21 bài** | |
 
 ---
 
@@ -466,11 +550,11 @@ Checklist deploy:
 | Tháng | File | Số bài |
 |-------|------|--------|
 | 1 — Java Cơ Bản | `java-basic-exercises.md` | 60 |
-| 2 — OOP & Collections & Concurrency | `java-oop-collections-exercises.md` | 50 |
+| 2 — OOP & Collections & Concurrency | `java-oop-collections-exercises.md` | 51 |
 | 3 — SQL & Database | `java-sql-database-exercises.md` | 30 |
-| 4 — Spring Boot & REST API | `java-springboot-rest-exercises.md` | 24 |
-| 5 — Testing & Security | `java-testing-security-exercises.md` | 20 |
-| 6 — Full-Stack & Deploy | `java-fullstack-deploy-exercises.md` | 20 |
-| **TỔNG** | | **204 bài** |
+| 4 — Spring Boot & REST API | `java-springboot-rest-exercises.md` | 26 |
+| 5 — Testing & Security | `java-testing-security-exercises.md` | 24 |
+| 6 — Full-Stack & Deploy | `java-fullstack-deploy-exercises.md` | 21 |
+| **TỔNG** | | **212 bài** |
 
-Hoàn thành tất cả 204 bài → bạn đã sẵn sàng nhận role **Fullstack Developer** (React + Spring Boot).
+Hoàn thành tất cả 212 bài → bạn đã sẵn sàng nhận role **Fullstack Developer** (React + Spring Boot).
