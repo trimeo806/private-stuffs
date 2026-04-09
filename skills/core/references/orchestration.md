@@ -1,4 +1,4 @@
-﻿# Orchestration Protocol
+# Orchestration Protocol
 
 Rules for agent delegation, context passing, execution modes, and escalation.
 
@@ -31,6 +31,7 @@ Hooks inject most of this automatically. Agents must verify context is present b
 3. Subagent gets fresh context — don't assume it knows prior conversation
 4. Wait for subagent result before next step (unless parallel-safe)
 5. Review subagent output before presenting to user
+6. If the prompt, routed intent, active plan, handoff chain, or loaded skills indicate a specialist agent is needed, dispatch it automatically from the main conversation without waiting for explicit user permission to spawn the agent
 
 ## Execution Modes
 
@@ -141,6 +142,8 @@ When you load a skill, check its frontmatter before executing:
 
 **Iron Law**: A skill with `context: fork` is a dispatch instruction, not a script to run yourself. Seeing `context: fork` means: stop, spawn the named agent, pass it the task.
 
+**Prompt-triggered routing law**: When the user's prompt clearly maps to one or more specialist agents, or when loaded skills imply a required downstream agent, the main conversation must dispatch those related agents automatically. Explicit user wording such as `spawn_agent` or `use Agent tool` is not required.
+
 **Common failure mode**: Skipping the Skill tool entirely and running raw Bash/shell commands instead. This bypasses routing, skips build gates, skips all skill-level safety checks. Never do this for git, research, planning, or any workflow that has a dedicated agent.
 
 ## Escalation Rules
@@ -174,3 +177,4 @@ When you load a skill, check its frontmatter before executing:
 | `chore:` | Build, config, tooling |
 
 No "Generated with Claude Code" or AI attribution in commits or PRs.
+
