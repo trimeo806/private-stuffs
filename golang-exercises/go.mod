@@ -1,3 +1,0 @@
-module golang-exercises
-
-go 1.25.6
