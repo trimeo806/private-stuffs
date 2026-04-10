@@ -1,0 +1,208 @@
+{
+  "main": {
+    "id": "79b1657b927df1f2",
+    "type": "split",
+    "children": [
+      {
+        "id": "5243b1513c857d1d",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "ed01662a24505b7c",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "phase-7-advanced.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "phase-7-advanced"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "8edd127aa3c6d661",
+    "type": "split",
+    "children": [
+      {
+        "id": "2ed74c65f1ced4f3",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "af2ceaf72f179c6b",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "543f70e788847338",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "3cd5ca4f8b01aaa3",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "424ee42c4a660a07",
+    "type": "split",
+    "children": [
+      {
+        "id": "60203b38c2c902b7",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "de2e622b3e00e815",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "phase-7-advanced.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for phase-7-advanced"
+            }
+          },
+          {
+            "id": "c25f3e530943d50f",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "phase-7-advanced.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from phase-7-advanced"
+            }
+          },
+          {
+            "id": "160cf2365a11a3be",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "c46a276bd09dda88",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "a89ccd2913d9427e",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "phase-7-advanced.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of phase-7-advanced"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false
+    }
+  },
+  "active": "ed01662a24505b7c",
+  "lastOpenFiles": [
+    "phase-8-ecosystem.md",
+    "phase-7-advanced.md",
+    "phase-6-testing.md",
+    "phase-5-database.md",
+    "phase-3-request-lifecycle.md",
+    "phase-4-auth.md",
+    "phase-2-nestjs-core.md",
+    "plan.md.tmp.9692.1775710311529",
+    "phase-8-ecosystem.md.tmp.9692.1775710302523",
+    "phase-8-ecosystem.md.tmp.9692.1775710288768",
+    "phase-7-advanced.md.tmp.9692.1775710273078",
+    "phase-7-advanced.md.tmp.9692.1775710247238",
+    "phase-7-advanced.md.tmp.9692.1775710240215",
+    "phase-5-database.md.tmp.9692.1775710234454",
+    "phase-4-auth.md.tmp.9692.1775710222920",
+    "phase-3-request-lifecycle.md.tmp.9692.1775710211761",
+    "phase-3-request-lifecycle.md.tmp.9692.1775710202593",
+    "phase-1-ts-foundations.md",
+    "plan.md"
+  ]
+}

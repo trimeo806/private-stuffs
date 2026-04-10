@@ -1,11 +1,11 @@
 {
-  "generated": "2026-03-18T06:45:04.645Z",
+  "generated": "2026-04-09T03:50:45.989Z",
   "version": "2.0.0",
-  "count": 60,
+  "count": 65,
   "categories": {
-    "uncategorized": 32,
-    "development-tools": 11,
-    "analysis-reasoning": 12,
+    "uncategorized": 39,
+    "development-tools": 10,
+    "analysis-reasoning": 11,
     "infrastructure": 2,
     "frontend-web": 3
   },
@@ -436,25 +436,6 @@
         "conflicts": []
       },
       "path": "cook\\SKILL.md"
-    },
-    {
-      "name": "core",
-      "description": "Use when any agent modifies files, makes architectural decisions, or needs safety and documentation rules",
-      "category": "analysis-reasoning",
-      "tier": "core",
-      "keywords": [],
-      "platforms": [
-        "all"
-      ],
-      "triggers": [],
-      "agent-affinity": [],
-      "connections": {
-        "extends": [],
-        "requires": [],
-        "enhances": [],
-        "conflicts": []
-      },
-      "path": "core\\SKILL.md"
     },
     {
       "name": "debug",
@@ -978,6 +959,25 @@
       "path": "microservices-architect\\SKILL.md"
     },
     {
+      "name": "nestjs-pro",
+      "description": "Use when building NestJS applications. Invoke for module architecture, dependency injection, controller/service design, Guards/Interceptors/Pipes/Filters (GIPF), validation with class-validator, exception handling, or Prisma repository patterns. Triggers on: NestJS, @Module, @Controller, @Injectable, @Guard, @Interceptor, @Pipe, @Filter, ValidationPipe, nest-cli.json, *.module.ts, *.controller.ts, *.service.ts, nestjs DI, nestjs authentication, nestjs exception filter.",
+      "category": "uncategorized",
+      "tier": "discoverable",
+      "keywords": [],
+      "platforms": [
+        "all"
+      ],
+      "triggers": "NestJS, @Module, @Controller, @Injectable, nest-cli.json, \"*.module.ts\", \"*.controller.ts\", \"*.service.ts\", Guards NestJS, Interceptors NestJS, Pipes NestJS, Filters NestJS, ValidationPipe, class-validator, Prisma NestJS, NestJS DI, NestJS authentication, NestJS exception filter",
+      "agent-affinity": [],
+      "connections": {
+        "extends": [],
+        "requires": [],
+        "enhances": [],
+        "conflicts": []
+      },
+      "path": "nestjs-pro\\SKILL.md"
+    },
+    {
       "name": "nextjs-developer",
       "description": "Use when building Next.js 14+ applications with App Router, server components, or server actions. Invoke to configure route handlers, implement middleware, set up API routes, add streaming SSR, write generateMetadata for SEO, scaffold loading.tsx/error.tsx boundaries, or deploy to Vercel. Triggers on: Next.js, Next.js 14, App Router, RSC, use server, Server Components, Server Actions, React Server Components, generateMetadata, loading.tsx, Next.js deployment, Vercel, Next.js performance.",
       "category": "uncategorized",
@@ -1445,45 +1445,6 @@
       "path": "test\\SKILL.md"
     },
     {
-      "name": "tri-ai-kit",
-      "description": "Kit conventions, agent catalog, skill architecture, and routing rules for tri_ai_kit. Load when answering kit-level questions, authoring agents/skills, or routing ambiguous requests.",
-      "category": "development-tools",
-      "tier": "discoverable",
-      "keywords": [
-        "kit",
-        "agent",
-        "skill",
-        "routing",
-        "conventions",
-        "catalog",
-        "tri-ai-kit",
-        "architecture"
-      ],
-      "platforms": [
-        "all"
-      ],
-      "triggers": [
-        "which agent",
-        "list agents",
-        "kit conventions",
-        "agent catalog",
-        "skill catalog",
-        "how does the kit work"
-      ],
-      "agent-affinity": [
-        "project-manager",
-        "planner",
-        "developer"
-      ],
-      "connections": {
-        "extends": [],
-        "requires": [],
-        "enhances": [],
-        "conflicts": []
-      },
-      "path": "tri-ai-kit\\SKILL.md"
-    },
-    {
       "name": "typescript-pro",
       "description": "Implements advanced TypeScript type systems, creates custom type guards, utility types, and branded types, and configures tRPC for end-to-end type safety. Use when building TypeScript applications requiring advanced generics, conditional or mapped types, discriminated unions, monorepo setup, or full-stack type safety with tRPC.",
       "category": "uncategorized",
@@ -1520,6 +1481,120 @@
         "conflicts": []
       },
       "path": "ui-ux-pro-max\\SKILL.md"
+    },
+    {
+      "name": "understand",
+      "description": "Analyze a codebase to produce an interactive knowledge graph for understanding architecture, components, and relationships",
+      "category": "uncategorized",
+      "tier": "discoverable",
+      "keywords": [],
+      "platforms": [
+        "all"
+      ],
+      "triggers": [],
+      "agent-affinity": [],
+      "connections": {
+        "extends": [],
+        "requires": [],
+        "enhances": [],
+        "conflicts": []
+      },
+      "path": "understand\\SKILL.md"
+    },
+    {
+      "name": "understand-chat",
+      "description": "Use when you need to ask questions about a codebase or understand code using a knowledge graph",
+      "category": "uncategorized",
+      "tier": "discoverable",
+      "keywords": [],
+      "platforms": [
+        "all"
+      ],
+      "triggers": [],
+      "agent-affinity": [],
+      "connections": {
+        "extends": [],
+        "requires": [],
+        "enhances": [],
+        "conflicts": []
+      },
+      "path": "understand-chat\\SKILL.md"
+    },
+    {
+      "name": "understand-dashboard",
+      "description": "Launch the interactive web dashboard to visualize a codebase's knowledge graph",
+      "category": "uncategorized",
+      "tier": "discoverable",
+      "keywords": [],
+      "platforms": [
+        "all"
+      ],
+      "triggers": [],
+      "agent-affinity": [],
+      "connections": {
+        "extends": [],
+        "requires": [],
+        "enhances": [],
+        "conflicts": []
+      },
+      "path": "understand-dashboard\\SKILL.md"
+    },
+    {
+      "name": "understand-diff",
+      "description": "Use when you need to analyze git diffs or pull requests to understand what changed, affected components, and risks",
+      "category": "uncategorized",
+      "tier": "discoverable",
+      "keywords": [],
+      "platforms": [
+        "all"
+      ],
+      "triggers": [],
+      "agent-affinity": [],
+      "connections": {
+        "extends": [],
+        "requires": [],
+        "enhances": [],
+        "conflicts": []
+      },
+      "path": "understand-diff\\SKILL.md"
+    },
+    {
+      "name": "understand-explain",
+      "description": "Use when you need a deep-dive explanation of a specific file, function, or module in the codebase",
+      "category": "uncategorized",
+      "tier": "discoverable",
+      "keywords": [],
+      "platforms": [
+        "all"
+      ],
+      "triggers": [],
+      "agent-affinity": [],
+      "connections": {
+        "extends": [],
+        "requires": [],
+        "enhances": [],
+        "conflicts": []
+      },
+      "path": "understand-explain\\SKILL.md"
+    },
+    {
+      "name": "understand-onboard",
+      "description": "Use when you need to generate an onboarding guide for new team members joining a project",
+      "category": "uncategorized",
+      "tier": "discoverable",
+      "keywords": [],
+      "platforms": [
+        "all"
+      ],
+      "triggers": [],
+      "agent-affinity": [],
+      "connections": {
+        "extends": [],
+        "requires": [],
+        "enhances": [],
+        "conflicts": []
+      },
+      "path": "understand-onboard\\SKILL.md"
     },
     {
       "name": "web-frontend",
