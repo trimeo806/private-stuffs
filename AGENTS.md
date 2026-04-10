@@ -215,3 +215,44 @@ See `.claude/skills/core/SKILL.md` for operational boundaries.
 - `.claude/skills/core/SKILL.md` — Operational rules and boundaries
 - `WORKFLOW.md` — Full 15-phase solution architect workflow (Problem → Go-Live → Post-Launch)
 
+---
+
+## OpenCode Compatibility
+
+This toolkit works with [OpenCode](https://opencode.ai) as a first-class citizen. All agents, commands, and hook behavior are available under `.opencode/`.
+
+### Config locations
+
+| Asset | Claude Code | OpenCode |
+|---|---|---|
+| Agents | `.claude/agents/` | `.opencode/agents/` |
+| Commands | `.claude/commands/` | `.opencode/commands/` |
+| Skills | `.claude/skills/` | referenced from `.opencode/agents/` (read-only) |
+| Plugin / Hooks | `.claude/hooks/` | `.opencode/plugins/tri-kit.js` |
+| Config | `.claude/settings.json` | `opencode.json` |
+
+### Models
+
+All agents use `github-copilot/claude-sonnet-4.6` (sonnet + opus tiers) or `github-copilot/claude-haiku-4.5` (haiku tier). `knowledge-graph-guide` inherits the session model.
+
+### Plugin behavior
+
+`.opencode/plugins/tri-kit.js` bridges the original Claude Code hooks to OpenCode plugin events:
+
+| OpenCode Event | Behavior |
+|---|---|
+| `tui.prompt.append` | Injects session/plan/rules context reminder before each prompt |
+| `tool.execute.before` | Blocks sensitive file access (`.env`, keys, credentials) — mirrors privacy-block hook |
+| `tool.execute.after` | Reminds to update `index.json` after writes to `docs/`, `reports/`, `plans/` |
+| `session.idle` | Writes session metrics to `.kit-data/improvements/sessions.jsonl`, evaluates lesson-capture thresholds, sends notifications if `TELEGRAM_BOT_TOKEN` / `DISCORD_WEBHOOK_URL` / `SLACK_WEBHOOK_URL` are set |
+
+### Sync script
+
+To re-sync `.opencode/agents/` from source (`.claude/agents/`), run:
+
+```powershell
+.\scripts\sync-to-opencode.ps1
+```
+
+This transforms frontmatter automatically (strips Claude Code fields, adds OpenCode fields, maps models).
+
