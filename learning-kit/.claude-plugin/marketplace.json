@@ -1,0 +1,15 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "learning-kit",
+  "owner": { "name": "Tri Nguyen" },
+  "description": "Personal learning skills, starting with Jane Street's socratic-tutor.",
+  "plugins": [
+    {
+      "name": "learning-kit",
+      "source": "./plugins/learning-kit",
+      "description": "Skills for self-study: Socratic tutoring with diagnostic, skill map, spaced review and final assessment.",
+      "version": "0.1.0",
+      "category": "learning"
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "learning-kit",
+  "description": "Skills for self-study. Includes socratic-tutor from janestreet/agent_skills: teaches a topic by questioning, tracks a 0-5 skill map, spaced review and a final assessment.",
+  "version": "0.1.0",
+  "author": { "name": "Tri Nguyen" },
+  "license": "MIT",
+  "keywords": ["learning", "tutor", "socratic", "study"]
+}
