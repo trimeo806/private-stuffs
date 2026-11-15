@@ -1,0 +1,12 @@
+{
+  "eval_name": "csharp-symptom-ticket-share-link-clock",
+  "prompt": "Coderbyte section 1, task 2 in TASK.md is a support ticket with no failing test. All 4 visible tests are green so I have nothing to go on. Where is the bug? I want the root cause nailed down before I ask the AI panel for a fix, I have about 10 minutes for this one. .NET 8 + xUnit, dotnet test works here.",
+  "assertions": [
+    "The response restates the ticket as at least one concrete case of input -> actual vs expected (for example a 1 hour link checked right after creation on a UTC+7 machine is invalid but should be valid).",
+    "The response identifies ShareLinkService.IsValid comparing DateTime.Now with ExpiresAtUtc, instead of the injected clock's UtcNow, as the root cause, with file and line.",
+    "The response explains both the Ho Chi Minh City symptom (links invalid immediately) and the Seattle symptom (links valid for hours after expiry) as the same local-time offset cause.",
+    "The trace shows a test or scratch program being run that demonstrates the wrong IsValid result, rather than the cause being asserted only from reading code.",
+    "The response flags ActiveLinksFor as having the same DateTime.Now bug.",
+    "At the end of the run, ShareLinkService.cs and the four original tests in ShareLinkServiceTests.cs are unchanged (new test code is allowed)."
+  ]
+}

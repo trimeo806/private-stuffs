@@ -1,0 +1,17 @@
+schema_version: "1.1"
+name: csharp-tag-merge-xunit
+expected_outcome: |
+  The run reads TASK.md, TagService.cs, the repository and the existing tests, and runs
+  dotnet test once for a baseline. It then adds a behavior-named xUnit test for MergeTags
+  (in TagServiceTests.cs or a new file beside it), runs it and sees it fail, for example
+  with NotImplementedException, before writing the implementation. The tag rewriting
+  (remove the source tag case-insensitively, add the target once) lives in a pure function
+  or static method that takes the tag list and returns a new one without touching the
+  repository, while MergeTags itself guards blank names with ArgumentException, loads the
+  assets, calls that function and calls Save only for assets that changed, returning the
+  count. The public signature int MergeTags(string sourceTag, string targetTag) and the two
+  existing tests stay as they are, no package is added, the final dotnet test run is green,
+  and the final message reports the tests added red to green with design notes on where
+  mutation lives and the edge cases handled, such as merging a tag into itself.
+context:
+  scaffold_script: place-files.sh

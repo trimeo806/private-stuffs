@@ -1,0 +1,40 @@
+{
+  "expectations": [
+    {
+      "text": "The response restates the ticket as at least one concrete case of input -> actual vs expected (for example a 1 hour link checked right after creation on a UTC+7 machine is invalid but should be valid).",
+      "passed": true,
+      "evidence": "States a link with lifetime under 7h looks expired at creation in UTC+7; 1h link valid ~9h in UTC-8."
+    },
+    {
+      "text": "The response identifies ShareLinkService.IsValid comparing DateTime.Now with ExpiresAtUtc, instead of the injected clock's UtcNow, as the root cause, with file and line.",
+      "passed": true,
+      "evidence": "Names :26 DateTime.Now < ExpiresAtUtc, should be _clock.UtcNow."
+    },
+    {
+      "text": "The response explains both the Ho Chi Minh City symptom (links invalid immediately) and the Seattle symptom (links valid for hours after expiry) as the same local-time offset cause.",
+      "passed": true,
+      "evidence": "Explains both reports via DateTime comparison ignoring Kind."
+    },
+    {
+      "text": "The trace shows a test or scratch program being run that demonstrates the wrong IsValid result, rather than the cause being asserted only from reading code.",
+      "passed": true,
+      "evidence": "Added 3 FakeClock tests, dotnet test 3 failed 4 passed."
+    },
+    {
+      "text": "The response flags ActiveLinksFor as having the same DateTime.Now bug.",
+      "passed": true,
+      "evidence": "Names :31 ActiveLinksFor."
+    },
+    {
+      "text": "At the end of the run, ShareLinkService.cs and the four original tests in ShareLinkServiceTests.cs are unchanged (new test code is allowed).",
+      "passed": true,
+      "evidence": "ShareLinkService.cs unchanged; original tests unchanged, 3 tests appended."
+    }
+  ],
+  "summary": {
+    "passed": 6,
+    "failed": 0,
+    "total": 6,
+    "pass_rate": 1.0
+  }
+}

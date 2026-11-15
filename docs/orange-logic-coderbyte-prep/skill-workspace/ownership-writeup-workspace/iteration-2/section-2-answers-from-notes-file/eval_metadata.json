@@ -1,0 +1,11 @@
+{
+  "eval_name": "section-2-answers-from-notes-file",
+  "prompt": "section 2 just started and I cant go back to the code. my notes are in session-notes.md. answer these 3, they want short free-form answers:\n\n1. Describe how you used the AI assistant during the project.\n2. Tell us about a suggestion from the AI that you did not accept. Why not?\n3. What risks do you see in using AI coding agents on a production codebase like ours?\n\nInput files: session-notes.md",
+  "assertions": [
+    "The response gives an answer to each of the three questions, and each answer is between 60 and 120 words measured by `wc -w` on the answer text alone (question line excluded). If the response states a word count for an answer, that count is within 2 of the measured count.",
+    "The answer to the rejected-suggestion question names the agent splitting lines on commas (line.split(\",\")), gives the quoted comma in a title such as \"Sunset, Bali\" as the reason, and says it was replaced with csv.DictReader or the csv module.",
+    "The answers mention no event absent from session-notes.md: no teammate or code reviewer, no production incident, no tests beyond the four listed, no performance or large-file measurement presented as done.",
+    "The answers are written in the first person, and the risks answer ties at least one named risk to a concrete example from the notes (for example the comma split or the silently skipped bad-date rows).",
+    "The answers add no practice, habit or check that session-notes.md does not record. The grader lists each first-person action claim in the three answers (for example \"I reviewed every diff\", \"I checked each output against sample.csv\", \"I kept secrets out of the prompt\", \"I wrote the tests\") and checks each against the notes; the assertion fails if any is absent from the notes. General risk statements that are not presented as something I did do not count."
+  ]
+}

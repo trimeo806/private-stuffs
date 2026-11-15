@@ -1,0 +1,20 @@
+--- a/src/Uploads/UploadService.cs
++++ b/src/Uploads/UploadService.cs
+@@ -4,15 +4,15 @@ public sealed class UploadService
+ {
+     private readonly List<StoredFile> _files = new();
+
+-    public StoredFile Upload(string fileName, string checksum, long sizeBytes)
++    public StoredFile Upload(string fileName, string checksum, int sizeBytes)
+     {
+-        if (string.IsNullOrWhiteSpace(fileName)) throw new ArgumentException("File name is required.", nameof(fileName));
+-        if (string.IsNullOrWhiteSpace(checksum)) throw new ArgumentException("Checksum is required.", nameof(checksum));
++        if (string.IsNullOrBlank(fileName)) throw new ArgumentException("File name is required.", nameof(fileName));
++        if (string.IsNullOrBlank(checksum)) throw new ArgumentException("Checksum is required.", nameof(checksum));
+         if (sizeBytes < 0) throw new ArgumentOutOfRangeException(nameof(sizeBytes));
+
+-        var existing = _files.FirstOrDefault(f => f.Checksum == checksum);
++        var existing = _files.FirstOrDefault(f => string.Equals(f.Checksum, checksum, StringComparison.OrdinalIgnoreCase));
+         if (existing is not null) throw new DuplicateFileException(existing.Id);
+
+         var stored = new StoredFile(_files.Count + 1, fileName.Trim(), checksum, sizeBytes);

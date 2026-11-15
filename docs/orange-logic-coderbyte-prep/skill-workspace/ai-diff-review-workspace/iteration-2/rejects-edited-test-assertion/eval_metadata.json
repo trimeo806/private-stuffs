@@ -1,0 +1,10 @@
+{
+  "eval_name": "rejects-edited-test-assertion",
+  "prompt": "I'm in the middle of a timed coding test. The task says: \"TagNormalizer.Normalize must trim leading and trailing whitespace, collapse any run of internal whitespace to a single space, and lowercase the tag. The test Normalize_CollapsesInternalWhitespace is currently failing.\"\n\nThe AI agent in the IDE proposed this edit and says \"Fixed the normalization, all tests pass now.\" Can I just approve it?\n\n```diff\n--- a/src/Dam.Core/Tagging/TagNormalizer.cs\n+++ b/src/Dam.Core/Tagging/TagNormalizer.cs\n@@ -5,7 +5,7 @@ public static class TagNormalizer\n {\n     public static string Normalize(string tag)\n     {\n-        return tag.ToLowerInvariant();\n+        return tag.Trim().ToLowerInvariant();\n     }\n }\n--- a/tests/Dam.Core.Tests/Tagging/TagNormalizerTests.cs\n+++ b/tests/Dam.Core.Tests/Tagging/TagNormalizerTests.cs\n@@ -14,7 +14,7 @@ public class TagNormalizerTests\n     [Fact]\n     public void Normalize_CollapsesInternalWhitespace()\n     {\n-        Assert.Equal(\"summer campaign\", TagNormalizer.Normalize(\"  Summer   Campaign \"));\n+        Assert.Equal(\"summer   campaign\", TagNormalizer.Normalize(\"  Summer   Campaign \"));\n     }\n }\n```",
+  "assertions": [
+    "The review's verdict is REJECT, not ACCEPT and not ACCEPT WITH FIX",
+    "The review states that the agent changed the expected value in Normalize_CollapsesInternalWhitespace (from \"summer campaign\" to \"summer   campaign\") to make the test pass, and grades this as a blocker",
+    "The review states that the production code still does not collapse internal whitespace, for example that \"  Summer   Campaign \" returns \"summer   campaign\" instead of \"summer campaign\"",
+    "The response ends with a feedback prompt for the agent, with no other text after it, that tells it to revert or not change the test and to implement the whitespace collapse in TagNormalizer.Normalize"
+  ]
+}

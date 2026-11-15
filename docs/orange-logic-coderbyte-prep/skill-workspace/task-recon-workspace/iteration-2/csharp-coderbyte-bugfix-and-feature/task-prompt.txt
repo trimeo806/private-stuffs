@@ -1,0 +1,27 @@
+Coderbyte assessment just started (Software Engineer AI Fluency, 80 min total, written questions come after and I can't go back). Section 1 is a C# repo, .NET 8 with xUnit. There are two tasks:
+
+Task 1 (bug): RenditionService.GetBestRendition(Guid assetId, int maxWidth) should return the largest rendition whose width is less than or equal to maxWidth. Users report it sometimes returns a rendition wider than maxWidth.
+
+Task 2 (feature): Add TagService.MergeTags(string sourceTag, string targetTag). Every asset tagged with sourceTag must end up tagged with targetTag, and sourceTag must be deleted afterwards. Tag names are case-insensitive.
+
+File tree:
+
+```
+AssetLibrary.sln
+README.md
+src/AssetLibrary/AssetLibrary.csproj
+src/AssetLibrary/Models/Asset.cs
+src/AssetLibrary/Models/Rendition.cs
+src/AssetLibrary/Models/Tag.cs
+src/AssetLibrary/Repositories/IAssetRepository.cs
+src/AssetLibrary/Repositories/InMemoryAssetRepository.cs
+src/AssetLibrary/Services/RenditionService.cs
+src/AssetLibrary/Services/TagService.cs
+tests/AssetLibrary.Tests/AssetLibrary.Tests.csproj
+tests/AssetLibrary.Tests/RenditionServiceTests.cs
+tests/AssetLibrary.Tests/TagServiceTests.cs
+```
+
+Visible tests: RenditionServiceTests has ReturnsExactWidthMatch and ReturnsNullWhenAssetHasNoRenditions. TagServiceTests has AddTagCreatesTagWhenMissing and AddTagIgnoresDuplicateTag. The task page says there are hidden tests as well and partial credit counts.
+
+I haven't opened any code yet, only the tree. Help me set this up before I start prompting their AI.

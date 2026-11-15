@@ -1,0 +1,46 @@
+{
+  "expectations": [
+    {
+      "text": "The response gives one paste-ready prompt in a code block that names slugifyFileName, src/slugify.ts and Vitest as the test framework",
+      "passed": true,
+      "evidence": "One fenced prompt block: 'Add edge-case tests for slugifyFileName to src/slugify.test.ts using the existing Vitest setup' and 'Do not modify src/slugify.ts'."
+    },
+    {
+      "text": "The pasted prompt tells the in-IDE assistant not to modify src/slugify.ts, and to report an expectation that disagrees with the code as a suspected bug instead of changing the expectation",
+      "passed": false,
+      "evidence": "The prompt says 'Do not modify src/slugify.ts' and 'Do not change production code even if you think a test will fail', but never tells the assistant to report a disagreeing expectation as a suspected bug or forbids changing the expectation; it only says 'Expected values come from the requirement in TASK.md'."
+    },
+    {
+      "text": "The pasted prompt asks for an edge-case table with input, expected and why before writing tests, and names at least four concrete file-name cases such as an empty string, whitespace only, an uppercase extension, accented letters, multiple dots or a leading dot",
+      "passed": false,
+      "evidence": "The prompt does not ask the assistant for a table before writing tests; it supplies its own table ('Test name (it) | Input | Expected') with no 'why' column and says 'Add exactly these cases'. Concrete cases are named (\"\", \"   \", \"archive.tar.gz\", \".env\", \"Caf\u00e9 Menu.txt\"), but the table-with-why-first part is missing."
+    },
+    {
+      "text": "src/slugify.ts is not modified during the run",
+      "passed": true,
+      "evidence": "diff -r against the original inputs shows no differences in src/slugify.ts (or any file)."
+    }
+  ],
+  "summary": {
+    "passed": 2,
+    "failed": 2,
+    "total": 4,
+    "pass_rate": 0.5
+  },
+  "timing": {
+    "executor_duration_seconds": 58.4,
+    "total_duration_seconds": 58.4
+  },
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "src/slugify.ts is not modified during the run",
+        "reason": "Non-discriminating: the task is to write a prompt, so neither run had a reason to touch src/slugify.ts; both pass trivially."
+      },
+      {
+        "reason": "No assertion checks that the expected values in the pasted prompt are correct per TASK.md (e.g. accented input expecting ASCII-folded output) or that the response warns the user that the accent-folding case will fail against the current code. Both runs did this; it is the most valuable outcome and it goes unchecked."
+      }
+    ],
+    "overall": "Assertions 2 and 3 discriminate well (old_skill hard-codes its own table with no 'why' and never asks for suspected-bug reporting); assertion 4 is free."
+  }
+}

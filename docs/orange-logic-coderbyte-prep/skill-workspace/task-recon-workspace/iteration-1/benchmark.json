@@ -1,0 +1,304 @@
+{
+  "metadata": {
+    "skill_name": "task-recon",
+    "skill_path": "<path/to/skill>",
+    "executor_model": "<model-name>",
+    "analyzer_model": "<model-name>",
+    "timestamp": "2026-11-14T11:40:51Z",
+    "evals_run": [
+      "csharp-coderbyte-bugfix-and-feature",
+      "python-takehome-repo-in-folder",
+      "vague-coderbyte-task-without-tree"
+    ],
+    "runs_per_configuration": 1
+  },
+  "runs": [
+    {
+      "eval_id": "csharp-coderbyte-bugfix-and-feature",
+      "eval_name": "csharp-coderbyte-bugfix-and-feature",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.5,
+        "passed": 2,
+        "failed": 2,
+        "total": 4,
+        "time_seconds": 69.9,
+        "tokens": 104645,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The response contains no C# implementation of GetBestRendition or MergeTags (no method bodies or code blocks containing a fix), and the trace shows no files created or edited.",
+          "passed": true,
+          "evidence": "No method bodies or code fixes. The only code blocks are prompts (lines 86-98, 104-115); plan steps describe changes in prose. outputs/ contains only response.md. No transcript saved; judged from outputs/ and response.md."
+        },
+        {
+          "text": "Requirements are a numbered list in which every item is labelled explicit or implied, and at least one implied requirement says the existing public method signatures or the currently passing behaviour must stay unchanged.",
+          "passed": true,
+          "evidence": "Requirements table R1-R10 has a Type column with every row 'explicit' or 'implied'. R10: 'Existing public API and visible tests unchanged | implied | the 4 visible tests still pass, no signature changed'."
+        },
+        {
+          "text": "The edge cases include all four of: merging a tag into itself, a source tag that does not exist, an asset that already carries both the source and the target tag, and every rendition being wider than maxWidth; each is given an expected behaviour.",
+          "passed": false,
+          "evidence": "Self-merge: 'source == target ignoring case | no-op, tag survives'; both tags: 'one target, no source'; all wider: 'null'. But source tag does not exist: 'Source tag does not exist | per A4', and A4 defers: 'Decide after reading TagService/InMemoryAssetRepository'; closing question 3: 'I've left this one to decide'. No committed expected behaviour."
+        },
+        {
+          "text": "The plan gives minutes per step that total no more than 60, names a cut line, and the response includes a ready-to-paste first prompt for the in-IDE agent that covers only one of the two tasks and tells the agent to keep existing signatures.",
+          "passed": false,
+          "evidence": "Minutes 8+10+12+8+5+3+7+2 = 55 (<= 60) and 'cut line' row present. But the block under '## First prompt' (lines 86-98) is a recon prompt pasted 'with both task statements', so it covers both tasks. The scoped one-task prompt with 'Keep the signature' is the second ('Then step 1'), not the first."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "python-takehome-repo-in-folder",
+      "eval_name": "python-takehome-repo-in-folder",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 78.6,
+        "tokens": 107167,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Before presenting the plan, the trace shows the agent reading TASK.md, src/inventory/importer.py and tests/test_importer.py.",
+          "passed": true,
+          "evidence": "Response opens 'I read TASK.md and the whole repo' and cites file-specific facts: '`sku, quantity, reason = row` fails' (importer.py), test style 'tmp_path + write_csv' and 'existing 2 tests' (test_importer.py), TASK constraints. No transcript saved; judged from outputs/ and response.md."
+        },
+        {
+          "text": "The assumptions point out that import_movements must keep returning a list of Movement while skipped rows must still be counted, and they pick one specific way to make the skipped count available to summarize.",
+          "passed": true,
+          "evidence": "A1: 'How does skipped get from the import into summarize(movements) when the import signature can't change? -> import_movements returns a list subclass ... carrying skipped: int. summarize reads getattr(movements, \"skipped\", 0)'."
+        },
+        {
+          "text": "The edge cases include a trailing blank line, a non-integer quantity such as 2.5, and SKUs that differ only by case, each with an expected behaviour.",
+          "passed": true,
+          "evidence": "'file ends with one blank line | all data rows imported'; 'quantity 2.5 | skipped, counted'; '`ab-1` and `AB-1` | one key `AB-1`'."
+        },
+        {
+          "text": "The plan's minutes total no more than 120 and a cut line is stated, and the trace shows no file under src/ or tests/ created or edited.",
+          "passed": true,
+          "evidence": "Minutes 8+10+20+20+15+10+5+10 = 98 (<= 120); 'Cut line: below step 6'. diff -r of outputs/ vs evals/.../files (excluding response.md and caches) shows no differences, so nothing under src/ or tests/ was changed."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "vague-coderbyte-task-without-tree",
+      "eval_name": "vague-coderbyte-task-without-tree",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 59.0,
+        "tokens": 102491,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The response gives a paste-ready prompt for the Coderbyte in-IDE AI that tells the agent not to edit or create files yet and asks it for requirements, assumptions, edge cases and a step plan.",
+          "passed": true,
+          "evidence": "First prompt: 'do not edit or create any files yet', then asks for requirements (item 3), assumptions (item 4), edge cases (item 6) and a step plan (item 7)."
+        },
+        {
+          "text": "The response records at least three ambiguities of the discount code feature as assumptions with a chosen default, drawn from: percentage versus fixed amount, stacking several codes, expired or unknown codes, code case sensitivity, rounding, and a discount larger than the order total.",
+          "passed": true,
+          "evidence": "A1 types -> percentage and fixed amount if none modelled; A2 unknown code -> IllegalArgumentException; A4 case -> case-insensitive; A5 rounding -> HALF_UP 2 decimals; A6 bigger than subtotal -> clamp 0; A7 stacking -> one per checkout. Six of the listed ambiguities with defaults."
+        },
+        {
+          "text": "The step plan puts fixing the failing tests in the orders module before implementing discount codes, and leaves at least 20 of the 80 minutes for the written section.",
+          "passed": true,
+          "evidence": "Step 2 'Fix the failing tests' precedes step 3 'Discount model'. Minutes 8+15+15+7+5+5 = 55, heading 'Section 1 ~55 min, leave 20+ for Section 2' (80-55 = 25)."
+        },
+        {
+          "text": "The response asks for missing inputs such as the file tree or the failing test output in no more than one consolidated question, and contains no Java implementation code.",
+          "passed": true,
+          "evidence": "Only user-directed question is the closing 'Is this plan right for your repo? ... paste its answer or the mvn test failure summary here' (the '?' in A1-A8 are assumption labels with answers). No Java code; code blocks are prompts only."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "csharp-coderbyte-bugfix-and-feature",
+      "eval_name": "csharp-coderbyte-bugfix-and-feature",
+      "configuration": "old_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.75,
+        "passed": 3,
+        "failed": 1,
+        "total": 4,
+        "time_seconds": 56.3,
+        "tokens": 96779,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The response contains no C# implementation of GetBestRendition or MergeTags (no method bodies or code blocks containing a fix), and the trace shows no files created or edited.",
+          "passed": true,
+          "evidence": "No method bodies or code fixes; step 3 is prose ('filter Width <= maxWidth, take the max width, FirstOrDefault'). Only code block is the prompt (lines 94-110). outputs/ contains only response.md. No transcript saved; judged from outputs/ and response.md."
+        },
+        {
+          "text": "Requirements are a numbered list in which every item is labelled explicit or implied, and at least one implied requirement says the existing public method signatures or the currently passing behaviour must stay unchanged.",
+          "passed": true,
+          "evidence": "Requirements table R1-R11 with every row labelled explicit/implied. R10: '`IAssetRepository` and the public signatures stay unchanged | implied'."
+        },
+        {
+          "text": "The edge cases include all four of: merging a tag into itself, a source tag that does not exist, an asset that already carries both the source and the target tag, and every rendition being wider than maxWidth; each is given an expected behaviour.",
+          "passed": true,
+          "evidence": "'`source == target` ignoring case -> no-op, tag still exists (A3)'; '`source` missing -> no-op (A2)'; 'Asset with both tags -> `target` once, `source` gone'; 'Every rendition wider than max -> `null`'."
+        },
+        {
+          "text": "The plan gives minutes per step that total no more than 60, names a cut line, and the response includes a ready-to-paste first prompt for the in-IDE agent that covers only one of the two tasks and tells the agent to keep existing signatures.",
+          "passed": false,
+          "evidence": "Minutes total 55 (table states **55**; script sum 6+4+5+6+5+12+8+4+5 = 55) and cut line in drop order given. But the first prompt asks the agent to 'Restate both tasks' and covers both RenditionService and TagService, so it does not cover only one task (it does say 'do not change IAssetRepository or any public signature')."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "python-takehome-repo-in-folder",
+      "eval_name": "python-takehome-repo-in-folder",
+      "configuration": "old_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 62.8,
+        "tokens": 98248,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Before presenting the plan, the trace shows the agent reading TASK.md, src/inventory/importer.py and tests/test_importer.py.",
+          "passed": true,
+          "evidence": "'I read the whole repo (it's small)' and cites: blank line '...restock\\n\\n', 'fails sooner, on row 3 (CD-7,2.5): ValueError: invalid literal for int()' (importer.py behaviour), 'Existing two tests' (test_importer.py), TASK.md as brief. No transcript saved; judged from outputs/ and response.md."
+        },
+        {
+          "text": "The assumptions point out that import_movements must keep returning a list of Movement while skipped rows must still be counted, and they pick one specific way to make the skipped count available to summarize.",
+          "passed": true,
+          "evidence": "A1: 'How does summarize(movements) know skipped when it only gets movements? -> import_movements returns a list subclass (e.g. MovementList(list)) with a skipped attribute ... summarize reads getattr(movements, \"skipped\", 0)'; R10 flags the conflict with R2."
+        },
+        {
+          "text": "The edge cases include a trailing blank line, a non-integer quantity such as 2.5, and SKUs that differ only by case, each with an expected behaviour.",
+          "passed": true,
+          "evidence": "'Trailing blank line -> ignored, skipped unchanged'; '2.5, 3.0, abc, empty quantity -> skipped, skipped += 1'; 'Duplicate SKU in different case (AB-1, ab-1, ` ab-1 `) -> one key AB-1, summed'."
+        },
+        {
+          "text": "The plan's minutes total no more than 120 and a cut line is stated, and the trace shows no file under src/ or tests/ created or edited.",
+          "passed": true,
+          "evidence": "Minutes 5+10+20+20+5+15+10+10+20 = 115 (<= 120); 'Cut line: drop step 5 first...'. diff -r of outputs/ vs input files shows no differences (response says it ran import_movements, but no source/test file changed)."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "vague-coderbyte-task-without-tree",
+      "eval_name": "vague-coderbyte-task-without-tree",
+      "configuration": "old_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 39.3,
+        "tokens": 94306,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The response gives a paste-ready prompt for the Coderbyte in-IDE AI that tells the agent not to edit or create files yet and asks it for requirements, assumptions, edge cases and a step plan.",
+          "passed": true,
+          "evidence": "First prompt: 'Do NOT write code yet. First:' then requirements and assumptions (item 3), edge cases (item 4), step plan (item 5). It says 'do not write code' rather than explicitly 'do not edit or create files'; judged equivalent in effect."
+        },
+        {
+          "text": "The response records at least three ambiguities of the discount code feature as assumptions with a chosen default, drawn from: percentage versus fixed amount, stacking several codes, expired or unknown codes, code case sensitivity, rounding, and a discount larger than the order total.",
+          "passed": true,
+          "evidence": "A1 percentage and fixed-amount; A3 invalid code -> throw IllegalArgumentException; A5 total never below 0; A6 case-insensitive and trimmed; A7 one code (no stacking); A8 rounding HALF_UP 2 decimals."
+        },
+        {
+          "text": "The step plan puts fixing the failing tests in the orders module before implementing discount codes, and leaves at least 20 of the 80 minutes for the written section.",
+          "passed": true,
+          "evidence": "Steps 1-3 run and fix failing tests before step 4 'Add DiscountCode'. Minutes 5+10+10+10+8+5+5+7 = 60; opening line: 'next ~60 min, which leaves 20 min for Section 2'."
+        },
+        {
+          "text": "The response asks for missing inputs such as the file tree or the failing test output in no more than one consolidated question, and contains no Java implementation code.",
+          "passed": true,
+          "evidence": "Single question: 'One question, answer only if you have 10 seconds: what does the tree show under src/main/java/.../orders and src/test/java/.../orders?'. No Java implementation code."
+        }
+      ],
+      "notes": []
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {
+        "mean": 0.8333,
+        "stddev": 0.2887,
+        "min": 0.5,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 69.1667,
+        "stddev": 9.8206,
+        "min": 59.0,
+        "max": 78.6
+      },
+      "tokens": {
+        "mean": 104767.6667,
+        "stddev": 2340.4122,
+        "min": 102491,
+        "max": 107167
+      }
+    },
+    "old_skill": {
+      "pass_rate": {
+        "mean": 0.9167,
+        "stddev": 0.1443,
+        "min": 0.75,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 52.8,
+        "stddev": 12.1347,
+        "min": 39.3,
+        "max": 62.8
+      },
+      "tokens": {
+        "mean": 96444.3333,
+        "stddev": 1992.1954,
+        "min": 94306,
+        "max": 98248
+      }
+    },
+    "delta": {
+      "pass_rate": "-0.08",
+      "time_seconds": "+16.4",
+      "tokens": "+8323"
+    }
+  },
+  "notes": [
+    "Only csharp-coderbyte-bugfix-and-feature discriminates; python-takehome and vague-task pass 4/4 in both configs (non-discriminating).",
+    "New skill lost A3: no default chosen for a missing source tag. Fix: every edge-case row must state a chosen default.",
+    "A4 ('first prompt covers one task') conflicts with the recon-first design; reword to 'first implementation prompt'.",
+    "New skill costs +16s and +8k tokens per run for no pass-rate gain on this set."
+  ]
+}

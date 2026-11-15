@@ -1,0 +1,11 @@
+{
+  "eval_name": "python-takehome-repo-in-folder",
+  "prompt": "Got a take-home for a backend role, 2 hour limit, started the clock a few minutes ago. The repo is in the current folder and the brief is in TASK.md. Before I let the AI loose on it: where should I start and how should I split my time?\n\nInput files: TASK.md, pyproject.toml, src/inventory/__init__.py, src/inventory/models.py, src/inventory/importer.py, tests/test_importer.py, data/movements.csv",
+  "assertions": [
+    "The response states the expected result of importing the provided data/movements.csv: net AB-1 is 3 and CD-7 is 3, with skipped equal to 1, and it says the trailing blank line is not counted as skipped.",
+    "The assumptions point out that import_movements must keep returning a list of Movement while skipped rows must still be counted, and they pick one specific way to make the skipped count available to summarize.",
+    "The edge cases include a trailing blank line, a non-integer quantity such as 2.5, and SKUs that differ only by case, each with an expected behaviour.",
+    "The plan's minutes total no more than 120 and a cut line is stated, and every file under src/ and tests/ in the outputs folder is identical to the input files (none created or edited).",
+    "The response's first implementation prompt covers exactly one plan step (one bug or one function) and is a separate prompt from any planning request: no single prompt asks the agent both to propose its own plan and to start implementing."
+  ]
+}

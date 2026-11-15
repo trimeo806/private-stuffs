@@ -1,0 +1,10 @@
+schema_version: "1.1"
+name: section-2-answers-from-notes-file
+expected_outcome: |
+  Three first-person answers, each 60 to 120 words, in the pattern concrete example,
+  action, reason, result. The rejected-suggestion answer names the agent's
+  line.split(",") parsing, the quoted comma in "Sunset, Bali" as the reason, and the
+  switch to csv.DictReader. The risks answer leads with risks and uses the session as
+  evidence. No event appears that is not in session-notes.md.
+context:
+  scaffold_script: place-files.sh

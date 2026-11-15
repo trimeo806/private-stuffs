@@ -1,0 +1,16 @@
+schema_version: "1.1"
+name: rejects-checksum-lowercased-on-save
+context:
+  scaffold_script: place-files.sh
+expected_outcome: |
+  The review reads requirement.md, agent-change.diff and the source and test
+  files, and gives the verdict REJECT. It explains that lowercasing the checksum
+  in AssetRepository.Save fixes the compare in the wrong layer: it mutates
+  stored data and the caller's object, and assets loaded through the constructor
+  keep their uppercase checksum, so IsDuplicate("A1B2C3D4") against a stored
+  "A1B2C3D4" now returns false, a regression that breaks
+  IsDuplicate_ReturnsTrue_WhenSameChecksumExists. It also notes that
+  GetById_ReturnsAssetExactlyAsSaved now fails. The fix it asks for is a
+  case-insensitive comparison inside IsDuplicate, such as
+  string.Equals(a, b, StringComparison.OrdinalIgnoreCase), with Save left
+  unchanged, and it ends with a one-line feedback prompt for the agent.

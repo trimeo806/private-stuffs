@@ -1,0 +1,294 @@
+{
+  "metadata": {
+    "skill_name": "ownership-writeup",
+    "skill_path": "<path/to/skill>",
+    "executor_model": "<model-name>",
+    "analyzer_model": "<model-name>",
+    "timestamp": "2026-11-14T11:40:51Z",
+    "evals_run": [
+      "pr-description-marks-missing-verification",
+      "section-2-answers-from-notes-file",
+      "solution-md-from-messy-notes"
+    ],
+    "runs_per_configuration": 1
+  },
+  "runs": [
+    {
+      "eval_id": "pr-description-marks-missing-verification",
+      "eval_name": "pr-description-marks-missing-verification",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 3,
+        "failed": 0,
+        "total": 3,
+        "time_seconds": 26.8,
+        "tokens": 96004,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The PR description does not state or imply that any test was run or passed (no test names, no \"tests pass\"); verification is marked as a gap or placeholder, or the response asks the user what was verified.",
+          "passed": true,
+          "evidence": "Verification section is only a placeholder: \"- [gap: tests or manual checks run and their results, e.g. ...]\"; Risks says \"Not verified yet ... please read this as an untested change\"; response asks \"What tests or manual checks did you run, and did they pass?\" No test names or 'tests pass' claims."
+        },
+        {
+          "text": "The PR description says retrying on 403 was removed and gives the reason that 403 is a permissions problem, so retrying only delays the error.",
+          "passed": true,
+          "evidence": "\"Copilot also retried on 403. **Removed:** a 403 means a permissions problem, and retrying it only delays the error the user needs to see.\""
+        },
+        {
+          "text": "The PR description states the max delay change from 30s to 5s and ties it to the upload dialog timing out at 10s.",
+          "passed": true,
+          "evidence": "\"Copilot capped the delay at 30s. **Edited:** I changed the cap to 5s. The upload dialog times out at 10s, so a 30s wait would run past the dialog...\""
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "section-2-answers-from-notes-file",
+      "eval_name": "section-2-answers-from-notes-file",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 39.2,
+        "tokens": 98678,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The response gives an answer to each of the three questions, and each answer is between 60 and 120 words.",
+          "passed": true,
+          "evidence": "Three answers present. Word counts via `wc -w` on each answer line (Q header stripped): Q1=107, Q2=94, Q3=117; all within 60-120. Matches the response's own \"Word counts: 107, 94, 117.\""
+        },
+        {
+          "text": "The answer to the rejected-suggestion question names the agent splitting lines on commas (line.split(\",\")), gives the quoted comma in a title such as \"Sunset, Bali\" as the reason, and says it was replaced with csv.DictReader or the csv module.",
+          "passed": true,
+          "evidence": "Q2: \"it parsed each line with line.split(\\\",\\\"). I rejected that because titles can contain quoted commas: row 2 of sample.csv has the title \\\"Sunset, Bali\\\" ... I told the agent to use csv.DictReader instead\"."
+        },
+        {
+          "text": "The answers mention no event absent from session-notes.md: no teammate or code reviewer, no production incident, no tests beyond the four listed, no performance or large-file measurement presented as done.",
+          "passed": true,
+          "evidence": "No teammate/reviewer, incident, extra tests, or perf measurement. Tests referenced are the four from notes; Q3 explicitly says \"I only ran the 50-row sample, so large files are unverified.\" Minor embellishment: \"reading every output against the real data\" is inferred, not stated in notes, but is not an event of the listed kinds."
+        },
+        {
+          "text": "The answers are written in the first person, and the risks answer ties at least one named risk to a concrete example from the notes (for example the comma split or the silently skipped bad-date rows).",
+          "passed": true,
+          "evidence": "First person throughout (\"I used the assistant...\", \"I rejected that...\"). Q3 ties the risk \"code that looks right and fails quietly on real data\" to \"split CSV lines on commas ... \\\"Sunset, Bali\\\"\" and to \"skipped bad rows with a bare continue\"."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "solution-md-from-messy-notes",
+      "eval_name": "solution-md-from-messy-notes",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.75,
+        "passed": 3,
+        "failed": 1,
+        "total": 4,
+        "time_seconds": 63.6,
+        "tokens": 100985,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "SOLUTION.md is written to disk and its content is at most 250 words.",
+          "passed": false,
+          "evidence": "File exists at outputs/SOLUTION.md, but `wc -w` on it = 266 words (> 250). Excluding standalone markdown tokens it is 231; the response claims \"243 words (not counting table pipes and markdown symbols)\", which matches neither count. Under the raw `wc -w` rule the file exceeds the limit."
+        },
+        {
+          "text": "SOLUTION.md names the rejected suggestion to upscale images smaller than the target size and gives the reason from the notes (blurry result and/or wasted storage).",
+          "passed": true,
+          "evidence": "Table row: \"Rejected upscaling images smaller than the target | A 200px image blown up to 1200 looks blurry and wastes storage; I added `withoutEnlargement: true`\"."
+        },
+        {
+          "text": "SOLUTION.md claims no event absent from the notes: no tests beyond the four listed (2000px png, 100px gif, pdf, corrupted jpg), no benchmark or measurement, and WebP output or HEIC support is not described as done.",
+          "passed": true,
+          "evidence": "Tests listed are exactly the four: \"2000px PNG gives 3 thumbnails; 100px GIF is not upscaled; PDF is skipped; corrupted JPG throws `UnsupportedImageError`\". No benchmark. Unknowns marked \"[gap: exact prompt]\" and \"Manual checks: [gap: ...]\". WebP/HEIC listed under Known limits as not done; \"plus a HEIC test\" is a proposed next step, disclosed in response as a suggestion."
+        },
+        {
+          "text": "SOLUTION.md has a known-limits section that names WebP output and HEIC support as not done.",
+          "passed": true,
+          "evidence": "\"## Known limits\\n- No WebP output -> add it as an output format.\\n- No HEIC input, because sharp needs libheif -> ...\""
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "pr-description-marks-missing-verification",
+      "eval_name": "pr-description-marks-missing-verification",
+      "configuration": "old_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 3,
+        "failed": 0,
+        "total": 3,
+        "time_seconds": 25.0,
+        "tokens": 93661,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The PR description does not state or imply that any test was run or passed (no test names, no \"tests pass\"); verification is marked as a gap or placeholder, or the response asks the user what was verified.",
+          "passed": true,
+          "evidence": "Verification is all unchecked TODO placeholders: \"- [ ] TODO: tests added or updated (name the test file and cases)\" ... \"- [ ] TODO: manual check in the upload dialog\"; preamble: \"Your notes don't say how this was tested, so I left the Verification section as TODO items\"; asks \"How did you verify this?\". No claim a test ran or passed."
+        },
+        {
+          "text": "The PR description says retrying on 403 was removed and gives the reason that 403 is a permissions problem, so retrying only delays the error.",
+          "passed": true,
+          "evidence": "Table row: \"Removed 403. It's a permissions problem, so a retry can't succeed and only delays the error\"; Trade-offs: \"Fail fast on 403 instead of retrying: a permissions error won't fix itself\"."
+        },
+        {
+          "text": "The PR description states the max delay change from 30s to 5s and ties it to the upload dialog timing out at 10s.",
+          "passed": true,
+          "evidence": "\"Set the max backoff delay to 30s | Changed it to 5s. The upload dialog times out at 10s, so a 30s delay would only ever fire after the user had already seen the error\". Note: Approach also asserts the 5s cap means \"the retries finish inside the upload dialog's 10s timeout\", which is not established by the notes (2 waits x 5s = 10s)."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "section-2-answers-from-notes-file",
+      "eval_name": "section-2-answers-from-notes-file",
+      "configuration": "old_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 40.5,
+        "tokens": 95398,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The response gives an answer to each of the three questions, and each answer is between 60 and 120 words.",
+          "passed": true,
+          "evidence": "Three answers present. Word counts via `wc -w` on each answer paragraph: Q1=108, Q2=107, Q3=115; all within 60-120."
+        },
+        {
+          "text": "The answer to the rejected-suggestion question names the agent splitting lines on commas (line.split(\",\")), gives the quoted comma in a title such as \"Sunset, Bali\" as the reason, and says it was replaced with csv.DictReader or the csv module.",
+          "passed": true,
+          "evidence": "Q2: \"the agent split each line with line.split(\\\",\\\"). I rejected it because titles can contain quoted commas. Row 2 of sample.csv has the title \\\"Sunset, Bali\\\" ... I told it to use csv.DictReader\"."
+        },
+        {
+          "text": "The answers mention no event absent from session-notes.md: no teammate or code reviewer, no production incident, no tests beyond the four listed, no performance or large-file measurement presented as done.",
+          "passed": true,
+          "evidence": "No teammate/reviewer, incident, extra tests, or perf measurement; Q3: \"I only tested the 50-row sample.csv.\" Caveat: unsupported process claims \"I checked each output against sample.csv before I moved on\" and mitigation \"keeping secrets out of the context\" are not in the notes, but they are not events of the enumerated kinds."
+        },
+        {
+          "text": "The answers are written in the first person, and the risks answer ties at least one named risk to a concrete example from the notes (for example the comma split or the silently skipped bad-date rows).",
+          "passed": true,
+          "evidence": "First person (\"I used it in small steps\"). Q3: \"The agent's line.split(\\\",\\\") works on simple rows and silently breaks on \\\"Sunset, Bali\\\"\" and \"Its validation dropped bad dates with a bare `continue`\"."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "solution-md-from-messy-notes",
+      "eval_name": "solution-md-from-messy-notes",
+      "configuration": "old_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 32.1,
+        "tokens": 94309,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "SOLUTION.md is written to disk and its content is at most 250 words.",
+          "passed": true,
+          "evidence": "File exists at outputs/SOLUTION.md; `wc -w` = 229 words (190 excluding markdown symbol tokens). Response states \"It is 229 words\", which matches."
+        },
+        {
+          "text": "SOLUTION.md names the rejected suggestion to upscale images smaller than the target size and gives the reason from the notes (blurry result and/or wasted storage).",
+          "passed": true,
+          "evidence": "Table row: \"Upscaled images smaller than the target size. | Rejected. A 200px image blown up to 1200px looks blurry and wastes storage. Added `withoutEnlargement: true`.\""
+        },
+        {
+          "text": "SOLUTION.md claims no event absent from the notes: no tests beyond the four listed (2000px png, 100px gif, pdf, corrupted jpg), no benchmark or measurement, and WebP output or HEIC support is not described as done.",
+          "passed": true,
+          "evidence": "Verification lists exactly the four tests (2000px PNG, 100px GIF, PDF, corrupted JPG), \"4/4 pass\"; no benchmark; WebP/HEIC under Known limits. Minor: \"Tests: 4 added\" asserts authorship the notes do not state, but it is not an extra test or event."
+        },
+        {
+          "text": "SOLUTION.md has a known-limits section that names WebP output and HEIC support as not done.",
+          "passed": true,
+          "evidence": "\"## Known limits / next steps\\n- No WebP output \u2192 add it as an output format.\\n- No HEIC input \u2192 needs sharp built with libheif.\""
+        }
+      ],
+      "notes": []
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {
+        "mean": 0.9167,
+        "stddev": 0.1443,
+        "min": 0.75,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 43.2,
+        "stddev": 18.7232,
+        "min": 26.8,
+        "max": 63.6
+      },
+      "tokens": {
+        "mean": 98555.6667,
+        "stddev": 2492.7524,
+        "min": 96004,
+        "max": 100985
+      }
+    },
+    "old_skill": {
+      "pass_rate": {
+        "mean": 1.0,
+        "stddev": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 32.5333,
+        "stddev": 7.7591,
+        "min": 25.0,
+        "max": 40.5
+      },
+      "tokens": {
+        "mean": 94456.0,
+        "stddev": 877.7807,
+        "min": 93661,
+        "max": 95398
+      }
+    },
+    "delta": {
+      "pass_rate": "-0.08",
+      "time_seconds": "+10.7",
+      "tokens": "+4100"
+    }
+  },
+  "notes": [
+    "pr-description and section-2 cases pass in both configs (non-discriminating).",
+    "New skill's only miss: SOLUTION.md was 266 words by wc -w against a 250 limit while the reply claimed 243. Fix: count words with a tool and keep a margin.",
+    "Old skill claimed retries finish within the 10s timeout, unsupported by the notes; no assertion catches invented claims. Add a 'no claims beyond the notes' assertion.",
+    "One run per config: a single word-count miss swings the pass rate by 8 pts."
+  ]
+}

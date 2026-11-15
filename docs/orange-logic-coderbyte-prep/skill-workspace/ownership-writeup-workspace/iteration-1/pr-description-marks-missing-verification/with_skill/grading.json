@@ -1,0 +1,45 @@
+{
+  "expectations": [
+    {
+      "text": "The PR description does not state or imply that any test was run or passed (no test names, no \"tests pass\"); verification is marked as a gap or placeholder, or the response asks the user what was verified.",
+      "passed": true,
+      "evidence": "Verification section is only a placeholder: \"- [gap: tests or manual checks run and their results, e.g. ...]\"; Risks says \"Not verified yet ... please read this as an untested change\"; response asks \"What tests or manual checks did you run, and did they pass?\" No test names or 'tests pass' claims."
+    },
+    {
+      "text": "The PR description says retrying on 403 was removed and gives the reason that 403 is a permissions problem, so retrying only delays the error.",
+      "passed": true,
+      "evidence": "\"Copilot also retried on 403. **Removed:** a 403 means a permissions problem, and retrying it only delays the error the user needs to see.\""
+    },
+    {
+      "text": "The PR description states the max delay change from 30s to 5s and ties it to the upload dialog timing out at 10s.",
+      "passed": true,
+      "evidence": "\"Copilot capped the delay at 30s. **Edited:** I changed the cap to 5s. The upload dialog times out at 10s, so a 30s wait would run past the dialog...\""
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 0,
+    "total": 3,
+    "pass_rate": 1.0
+  },
+  "timing": {
+    "executor_duration_seconds": 26.8,
+    "total_duration_seconds": 26.8
+  },
+  "execution_metrics": {
+    "total_tokens": 96004,
+    "output_chars": 2308
+  },
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "reason": "All three assertions pass for both configs, so this case does not discriminate. The with_skill run uniquely flags that two 5s waits already consume the 10s dialog budget (\"That adds up to 10s of waiting before any upload time is counted\"); old_skill instead claims the 5s cap means \"the retries finish inside the upload dialog's 10s timeout\", an unverified and arguably wrong claim. Consider an assertion that the description does not claim the retry budget fits within 10s (or flags the 2x5s risk)."
+      },
+      {
+        "assertion": "The PR description does not state or imply that any test was run or passed (no test names, no \"tests pass\"); verification is marked as a gap or placeholder, or the response asks the user what was verified.",
+        "reason": "Satisfied by any TODO checklist; old_skill's TODO list enumerates specific checks (e.g. \"403 fails right away with no retry\") which a reader could skim as done. Consider requiring that the description also does not list unchecked test scenarios as if they were the verification plan without labelling them unverified."
+      }
+    ],
+    "overall": "Non-discriminating at 3/3 vs 3/3; the real quality difference (timing-budget honesty) is not covered."
+  }
+}

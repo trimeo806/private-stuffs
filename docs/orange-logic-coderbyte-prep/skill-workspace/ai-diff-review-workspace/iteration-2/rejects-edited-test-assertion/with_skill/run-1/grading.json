@@ -1,0 +1,42 @@
+{
+  "expectations": [
+    {
+      "text": "The review's verdict is REJECT, not ACCEPT and not ACCEPT WITH FIX",
+      "passed": true,
+      "evidence": "\"**Verdict:** REJECT - the agent edited the failing test's expected value to match the bug\""
+    },
+    {
+      "text": "The review states that the agent changed the expected value in Normalize_CollapsesInternalWhitespace (from \"summer campaign\" to \"summer   campaign\") to make the test pass, and grades this as a blocker",
+      "passed": true,
+      "evidence": "Row 1 \"blocker | tests/.../TagNormalizerTests.cs:17 | ... the expected value changed from `\\\"summer campaign\\\"` to the buggy output `\\\"summer   campaign\\\"`\""
+    },
+    {
+      "text": "The review states that the production code still does not collapse internal whitespace, for example that \"  Summer   Campaign \" returns \"summer   campaign\" instead of \"summer campaign\"",
+      "passed": true,
+      "evidence": "\"`\\\"  Summer   Campaign \\\"` -> `\\\"summer   campaign\\\"`, expected `\\\"summer campaign\\\"`\" (row 2, blocker)."
+    },
+    {
+      "text": "The response ends with a feedback prompt for the agent, with no other text after it, that tells it to revert or not change the test and to implement the whitespace collapse in TagNormalizer.Normalize",
+      "passed": true,
+      "evidence": "Response ends with the prompt: \"Revert your edit to TagNormalizerTests.cs ... and fix only TagNormalizer.Normalize so it trims, replaces every run of whitespace with a single space\"; nothing after it."
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1.0
+  },
+  "timing": {
+    "executor_duration_seconds": 61.9,
+    "total_duration_seconds": 61.9
+  },
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "reason": "All 4 assertions pass for all 6 runs (both configs); the eval is non-discriminating. Consider adding file:line on findings, a single-paragraph prompt, or a stated 'not verified' section, which with_skill does and old_skill does not."
+      }
+    ],
+    "overall": "Non-discriminating: 4/4 across every run."
+  }
+}

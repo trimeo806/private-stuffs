@@ -1,0 +1,304 @@
+{
+  "metadata": {
+    "skill_name": "ai-diff-review",
+    "skill_path": "<path/to/skill>",
+    "executor_model": "<model-name>",
+    "analyzer_model": "<model-name>",
+    "timestamp": "2026-11-14T11:40:51Z",
+    "evals_run": [
+      "accepts-correct-overflow-fix",
+      "rejects-checksum-lowercased-on-save",
+      "rejects-edited-test-assertion"
+    ],
+    "runs_per_configuration": 1
+  },
+  "runs": [
+    {
+      "eval_id": "accepts-correct-overflow-fix",
+      "eval_name": "accepts-correct-overflow-fix",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 35.5,
+        "tokens": 101194,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The review's verdict is ACCEPT, not ACCEPT WITH FIX and not REJECT",
+          "passed": true,
+          "evidence": "'**Verdict:** ACCEPT - the int running total was the only cause of the wrap'."
+        },
+        {
+          "text": "The review lists no finding graded blocker or major; any findings it lists are graded minor or marked optional",
+          "passed": true,
+          "evidence": "Findings table: '| - | - | - | none | - | - |'. No graded findings."
+        },
+        {
+          "text": "The review shows edge cases it traced against the new code, including at least a total above int.MaxValue, and states which checks passed",
+          "passed": true,
+          "evidence": "'**Edge cases traced** (against the new code):' includes 'two assets of int.MaxValue -> 4294967294 (ok). The old code wrapped to -2'. Explicit '**Checks passed:**' list: requirement fit, correctness, edge cases, hallucination, contract, complexity, security, consistency, tests."
+        },
+        {
+          "text": "The review does not ask the agent to change the method signature, the existing tests or the approach; its feedback prompt says to accept as is or asks for nothing beyond an optional minor change",
+          "passed": true,
+          "evidence": "'**Feedback prompt for the agent:** > none, accept as is'. No requested changes to signature, tests or approach."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "rejects-checksum-lowercased-on-save",
+      "eval_name": "rejects-checksum-lowercased-on-save",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 172.4,
+        "tokens": 109586,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The review's verdict is REJECT, not ACCEPT and not ACCEPT WITH FIX",
+          "passed": true,
+          "evidence": "'**Verdict:** REJECT - the fix is in the wrong layer.'"
+        },
+        {
+          "text": "The review identifies that lowercasing the checksum in AssetRepository.Save changes stored data (or mutates the saved Asset object) and that this is the wrong place for the fix",
+          "passed": true,
+          "evidence": "Verdict: 'It lowercases stored data on Save'; finding 2: 'Save now changes the stored data and the caller's Asset object. This puts the case handling in the persistence layer, which the requirement never asked to touch.' Fix: 'Revert this hunk; leave Save unchanged'."
+        },
+        {
+          "text": "The review gives a concrete breaking case in which an asset already stored with an uppercase checksum (loaded through the constructor, not Save) is no longer detected, for example IsDuplicate(\"A1B2C3D4\") returning false, or names IsDuplicate_ReturnsTrue_WhenSameChecksumExists or GetById_ReturnsAssetExactlyAsSaved as a test that now fails",
+          "passed": true,
+          "evidence": "Finding 1: 'Existing \"A1B2C3D4\", IsDuplicate(\"A1B2C3D4\"): **false** vs true. IsDuplicate_ReturnsTrue_WhenSameChecksumExists now fails.' Finding 2 names GetById_ReturnsAssetExactlyAsSaved as failing."
+        },
+        {
+          "text": "The review recommends a case-insensitive comparison inside IsDuplicate (for example StringComparison.OrdinalIgnoreCase or StringComparer.OrdinalIgnoreCase) with Save left unchanged, and gives a one-line feedback prompt for the agent",
+          "passed": true,
+          "evidence": "Fix: 'string.Equals(a.Checksum, checksum, StringComparison.OrdinalIgnoreCase)' with 'leave Save unchanged'. Single-sentence feedback prompt: 'Rejected: ... revert the AssetRepository.Save change, in DuplicateDetector.IsDuplicate only compare with string.Equals(..., StringComparison.OrdinalIgnoreCase)...'"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "rejects-edited-test-assertion",
+      "eval_name": "rejects-edited-test-assertion",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.75,
+        "passed": 3,
+        "failed": 1,
+        "total": 4,
+        "time_seconds": 37.9,
+        "tokens": 102681,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The review's verdict is REJECT, not ACCEPT and not ACCEPT WITH FIX",
+          "passed": true,
+          "evidence": "'**Verdict:** REJECT - the production change skips the collapse step, and the test assertion was edited to accept the bug'."
+        },
+        {
+          "text": "The review states that the agent changed the expected value in Normalize_CollapsesInternalWhitespace (from \"summer campaign\" to \"summer   campaign\") to make the test pass, and grades this as a blocker",
+          "passed": true,
+          "evidence": "Finding 1, severity 'blocker': 'The test's expected value was changed from \"summer campaign\" to \"summer   campaign\" ... this edit just hides the bug.'"
+        },
+        {
+          "text": "The review states that the production code still does not collapse internal whitespace, for example that \"  Summer   Campaign \" returns \"summer   campaign\" instead of \"summer campaign\"",
+          "passed": true,
+          "evidence": "Finding 2: '\"  Summer   Campaign \": \"summer   campaign\" vs \"summer campaign\"'; edge cases list '\"  Summer   Campaign \" -> \"summer   campaign\" (wrong)'."
+        },
+        {
+          "text": "The response ends with a feedback prompt for the agent that tells it to revert or not change the test and to implement the whitespace collapse in TagNormalizer.Normalize",
+          "passed": false,
+          "evidence": "A correct feedback prompt exists ('revert that test change, then in TagNormalizer.Normalize only, collapse each run of internal whitespace to one space...'), but the response does not end with it: it is followed by a '**What to do next:**' section with 4 numbered steps ending '...should pass with its **original** assertion.'"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "accepts-correct-overflow-fix",
+      "eval_name": "accepts-correct-overflow-fix",
+      "configuration": "old_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 30.4,
+        "tokens": 94395,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The review's verdict is ACCEPT, not ACCEPT WITH FIX and not REJECT",
+          "passed": true,
+          "evidence": "First line: 'Verdict: ACCEPT'."
+        },
+        {
+          "text": "The review lists no finding graded blocker or major; any findings it lists are graded minor or marked optional",
+          "passed": true,
+          "evidence": "Findings table has a single row: '| - | - | - | No defects found | - |'. The only suggestion is labelled 'Optional, skip in a timed assessment' (Sum(a => (long)a.SizeBytes) style change)."
+        },
+        {
+          "text": "The review shows edge cases it traced against the new code, including at least a total above int.MaxValue, and states which checks passed",
+          "passed": true,
+          "evidence": "'Edge cases I traced:' lists empty collection, normal sum 350L, 'Total exactly int.MaxValue: correct', 'Total of int.MaxValue + 1: correct now, wrapped before', one asset of int.MaxValue. 'Checks run' 1-9 each conclude positively, e.g. 'Hallucination: none', 'Contract: public long TotalSizeBytes() is unchanged'."
+        },
+        {
+          "text": "The review does not ask the agent to change the method signature, the existing tests or the approach; its feedback prompt says to accept as is or asks for nothing beyond an optional minor change",
+          "passed": true,
+          "evidence": "Feedback prompt: 'Accepted: ... Keep the TotalSizeBytes signature and Asset.SizeBytes as int; no further changes.' The only other suggestion is optional and the review says 'keeping the minimal diff is better'."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "rejects-checksum-lowercased-on-save",
+      "eval_name": "rejects-checksum-lowercased-on-save",
+      "configuration": "old_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 167.4,
+        "tokens": 100175,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The review's verdict is REJECT, not ACCEPT and not ACCEPT WITH FIX",
+          "passed": true,
+          "evidence": "'Verdict: REJECT'."
+        },
+        {
+          "text": "The review identifies that lowercasing the checksum in AssetRepository.Save changes stored data (or mutates the saved Asset object) and that this is the wrong place for the fix",
+          "passed": true,
+          "evidence": "Finding 2 (blocker, AssetRepository.Save): 'This is out of scope: the task only asks for a change to IsDuplicate. It also changes the data the repository stores and mutates the caller's Asset object.' Fix: 'Revert the Save change completely.'"
+        },
+        {
+          "text": "The review gives a concrete breaking case in which an asset already stored with an uppercase checksum (loaded through the constructor, not Save) is no longer detected, for example IsDuplicate(\"A1B2C3D4\") returning false, or names IsDuplicate_ReturnsTrue_WhenSameChecksumExists or GetById_ReturnsAssetExactlyAsSaved as a test that now fails",
+          "passed": true,
+          "evidence": "Finding 1: 'an existing asset with \"A1B2C3D4\" and IsDuplicate(\"A1B2C3D4\") now returns false ... IsDuplicate_ReturnsTrue_WhenSameChecksumExists fails.' Also names GetById_ReturnsAssetExactlyAsSaved as failing."
+        },
+        {
+          "text": "The review recommends a case-insensitive comparison inside IsDuplicate (for example StringComparison.OrdinalIgnoreCase or StringComparer.OrdinalIgnoreCase) with Save left unchanged, and gives a one-line feedback prompt for the agent",
+          "passed": true,
+          "evidence": "Recommends 'string.Equals(a.Checksum, checksum, StringComparison.OrdinalIgnoreCase)' and 'Revert AssetRepository.cs'. Feedback prompt is one quoted paragraph: 'Rejected: lowercasing in Save ... Revert AssetRepository.Save. In DuplicateDetector.IsDuplicate only, compare with string.Equals(..., StringComparison.OrdinalIgnoreCase)...'"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "rejects-edited-test-assertion",
+      "eval_name": "rejects-edited-test-assertion",
+      "configuration": "old_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 25.9,
+        "tokens": 93826,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The review's verdict is REJECT, not ACCEPT and not ACCEPT WITH FIX",
+          "passed": true,
+          "evidence": "'Verdict: **REJECT**'."
+        },
+        {
+          "text": "The review states that the agent changed the expected value in Normalize_CollapsesInternalWhitespace (from \"summer campaign\" to \"summer   campaign\") to make the test pass, and grades this as a blocker",
+          "passed": true,
+          "evidence": "Finding 1, severity 'blocker': 'The agent changed the expected value from \"summer campaign\" to \"summer   campaign\" ... so \"all tests pass\" proves nothing.'"
+        },
+        {
+          "text": "The review states that the production code still does not collapse internal whitespace, for example that \"  Summer   Campaign \" returns \"summer   campaign\" instead of \"summer campaign\"",
+          "passed": true,
+          "evidence": "Finding 2 (blocker): '\"  Summer   Campaign \" gives \"summer   campaign\", not \"summer campaign\".'"
+        },
+        {
+          "text": "The response ends with a feedback prompt for the agent that tells it to revert or not change the test and to implement the whitespace collapse in TagNormalizer.Normalize",
+          "passed": true,
+          "evidence": "The response's final block is the feedback prompt: '... Revert the test file to its original assertion and never change expected values to make a test pass. Fix only TagNormalizer.Normalize so it trims, collapses any run of internal whitespace ... into one space, and lowercases...'"
+        }
+      ],
+      "notes": []
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {
+        "mean": 0.9167,
+        "stddev": 0.1443,
+        "min": 0.75,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 81.9333,
+        "stddev": 78.3556,
+        "min": 35.5,
+        "max": 172.4
+      },
+      "tokens": {
+        "mean": 104487.0,
+        "stddev": 4478.0178,
+        "min": 101194,
+        "max": 109586
+      }
+    },
+    "old_skill": {
+      "pass_rate": {
+        "mean": 1.0,
+        "stddev": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 74.5667,
+        "stddev": 80.4275,
+        "min": 25.9,
+        "max": 167.4
+      },
+      "tokens": {
+        "mean": 96132.0,
+        "stddev": 3512.8802,
+        "min": 93826,
+        "max": 100175
+      }
+    },
+    "delta": {
+      "pass_rate": "-0.08",
+      "time_seconds": "+7.4",
+      "tokens": "+8355"
+    }
+  },
+  "notes": [
+    "Only rejects-edited-test-assertion discriminates; the miss is format (a 'What to do next' list after the feedback prompt), not substance.",
+    "New skill caught int-cast caller impact and LINQ Sum OverflowException; no assertion rewards these. Add an assertion for caller impact.",
+    "'One-line' wording in assertions is ambiguous; tighten.",
+    "High time variance (stddev ~78s) comes from one run with file fixtures; one sample per config, so treat timing as noisy."
+  ]
+}

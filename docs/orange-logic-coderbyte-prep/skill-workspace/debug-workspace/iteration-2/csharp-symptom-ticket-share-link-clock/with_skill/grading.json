@@ -1,0 +1,45 @@
+{
+  "expectations": [
+    {
+      "text": "The response restates the ticket as at least one concrete case of input -> actual vs expected (for example a 1 hour link checked right after creation on a UTC+7 machine is invalid but should be valid).",
+      "passed": true,
+      "evidence": "1h link at 09:00 UTC: HCMC invalid at 09:00, Seattle valid until 18:00 UTC vs expected 10:00."
+    },
+    {
+      "text": "The response identifies ShareLinkService.IsValid comparing DateTime.Now with ExpiresAtUtc, instead of the injected clock's UtcNow, as the root cause, with file and line.",
+      "passed": true,
+      "evidence": "Row 1: ShareLinkService.cs:26 DateTime.Now vs ExpiresAtUtc, not injected clock."
+    },
+    {
+      "text": "The response explains both the Ho Chi Minh City symptom (links invalid immediately) and the Seattle symptom (links valid for hours after expiry) as the same local-time offset cause.",
+      "passed": true,
+      "evidence": "Local offset shifts expiry -7h HCMC, +8h Seattle: same cause."
+    },
+    {
+      "text": "The trace shows a test or scratch program being run that demonstrates the wrong IsValid result, rather than the cause being asserted only from reading code.",
+      "passed": true,
+      "evidence": "Added 3 FakeClock tests, dotnet test 3 failed; TZ probe run under Asia/Saigon and America/Los_Angeles."
+    },
+    {
+      "text": "The response flags ActiveLinksFor as having the same DateTime.Now bug.",
+      "passed": true,
+      "evidence": "Same bug at :31 ActiveLinksFor."
+    },
+    {
+      "text": "At the end of the run, ShareLinkService.cs and the four original tests in ShareLinkServiceTests.cs are unchanged (new test code is allowed).",
+      "passed": true,
+      "evidence": "Source unchanged; original tests intact, 3 tests appended."
+    },
+    {
+      "text": "The final reply to the user is under 600 words, so it can be read quickly during a timed assessment.",
+      "passed": true,
+      "evidence": "349 words."
+    }
+  ],
+  "summary": {
+    "passed": 7,
+    "failed": 0,
+    "total": 7,
+    "pass_rate": 1.0
+  }
+}

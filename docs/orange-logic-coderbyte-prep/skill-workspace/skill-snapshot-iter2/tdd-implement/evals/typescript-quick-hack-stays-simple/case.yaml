@@ -1,0 +1,14 @@
+schema_version: "1.1"
+name: typescript-quick-hack-stays-simple
+expected_outcome: |
+  Despite the "quick hack" framing, the run adds one behavior-named Vitest test to
+  src/assetUrl.test.ts, such as "serves public assets from the cdn", and runs it red
+  before changing src/assetUrl.ts. The change stays small and local: a named constant for
+  the CDN url and a conditional on visibility inside buildAssetUrl or a tiny helper in the
+  same file. It adds no interface, class, strategy, factory, config file, environment
+  variable or new source file, keeps the exported signature
+  buildAssetUrl(asset, baseUrl) and the two existing tests unchanged, adds no package,
+  and reports an actual green vitest run with a short note on edge cases such as a
+  trailing slash or encoded file names for public assets.
+context:
+  scaffold_script: place-files.sh

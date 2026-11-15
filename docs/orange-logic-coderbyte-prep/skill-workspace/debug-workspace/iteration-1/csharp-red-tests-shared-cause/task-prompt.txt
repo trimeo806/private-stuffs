@@ -1,0 +1,1 @@
+Coderbyte AI fluency assessment, section 1, task 1 in TASK.md: some visible tests fail, fix the code not the tests. dotnet test shows 4 red out of 8. Before I prompt the AI panel to change anything I want to understand why each one fails, so the fix prompt is precise. .NET 8 + xUnit, dotnet test works here.

@@ -1,0 +1,58 @@
+{
+  "expectations": [
+    {
+      "text": "The response contains no C# implementation of GetBestRendition or MergeTags (no method bodies or code blocks containing a fix), and the outputs folder contains no .cs file.",
+      "passed": true,
+      "evidence": "outputs/ holds only response.md. Code blocks are the recon prompt and the 'Step 1 only' prompt, both prose; only inline fragments like '`OrderByDescending(r => r.Width)` followed by `FirstOrDefault`' in A4, no method body."
+    },
+    {
+      "text": "Requirements are a numbered list in which every item is labelled explicit or implied, and at least one implied requirement says the existing public method signatures or the currently passing behaviour must stay unchanged.",
+      "passed": true,
+      "evidence": "Table rows R1-R11 each have a Type column (explicit / implied / 'explicit + visible test'). R11: 'Existing public API and visible tests are unchanged | implied'."
+    },
+    {
+      "text": "The edge cases include all four of: merging a tag into itself, a source tag that does not exist, an asset that already carries both the source and the target tag, and every rendition being wider than maxWidth; each is given a concrete expected behaviour (a return value, an exception type or a no-op), and none is left as 'per A<n>', 'TBD' or 'decide after reading the code' without a chosen default.",
+      "passed": true,
+      "evidence": "'Source equals target ignoring case (\"Red\", \"red\") | No-op, the tag is kept'; 'Source doesn't exist | No-op, no throw (A6)'; 'An asset already has both tags | It ends with one \"crimson\" and no \"red\"'; 'All renditions wider than max (e.g. max 100) | `null`'."
+    },
+    {
+      "text": "The plan gives minutes per step that total no more than 60 and names a cut line, and the response's first implementation prompt (the first paste-ready prompt that asks the agent to change code; a no-edit recon prompt does not count) covers exactly one plan step and tells the agent to keep existing signatures.",
+      "passed": true,
+      "evidence": "Minutes 8+8+5+12+7+5+5+3+2 = 55 ('Budget: 55 of 80 min'); '**cut line**' row below step 5. Step 1 prompt: 'Step 1 only... Fix GetBestRendition' (plan step 1 = fix; tests are step 2) and 'Constraints: keep the public signature'."
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1.0
+  },
+  "timing": {
+    "executor_duration_seconds": 83.7,
+    "total_duration_seconds": 83.7
+  },
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "The response contains no C# implementation of GetBestRendition or MergeTags (no method bodies or code blocks containing a fix), and the outputs folder contains no .cs file.",
+        "reason": "Passed in all 6 runs (old and new skill). Non-discriminating; keep as a guardrail but it does not measure the skill change."
+      },
+      {
+        "assertion": "Requirements are a numbered list in which every item is labelled explicit or implied, and at least one implied requirement says the existing public method signatures or the currently passing behaviour must stay unchanged.",
+        "reason": "Passed in all 6 runs. Every run used a table with R1..Rn rows rather than a literal numbered list; I accepted numbered table rows. Say explicitly whether a numbered table counts."
+      },
+      {
+        "assertion": "The edge cases include all four of: merging a tag into itself, a source tag that does not exist, an asset that already carries both the source and the target tag, and every rendition being wider than maxWidth; each is given a concrete expected behaviour (a return value, an exception type or a no-op), and none is left as 'per A<n>', 'TBD' or 'decide after reading the code' without a chosen default.",
+        "reason": "Discriminated only once (old run-2: 'no-op or the existing not-found behaviour'). Most runs use 'no-op, switch to X only if the code already throws'; clarify whether a conditional switch-rule counts as a chosen default."
+      },
+      {
+        "assertion": "The plan gives minutes per step that total no more than 60 and names a cut line, and the response's first implementation prompt (the first paste-ready prompt that asks the agent to change code; a no-edit recon prompt does not count) covers exactly one plan step and tells the agent to keep existing signatures.",
+        "reason": "This is the only discriminating assertion; old-skill runs fail because they give no implementation prompt at all (or only an inline example). It bundles four checks; splitting them would show which part regressed."
+      },
+      {
+        "reason": "No assertion checks length or time-to-answer. The user is on a running 80-minute clock; with_skill responses are 11-13k chars and 84-97s vs 8k chars and 47-63s for old_skill. Consider a length or skimmability check."
+      }
+    ],
+    "overall": "Only assertion 4 separates the configs; assertions 1-3 pass for everything."
+  }
+}

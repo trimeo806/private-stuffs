@@ -1,0 +1,51 @@
+{
+  "expectations": [
+    {
+      "text": "The response contains no C# implementation of GetBestRendition or MergeTags (no method bodies or code blocks containing a fix), and the trace shows no files created or edited.",
+      "passed": true,
+      "evidence": "No method bodies or code fixes. The only code blocks are prompts (lines 86-98, 104-115); plan steps describe changes in prose. outputs/ contains only response.md. No transcript saved; judged from outputs/ and response.md."
+    },
+    {
+      "text": "Requirements are a numbered list in which every item is labelled explicit or implied, and at least one implied requirement says the existing public method signatures or the currently passing behaviour must stay unchanged.",
+      "passed": true,
+      "evidence": "Requirements table R1-R10 has a Type column with every row 'explicit' or 'implied'. R10: 'Existing public API and visible tests unchanged | implied | the 4 visible tests still pass, no signature changed'."
+    },
+    {
+      "text": "The edge cases include all four of: merging a tag into itself, a source tag that does not exist, an asset that already carries both the source and the target tag, and every rendition being wider than maxWidth; each is given an expected behaviour.",
+      "passed": false,
+      "evidence": "Self-merge: 'source == target ignoring case | no-op, tag survives'; both tags: 'one target, no source'; all wider: 'null'. But source tag does not exist: 'Source tag does not exist | per A4', and A4 defers: 'Decide after reading TagService/InMemoryAssetRepository'; closing question 3: 'I've left this one to decide'. No committed expected behaviour."
+    },
+    {
+      "text": "The plan gives minutes per step that total no more than 60, names a cut line, and the response includes a ready-to-paste first prompt for the in-IDE agent that covers only one of the two tasks and tells the agent to keep existing signatures.",
+      "passed": false,
+      "evidence": "Minutes 8+10+12+8+5+3+7+2 = 55 (<= 60) and 'cut line' row present. But the block under '## First prompt' (lines 86-98) is a recon prompt pasted 'with both task statements', so it covers both tasks. The scoped one-task prompt with 'Keep the signature' is the second ('Then step 1'), not the first."
+    }
+  ],
+  "summary": {
+    "passed": 2,
+    "failed": 2,
+    "total": 4,
+    "pass_rate": 0.5
+  },
+  "timing": {
+    "executor_duration_seconds": 69.9,
+    "total_duration_seconds": 69.9
+  },
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "The plan gives minutes per step that total no more than 60, names a cut line, and the response includes a ready-to-paste first prompt for the in-IDE agent that covers only one of the two tasks and tells the agent to keep existing signatures.",
+        "reason": "Conflicts with the skill's recon-first design (the vague-case assertion 1 requires the first prompt to be a no-edit recon prompt, which necessarily covers both tasks). Both configs fail only on the 'covers only one task' clause even though with_skill ships a scoped, signature-preserving step-1 prompt. Reword to 'the first implementation prompt' or 'a step prompt'."
+      },
+      {
+        "assertion": "The edge cases include all four of: merging a tag into itself, a source tag that does not exist, an asset that already carries both the source and the target tag, and every rendition being wider than maxWidth; each is given an expected behaviour.",
+        "reason": "Good discriminator: it caught with_skill deferring the missing-source-tag behaviour ('per A4', decide later) while old_skill committed to a default."
+      },
+      {
+        "assertion": "The response contains no C# implementation of GetBestRendition or MergeTags (no method bodies or code blocks containing a fix), and the trace shows no files created or edited.",
+        "reason": "The 'trace' half cannot be verified without a transcript and the C# case has no input repo to diff; only the response half is checkable."
+      }
+    ],
+    "overall": "A4 is flawed as worded; A3 discriminates; A1/A2 pass for both and are weakly discriminating."
+  }
+}

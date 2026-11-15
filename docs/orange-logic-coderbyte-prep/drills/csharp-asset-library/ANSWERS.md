@@ -1,0 +1,16 @@
+# Section 2 answers
+
+**Q1: Walk through how you used AI on this project. Which prompt gave the most useful result, and why did it work?**
+I planned first, then asked for edge-case tests on the search requirement before any code. That prompt was the most useful: it produced 14 cases, 6 failing on the original code, and exposed that tag trimming sat in my last, first-to-cut step although search depends on it. It worked because it took expected values from the spec, not the code. I moved trimming forward, then ran four implementation steps as separate agents, each showing a failing test before its fix, and reviewed the merged diff. Final suite: 61 passed.
+
+**Q2: Describe one AI suggestion you rejected or changed. How did you detect the problem?**
+The duplicate-checksum fix put the case-insensitive compare in `InMemoryAssetRepository`, and the agent itself flagged that another repository would still store "AA11" after "aa11". The alternative was lowercasing checksums in the service. I rejected that: it changes stored data and the checksum returned to callers, which a hidden test could assert. I kept the repository fix and its test that the original casing is preserved, and listed the limit in SOLUTION.md. I also changed the plan to run steps in isolated copies, because four agents editing `AssetService.cs` together would collide.
+
+**Q3: How did you verify the storage report handles edge cases? What would you still test with more time?**
+I put the logic in a pure `StorageReportCalculator` and tested it directly and through the service: 14 cases. They cover `backup.tar.gz`, `README`, `draft.`, `.gitignore`, `PHOTO.JPG`, `topN` -1, 0 and 99, two 2,000,000,000-byte files totalling 4,000,000,000, `B.jpg` before `a.jpg` to prove ordinal ordering, ties by id, and an empty library. All pass. With more time: file names with trailing spaces (`"photo.jpg "` currently gives `"jpg "`), a stronger extension-ordering test, since mine would also pass with culture ordering, and very large libraries.
+
+**Q4: A teammate opens a PR fully written by an AI agent touching pagination and duplicate detection. What do you check before approving?**
+First, that no existing test was edited or loosened; I diff the test files. For pagination: offset `(page - 1) * size`, ceiling for total pages, and overflow. In my session `GetPage(int.MaxValue, 2)` wrapped negative and returned page 1. For duplicates: case and whitespace in checksums, and which layer compares them, since a fix only in one repository misses others. I ask for a failing test per bug, run the suite myself, and check the PR keeps public signatures and stored data unchanged.
+
+**Q5: What is one risk of relying on AI coding tools in a production DAM platform, and how would you mitigate it?**
+Risk: plausible code that quietly breaks a data rule. In a DAM, a case-sensitive checksum compare stores the same file twice, wasting storage and splitting metadata. That was the bug in this task, and the code looked fine. Mitigation: state rules as tests before generating code, require each test to fail first, review every AI diff against the spec with concrete inputs (`"AA11"` vs `"aa11"`, `int.MaxValue` page), and add database constraints, such as a unique case-insensitive index on checksum, so the store enforces what code might miss.

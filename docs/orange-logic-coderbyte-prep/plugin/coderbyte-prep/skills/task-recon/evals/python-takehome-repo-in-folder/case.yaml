@@ -1,0 +1,12 @@
+schema_version: "1.1"
+name: python-takehome-repo-in-folder
+expected_outcome: |
+  The agent reads TASK.md, the importer, the model and the existing tests before planning,
+  then produces a recon without editing the repo: goal, requirements marked explicit or
+  implied, an assumption resolving how skipped rows are reported while import_movements
+  keeps its list-of-Movement signature, a file map with real paths (importer.py to change,
+  NOTES.md to create, existing tests kept), the pytest command, edge cases such as a
+  trailing blank line, a non-integer quantity and SKUs that differ only by case, a step
+  plan that fits 120 minutes with a cut line, and a scoped first prompt for the agent.
+context:
+  scaffold_script: place-files.sh

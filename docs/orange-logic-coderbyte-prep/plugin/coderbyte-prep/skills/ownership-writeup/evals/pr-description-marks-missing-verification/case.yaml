@@ -1,0 +1,9 @@
+schema_version: "1.1"
+name: pr-description-marks-missing-verification
+expected_outcome: |
+  A PR description with a summary, what the agent did versus what the author changed
+  (max delay 30s to 5s because of the 10s dialog timeout, 403 removed from retries
+  because it is a permissions error, variable renames reverted to keep the diff
+  small), and a verification section. The notes say nothing about tests, so
+  verification is marked as a gap or the user is asked what was verified; no test
+  run or result is invented.

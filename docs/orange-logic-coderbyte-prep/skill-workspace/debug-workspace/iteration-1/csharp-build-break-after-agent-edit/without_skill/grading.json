@@ -1,0 +1,40 @@
+{
+  "expectations": [
+    {
+      "text": "The trace shows dotnet build or dotnet test being run, and the response cites error CS0117 for string.IsNullOrBlank from that output.",
+      "passed": true,
+      "evidence": "Ran dotnet build, cites CS0117 output."
+    },
+    {
+      "text": "The response states that string.IsNullOrBlank does not exist in .NET and that the original string.IsNullOrWhiteSpace must be restored.",
+      "passed": true,
+      "evidence": "States IsNullOrBlank does not exist, change back to IsNullOrWhiteSpace."
+    },
+    {
+      "text": "The response identifies the change of the sizeBytes parameter from long to int as a contract break that breaks the test passing 3_000_000_000L and the over-2-GB requirement, and says to restore long rather than edit the tests.",
+      "passed": true,
+      "evidence": "Point 2: long->int breaks signature rule and >2GB, CS1503 shown, restore long."
+    },
+    {
+      "text": "The response says the string.Equals(..., StringComparison.OrdinalIgnoreCase) checksum comparison is the correct part of the edit and should be kept.",
+      "passed": true,
+      "evidence": "Point 3: OrdinalIgnoreCase line correct, keep."
+    },
+    {
+      "text": "At the end of the run, UploadService.cs and UploadServiceTests.cs are unchanged from the originals.",
+      "passed": true,
+      "evidence": "diff -rq: no repo changes."
+    },
+    {
+      "text": "The response ends with a paste-ready rejection or fix prompt for the agent that names both problems (the nonexistent API and the signature change) and what to keep.",
+      "passed": false,
+      "evidence": "Paste-ready rejection note names both problems but the reply ends with a suggested-fix list and go-ahead question, not the prompt."
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 1,
+    "total": 6,
+    "pass_rate": 0.83
+  }
+}

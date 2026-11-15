@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "AmEoLb//Lqc=",
+  "success": true,
+  "projectFilePath": "/Users/nguyenthanhtri/workspace/private-stuffs/docs/orange-logic-coderbyte-prep/skill-workspace/edge-case-tests-workspace/iteration-2/csharp-asset-pager-xunit/old_skill/run-3/outputs/AssetLibrary/AssetLibrary.csproj",
+  "expectedPackageFiles": [
+    "/Users/nguyenthanhtri/.nuget/packages/microsoft.netcore.app.ref/8.0.34/microsoft.netcore.app.ref.8.0.34.nupkg.sha512",
+    "/Users/nguyenthanhtri/.nuget/packages/microsoft.aspnetcore.app.ref/8.0.34/microsoft.aspnetcore.app.ref.8.0.34.nupkg.sha512"
+  ],
+  "logs": []
+}

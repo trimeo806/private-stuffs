@@ -1,0 +1,46 @@
+{
+  "expectations": [
+    {
+      "text": "New tests are written for pytest under the tests folder, and at least one test uses pytest.mark.parametrize; no unittest.TestCase class or new test dependency is introduced",
+      "passed": true,
+      "evidence": "New file tests/test_summarize_by_extension_edge_cases.py uses plain pytest functions and '@pytest.mark.parametrize((\"name\", \"expected_extension\"), [...])'; no unittest.TestCase; pyproject.toml unchanged (diff -r shows only the new test file). Re-run in a scratch copy: 12 passed, 4 failed, matching the response."
+    },
+    {
+      "text": "The tests include extensions that differ only in case (for example \"a.JPG\" and \"b.jpg\") expecting one lowercase group, and two extensions with equal totals expecting them ordered by extension ascending",
+      "passed": true,
+      "evidence": "'test_merges_case_variants_of_the_same_extension': a.jpg, b.JPG, c.Jpg -> '[(\"jpg\", 7)]'. 'test_breaks_total_ties_by_extension_ascending': z.txt, a.png, m.csv all size 5 -> '[(\"csv\", 5), (\"png\", 5), (\"txt\", 5)]'."
+    },
+    {
+      "text": "The final response reports that summarize_by_extension does not merge mixed-case extensions as a bug in storage_report.py, and storage_report.py is not modified during the run",
+      "passed": true,
+      "evidence": "Response: 'Cases 2 and 3: extensions are not lowercased ... The cause is `storage_report.py:10`: `return ext` returns the raw casing. Because of this, `JPG`, `Jpg` and `jpg` become separate groups' and 'Production code is unchanged.' diff -r shows storage_report.py unchanged."
+    },
+    {
+      "text": "A test asserts that a negative size raises ValueError using pytest.raises",
+      "passed": true,
+      "evidence": "'test_rejects_negative_size' (parametrized, 2 cases) uses 'with pytest.raises(ValueError): summarize_by_extension(files)'."
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1.0
+  },
+  "timing": {
+    "executor_duration_seconds": 90.2,
+    "total_duration_seconds": 90.2
+  },
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "reason": "All four assertions pass for both configs, so this case does not separate them. Differences that went unchecked: with_skill gives the edge-case table a 'What it would catch' column and an Assumptions section, while old_skill's table has only 'Source'; with_skill adds a new test file, while old_skill rewrites the existing one. Consider an assertion for a table with a reason per row (as in the C# case)."
+      },
+      {
+        "assertion": "The final response reports that summarize_by_extension does not merge mixed-case extensions as a bug in storage_report.py, and storage_report.py is not modified during the run",
+        "reason": "Both configs also found and reported the trailing-dot bug ('notes.' -> '' instead of '(none)'); no assertion requires it, and it is the less obvious of the two bugs, so it would discriminate better than the mixed-case one."
+      }
+    ],
+    "overall": "Non-discriminating as written; both runs satisfy every assertion with real evidence."
+  }
+}

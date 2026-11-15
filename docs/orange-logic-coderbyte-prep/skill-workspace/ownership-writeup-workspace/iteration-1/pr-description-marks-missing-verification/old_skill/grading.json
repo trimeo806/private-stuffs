@@ -1,0 +1,45 @@
+{
+  "expectations": [
+    {
+      "text": "The PR description does not state or imply that any test was run or passed (no test names, no \"tests pass\"); verification is marked as a gap or placeholder, or the response asks the user what was verified.",
+      "passed": true,
+      "evidence": "Verification is all unchecked TODO placeholders: \"- [ ] TODO: tests added or updated (name the test file and cases)\" ... \"- [ ] TODO: manual check in the upload dialog\"; preamble: \"Your notes don't say how this was tested, so I left the Verification section as TODO items\"; asks \"How did you verify this?\". No claim a test ran or passed."
+    },
+    {
+      "text": "The PR description says retrying on 403 was removed and gives the reason that 403 is a permissions problem, so retrying only delays the error.",
+      "passed": true,
+      "evidence": "Table row: \"Removed 403. It's a permissions problem, so a retry can't succeed and only delays the error\"; Trade-offs: \"Fail fast on 403 instead of retrying: a permissions error won't fix itself\"."
+    },
+    {
+      "text": "The PR description states the max delay change from 30s to 5s and ties it to the upload dialog timing out at 10s.",
+      "passed": true,
+      "evidence": "\"Set the max backoff delay to 30s | Changed it to 5s. The upload dialog times out at 10s, so a 30s delay would only ever fire after the user had already seen the error\". Note: Approach also asserts the 5s cap means \"the retries finish inside the upload dialog's 10s timeout\", which is not established by the notes (2 waits x 5s = 10s)."
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 0,
+    "total": 3,
+    "pass_rate": 1.0
+  },
+  "timing": {
+    "executor_duration_seconds": 25.0,
+    "total_duration_seconds": 25.0
+  },
+  "execution_metrics": {
+    "total_tokens": 93661,
+    "output_chars": 2695
+  },
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "reason": "All three assertions pass for both configs, so this case does not discriminate. The with_skill run uniquely flags that two 5s waits already consume the 10s dialog budget (\"That adds up to 10s of waiting before any upload time is counted\"); old_skill instead claims the 5s cap means \"the retries finish inside the upload dialog's 10s timeout\", an unverified and arguably wrong claim. Consider an assertion that the description does not claim the retry budget fits within 10s (or flags the 2x5s risk)."
+      },
+      {
+        "assertion": "The PR description does not state or imply that any test was run or passed (no test names, no \"tests pass\"); verification is marked as a gap or placeholder, or the response asks the user what was verified.",
+        "reason": "Satisfied by any TODO checklist; old_skill's TODO list enumerates specific checks (e.g. \"403 fails right away with no retry\") which a reader could skim as done. Consider requiring that the description also does not list unchecked test scenarios as if they were the verification plan without labelling them unverified."
+      }
+    ],
+    "overall": "Non-discriminating at 3/3 vs 3/3; the real quality difference (timing-budget honesty) is not covered."
+  }
+}

@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eval Review</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&family=Lora:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" integrity="sha384-EnyY0/GSHQGSxSgMwaIPzSESbqoOLSexfnSMN2AP+39Ckmn92stwABZynq1JyzdT" crossorigin="anonymous"></script>
+  <style>
+    :root {
+      --bg: #faf9f5;
+      --surface: #ffffff;
+      --border: #e8e6dc;
+      --text: #141413;
+      --text-muted: #b0aea5;
+      --accent: #d97757;
+      --accent-hover: #c4613f;
+      --green: #788c5d;
+      --green-bg: #eef2e8;
+      --red: #c44;
+      --red-bg: #fceaea;
+      --header-bg: #141413;
+      --header-text: #faf9f5;
+      --radius: 6px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Lora', Georgia, serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ---- Header ---- */
+    .header {
+      background: var(--header-bg);
+      color: var(--header-text);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .header h1 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    .header .instructions {
+      font-size: 0.8rem;
+      opacity: 0.7;
+      margin-top: 0.25rem;
+    }
+    .header .progress {
+      font-size: 0.875rem;
+      opacity: 0.8;
+      text-align: right;
+    }
+
+    /* ---- Main content ---- */
+    .main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.5rem 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    /* ---- Sections ---- */
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      flex-shrink: 0;
+    }
+    .section-header {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.75rem 1rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+    }
+    .section-body {
+      padding: 1rem;
+    }
+
+    /* ---- Config badge ---- */
+    .config-badge {
+      display: inline-block;
+      padding: 0.2rem 0.625rem;
+      border-radius: 9999px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-left: 0.75rem;
+      vertical-align: middle;
+    }
+    .config-badge.config-primary {
+      background: rgba(33, 150, 243, 0.12);
+      color: #1976d2;
+    }
+    .config-badge.config-baseline {
+      background: rgba(255, 193, 7, 0.15);
+      color: #f57f17;
+    }
+
+    /* ---- Prompt ---- */
+    .prompt-text {
+      white-space: pre-wrap;
+      font-size: 0.9375rem;
+      line-height: 1.6;
+    }
+
+    /* ---- Outputs ---- */
+    .output-file {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .output-file + .output-file {
+      margin-top: 1rem;
+    }
+    .output-file-header {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .output-file-header .dl-btn {
+      font-size: 0.7rem;
+      color: var(--accent);
+      text-decoration: none;
+      cursor: pointer;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-weight: 500;
+      opacity: 0.8;
+    }
+    .output-file-header .dl-btn:hover {
+      opacity: 1;
+      text-decoration: underline;
+    }
+    .output-file-content {
+      padding: 0.75rem;
+      overflow-x: auto;
+    }
+    .output-file-content pre {
+      font-size: 0.8125rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+    }
+    .output-file-content img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+    }
+    .output-file-content iframe {
+      width: 100%;
+      height: 600px;
+      border: none;
+    }
+    .output-file-content table {
+      border-collapse: collapse;
+      font-size: 0.8125rem;
+      width: 100%;
+    }
+    .output-file-content table td,
+    .output-file-content table th {
+      border: 1px solid var(--border);
+      padding: 0.375rem 0.5rem;
+      text-align: left;
+    }
+    .output-file-content table th {
+      background: var(--bg);
+      font-weight: 600;
+    }
+    .output-file-content .download-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.875rem;
+      cursor: pointer;
+    }
+    .output-file-content .download-link:hover {
+      background: var(--border);
+    }
+    .empty-state {
+      color: var(--text-muted);
+      font-style: italic;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    /* ---- Feedback ---- */
+    .prev-feedback {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.625rem 0.75rem;
+      margin-top: 0.75rem;
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .prev-feedback-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.25rem;
+      color: var(--text-muted);
+    }
+    .feedback-textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 0.9375rem;
+      line-height: 1.5;
+      resize: vertical;
+      color: var(--text);
+    }
+    .feedback-textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    .feedback-status {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+      min-height: 1.1em;
+    }
+
+    /* ---- Grades (collapsible) ---- */
+    .grades-toggle {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .grades-toggle:hover {
+      color: var(--accent);
+    }
+    .grades-toggle .arrow {
+      margin-right: 0.5rem;
+      transition: transform 0.15s;
+      font-size: 0.75rem;
+    }
+    .grades-toggle .arrow.open {
+      transform: rotate(90deg);
+    }
+    .grades-content {
+      display: none;
+      margin-top: 0.75rem;
+    }
+    .grades-content.open {
+      display: block;
+    }
+    .grades-summary {
+      font-size: 0.875rem;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .grade-badge {
+      display: inline-block;
+      padding: 0.125rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .grade-pass { background: var(--green-bg); color: var(--green); }
+    .grade-fail { background: var(--red-bg); color: var(--red); }
+    .assertion-list {
+      list-style: none;
+    }
+    .assertion-item {
+      padding: 0.625rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.8125rem;
+    }
+    .assertion-item:last-child { border-bottom: none; }
+    .assertion-status {
+      font-weight: 600;
+      margin-right: 0.5rem;
+    }
+    .assertion-status.pass { color: var(--green); }
+    .assertion-status.fail { color: var(--red); }
+    .assertion-evidence {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      margin-top: 0.25rem;
+      padding-left: 1.5rem;
+    }
+
+    /* ---- View tabs ---- */
+    .view-tabs {
+      display: flex;
+      gap: 0;
+      padding: 0 2rem;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .view-tab {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.625rem 1.25rem;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: var(--text-muted);
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+    }
+    .view-tab:hover { color: var(--text); }
+    .view-tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+    .view-panel { display: none; }
+    .view-panel.active { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+
+    /* ---- Benchmark view ---- */
+    .benchmark-view {
+      padding: 1.5rem 2rem;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .benchmark-table {
+      border-collapse: collapse;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.8125rem;
+      width: 100%;
+      margin-bottom: 1.5rem;
+    }
+    .benchmark-table th, .benchmark-table td {
+      padding: 0.625rem 0.75rem;
+      text-align: left;
+      border: 1px solid var(--border);
+    }
+    .benchmark-table th {
+      font-family: 'Poppins', sans-serif;
+      background: var(--header-bg);
+      color: var(--header-text);
+      font-weight: 500;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .benchmark-table tr:hover { background: var(--bg); }
+    .benchmark-table tr.benchmark-row-with { background: rgba(33, 150, 243, 0.06); }
+    .benchmark-table tr.benchmark-row-without { background: rgba(255, 193, 7, 0.06); }
+    .benchmark-table tr.benchmark-row-with:hover { background: rgba(33, 150, 243, 0.12); }
+    .benchmark-table tr.benchmark-row-without:hover { background: rgba(255, 193, 7, 0.12); }
+    .benchmark-table tr.benchmark-row-avg { font-weight: 600; border-top: 2px solid var(--border); }
+    .benchmark-table tr.benchmark-row-avg.benchmark-row-with { background: rgba(33, 150, 243, 0.12); }
+    .benchmark-table tr.benchmark-row-avg.benchmark-row-without { background: rgba(255, 193, 7, 0.12); }
+    .benchmark-delta-positive { color: var(--green); font-weight: 600; }
+    .benchmark-delta-negative { color: var(--red); font-weight: 600; }
+    .benchmark-notes {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+    }
+    .benchmark-notes h3 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.875rem;
+      margin-bottom: 0.75rem;
+    }
+    .benchmark-notes ul {
+      list-style: disc;
+      padding-left: 1.25rem;
+    }
+    .benchmark-notes li {
+      font-size: 0.8125rem;
+      line-height: 1.6;
+      margin-bottom: 0.375rem;
+    }
+    .benchmark-empty {
+      color: var(--text-muted);
+      font-style: italic;
+      text-align: center;
+      padding: 3rem;
+    }
+
+    /* ---- Navigation ---- */
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      flex-shrink: 0;
+    }
+    .nav-btn {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.5rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text);
+      transition: all 0.15s;
+    }
+    .nav-btn:hover:not(:disabled) {
+      background: var(--bg);
+      border-color: var(--text-muted);
+    }
+    .nav-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .done-btn {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.5rem 1.5rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    .done-btn:hover {
+      background: var(--bg);
+      border-color: var(--text-muted);
+    }
+    .done-btn.ready {
+      border: none;
+      background: var(--accent);
+      color: white;
+      font-weight: 600;
+    }
+    .done-btn.ready:hover {
+      background: var(--accent-hover);
+    }
+    /* ---- Done overlay ---- */
+    .done-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+    }
+    .done-overlay.visible {
+      display: flex;
+    }
+    .done-card {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 2rem 3rem;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 500px;
+    }
+    .done-card h2 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .done-card p {
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+      line-height: 1.5;
+    }
+    .done-card .btn-row {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+    .done-card button {
+      padding: 0.5rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 0.875rem;
+    }
+    .done-card button:hover {
+      background: var(--bg);
+    }
+    /* ---- Toast ---- */
+    .toast {
+      position: fixed;
+      bottom: 5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--header-bg);
+      color: var(--header-text);
+      padding: 0.625rem 1.25rem;
+      border-radius: var(--radius);
+      font-size: 0.875rem;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      z-index: 200;
+    }
+    .toast.visible {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <div id="app" style="height:100vh; display:flex; flex-direction:column;">
+    <div class="header">
+      <div>
+        <h1>Eval Review: <span id="skill-name"></span></h1>
+        <div class="instructions">Review each output and leave feedback below. Navigate with arrow keys or buttons. When done, copy feedback and paste into Claude Code.</div>
+      </div>
+      <div class="progress" id="progress"></div>
+    </div>
+
+    <!-- View tabs (only shown when benchmark data exists) -->
+    <div class="view-tabs" id="view-tabs" style="display:none;">
+      <button class="view-tab active" onclick="switchView('outputs')">Outputs</button>
+      <button class="view-tab" onclick="switchView('benchmark')">Benchmark</button>
+    </div>
+
+    <!-- Outputs panel (qualitative review) -->
+    <div class="view-panel active" id="panel-outputs">
+    <div class="main">
+      <!-- Prompt -->
+      <div class="section">
+        <div class="section-header">Prompt <span class="config-badge" id="config-badge" style="display:none;"></span></div>
+        <div class="section-body">
+          <div class="prompt-text" id="prompt-text"></div>
+        </div>
+      </div>
+
+      <!-- Outputs -->
+      <div class="section">
+        <div class="section-header">Output</div>
+        <div class="section-body" id="outputs-body">
+          <div class="empty-state">No output files found</div>
+        </div>
+      </div>
+
+      <!-- Previous Output (collapsible) -->
+      <div class="section" id="prev-outputs-section" style="display:none;">
+        <div class="section-header">
+          <div class="grades-toggle" onclick="togglePrevOutputs()">
+            <span class="arrow" id="prev-outputs-arrow">&#9654;</span>
+            Previous Output
+          </div>
+        </div>
+        <div class="grades-content" id="prev-outputs-content"></div>
+      </div>
+
+      <!-- Grades (collapsible) -->
+      <div class="section" id="grades-section" style="display:none;">
+        <div class="section-header">
+          <div class="grades-toggle" onclick="toggleGrades()">
+            <span class="arrow" id="grades-arrow">&#9654;</span>
+            Formal Grades
+          </div>
+        </div>
+        <div class="grades-content" id="grades-content"></div>
+      </div>
+
+      <!-- Feedback -->
+      <div class="section">
+        <div class="section-header">Your Feedback</div>
+        <div class="section-body">
+          <textarea
+            class="feedback-textarea"
+            id="feedback"
+            placeholder="What do you think of this output? Any issues, suggestions, or things that look great?"
+          ></textarea>
+          <div class="feedback-status" id="feedback-status"></div>
+          <div class="prev-feedback" id="prev-feedback" style="display:none;">
+            <div class="prev-feedback-label">Previous feedback</div>
+            <div id="prev-feedback-text"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav" id="outputs-nav">
+      <button class="nav-btn" id="prev-btn" onclick="navigate(-1)">&#8592; Previous</button>
+      <button class="done-btn" id="done-btn" onclick="showDoneDialog()">Submit All Reviews</button>
+      <button class="nav-btn" id="next-btn" onclick="navigate(1)">Next &#8594;</button>
+    </div>
+    </div><!-- end panel-outputs -->
+
+    <!-- Benchmark panel (quantitative stats) -->
+    <div class="view-panel" id="panel-benchmark">
+      <div class="benchmark-view" id="benchmark-content">
+        <div class="benchmark-empty">No benchmark data available. Run a benchmark to see quantitative results here.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Done overlay -->
+  <div class="done-overlay" id="done-overlay">
+    <div class="done-card">
+      <h2>Review Complete</h2>
+      <p>Your feedback has been saved. Go back to your Claude Code session and tell Claude you're done reviewing.</p>
+      <div class="btn-row">
+        <button onclick="closeDoneDialog()">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ---- Embedded data (injected by generate_review.py) ----
+    const EMBEDDED_DATA = {"skill_name": "ai-diff-review", "runs": [{"id": "accepts-correct-overflow-fix-old_skill", "prompt": "Bug ticket: \"Collection overview shows a negative total size for collections larger than 2 GB. CollectionStats.TotalSizeBytes must return the correct total.\" Asset.SizeBytes is an int (single files are capped below 2 GB by the upload service), and TotalSizeBytes already returns long. Existing tests are TotalSizeBytes_ReturnsZero_ForEmptyCollection and TotalSizeBytes_SumsAllAssetSizes.\n\nCopilot wrote the change below and said \"Changed the accumulator to long so large totals no longer wrap, and added a regression test.\" The agent wrote this, looks fine?\n\n```diff\n--- a/src/Dam.Core/Collections/CollectionStats.cs\n+++ b/src/Dam.Core/Collections/CollectionStats.cs\n@@ -11,7 +11,7 @@ public class CollectionStats\n \n     public long TotalSizeBytes()\n     {\n-        int total = 0;\n+        long total = 0;\n         foreach (var asset in _assets)\n         {\n             total += asset.SizeBytes;\n--- a/tests/Dam.Core.Tests/Collections/CollectionStatsTests.cs\n+++ b/tests/Dam.Core.Tests/Collections/CollectionStatsTests.cs\n@@ -19,4 +19,12 @@ public class CollectionStatsTests\n \n         Assert.Equal(350L, stats.TotalSizeBytes());\n     }\n+\n+    [Fact]\n+    public void TotalSizeBytes_DoesNotOverflow_WhenTotalExceedsIntMaxValue()\n+    {\n+        var stats = new CollectionStats(new[] { new Asset { SizeBytes = int.MaxValue }, new Asset { SizeBytes = int.MaxValue } });\n+\n+        Assert.Equal(2L * int.MaxValue, stats.TotalSizeBytes());\n+    }\n }\n```\n\nFor context, the method before the change:\n\n```csharp\npublic long TotalSizeBytes()\n{\n    int total = 0;\n    foreach (var asset in _assets)\n    {\n        total += asset.SizeBytes;\n    }\n    return total;\n}\n```", "eval_id": null, "outputs": [{"name": "response.md", "type": "text", "content": "Verdict: ACCEPT\n\nYes, this one is fine. It fixes the root cause with a one-word change, and the new test would fail on the old code.\n\n| # | Severity | Line / part | Problem | Fix |\n|---|---|---|---|---|\n| - | - | - | No defects found | - |\n\n**Why it is correct**\n\n- **Root cause:** the old accumulator was `int`, so `total += asset.SizeBytes` wrapped past `int.MaxValue` (2,147,483,647). It only became a `long` at `return total;`, after the wrap had already happened. With `long total`, each `int` `SizeBytes` widens to `long` before the add, so nothing wraps.\n- **Example input:** two assets of `int.MaxValue`. The old code returns `-2`, which is the \"negative total\" from the ticket. The new code returns `4294967294`.\n\n**Checks run**\n\n1. **Requirement fit:** it fixes exactly the ticket's bug. There's no scope creep: the signature, the loop and the return are unchanged.\n2. **Correctness:** the widening is implicit and safe in C#. A `long` holds totals up to about 9.2e18 bytes, roughly 4 billion max-size assets, so a collection can't realistically overflow it.\n3. **Edge cases I traced:**\n   - Empty collection: returns `0`, and the existing `ReturnsZero_ForEmptyCollection` test still holds.\n   - Normal sum: `350L` is unchanged.\n   - Total exactly `int.MaxValue`: correct.\n   - Total of `int.MaxValue + 1`: correct now, wrapped before.\n   - One asset of `int.MaxValue`: allowed, because the upload cap is \"below 2 GB\" and `int.MaxValue` is 2 GiB minus 1 byte.\n4. **Hallucination:** none. It uses only plain `long` and `int` arithmetic.\n5. **Contract:** `public long TotalSizeBytes()` is unchanged, and `Asset.SizeBytes` stays `int`. Callers are not affected.\n6. **Complexity:** still O(n) time and O(1) space.\n7. **Security:** not applicable.\n8. **Consistency:** the test name follows the existing `Method_Outcome_Condition` pattern, the test uses xUnit `[Fact]` and `Assert.Equal` like its neighbours, and there are no new dependencies.\n9. **Tests:** the regression test checks real behaviour, not a mock. On the old code it fails (`-2` instead of `4294967294`), and on the new code it passes. The expected value `2L * int.MaxValue` is computed in `long`, so the assertion can't overflow either.\n\n**One thing to confirm, not a defect:** I can't see the setup of the existing tests. The new test calls `new CollectionStats(new[] { new Asset { ... } })`. Check that this matches how the `350L` test builds its collection, for example an array or list constructor and a settable `SizeBytes`. If it compiles and the suite is green, you're done.\n\n**Optional, skip in a timed assessment:** you could write the method as `_assets.Sum(a => (long)a.SizeBytes)`. That only changes style, so keeping the minimal diff is better.\n\nFeedback prompt for the agent:\n\"Accepted: the long accumulator fixes the wrap at int.MaxValue, and the regression test fails on the old code (-2) and passes on the new code. Keep the TotalSizeBytes signature and Asset.SizeBytes as int; no further changes.\"\n"}], "grading": {"expectations": [{"text": "The review's verdict is ACCEPT, not ACCEPT WITH FIX and not REJECT", "passed": true, "evidence": "First line: 'Verdict: ACCEPT'."}, {"text": "The review lists no finding graded blocker or major; any findings it lists are graded minor or marked optional", "passed": true, "evidence": "Findings table has a single row: '| - | - | - | No defects found | - |'. The only suggestion is labelled 'Optional, skip in a timed assessment' (Sum(a => (long)a.SizeBytes) style change)."}, {"text": "The review shows edge cases it traced against the new code, including at least a total above int.MaxValue, and states which checks passed", "passed": true, "evidence": "'Edge cases I traced:' lists empty collection, normal sum 350L, 'Total exactly int.MaxValue: correct', 'Total of int.MaxValue + 1: correct now, wrapped before', one asset of int.MaxValue. 'Checks run' 1-9 each conclude positively, e.g. 'Hallucination: none', 'Contract: public long TotalSizeBytes() is unchanged'."}, {"text": "The review does not ask the agent to change the method signature, the existing tests or the approach; its feedback prompt says to accept as is or asks for nothing beyond an optional minor change", "passed": true, "evidence": "Feedback prompt: 'Accepted: ... Keep the TotalSizeBytes signature and Asset.SizeBytes as int; no further changes.' The only other suggestion is optional and the review says 'keeping the minimal diff is better'."}], "summary": {"passed": 4, "failed": 0, "total": 4, "pass_rate": 1.0}, "timing": {"executor_duration_seconds": 30.4, "total_duration_seconds": 30.4, "total_tokens": 94395}, "eval_feedback": {"suggestions": [{"reason": "All four assertions pass for both with_skill and old_skill, so this case does not separate the configs. Only with_skill flagged the out-of-diff risk that a caller casting TotalSizeBytes() to int would still show a negative total, and that LINQ Sum on int would throw; an assertion on a 'Not verified' / caller-impact note would discriminate."}], "overall": "Assertions are correct for an ACCEPT case but non-discriminating between configs."}}}, {"id": "accepts-correct-overflow-fix-with_skill", "prompt": "Bug ticket: \"Collection overview shows a negative total size for collections larger than 2 GB. CollectionStats.TotalSizeBytes must return the correct total.\" Asset.SizeBytes is an int (single files are capped below 2 GB by the upload service), and TotalSizeBytes already returns long. Existing tests are TotalSizeBytes_ReturnsZero_ForEmptyCollection and TotalSizeBytes_SumsAllAssetSizes.\n\nCopilot wrote the change below and said \"Changed the accumulator to long so large totals no longer wrap, and added a regression test.\" The agent wrote this, looks fine?\n\n```diff\n--- a/src/Dam.Core/Collections/CollectionStats.cs\n+++ b/src/Dam.Core/Collections/CollectionStats.cs\n@@ -11,7 +11,7 @@ public class CollectionStats\n \n     public long TotalSizeBytes()\n     {\n-        int total = 0;\n+        long total = 0;\n         foreach (var asset in _assets)\n         {\n             total += asset.SizeBytes;\n--- a/tests/Dam.Core.Tests/Collections/CollectionStatsTests.cs\n+++ b/tests/Dam.Core.Tests/Collections/CollectionStatsTests.cs\n@@ -19,4 +19,12 @@ public class CollectionStatsTests\n \n         Assert.Equal(350L, stats.TotalSizeBytes());\n     }\n+\n+    [Fact]\n+    public void TotalSizeBytes_DoesNotOverflow_WhenTotalExceedsIntMaxValue()\n+    {\n+        var stats = new CollectionStats(new[] { new Asset { SizeBytes = int.MaxValue }, new Asset { SizeBytes = int.MaxValue } });\n+\n+        Assert.Equal(2L * int.MaxValue, stats.TotalSizeBytes());\n+    }\n }\n```\n\nFor context, the method before the change:\n\n```csharp\npublic long TotalSizeBytes()\n{\n    int total = 0;\n    foreach (var asset in _assets)\n    {\n        total += asset.SizeBytes;\n    }\n    return total;\n}\n```", "eval_id": null, "outputs": [{"name": "response.md", "type": "text", "content": "Yes, this one is fine. The fix goes in the right place, it is the smallest change that solves the bug, and the new test fails on the old code and passes on the new code. Accept it.\n\n**Requirement:** `CollectionStats.TotalSizeBytes()` must return the correct total for collections over 2 GB. Each `Asset.SizeBytes` is an `int` below 2 GB, and the method already returns `long`.\n**Verdict:** ACCEPT - the `int` running total was the only cause of the wrap, and changing it to `long` fixes it without changing any contract. The new test catches the overflow and the existing tests are untouched.\n\n| # | Severity | Where | Problem | Breaking input: actual vs expected | Fix |\n|---|---|---|---|---|---|\n| - | - | - | none | - | - |\n\n**Edge cases traced** (against the new code):\n- empty collection -> `0` (ok, matches `TotalSizeBytes_ReturnsZero_ForEmptyCollection`)\n- single asset of `int.MaxValue` -> `2147483647` (ok)\n- `100 + 250` -> `350` (ok, matches `TotalSizeBytes_SumsAllAssetSizes`)\n- two assets of `int.MaxValue` -> `4294967294` (ok). The old code wrapped to `-2`, which is the negative total in the ticket.\n- many 1.9 GB assets, for example 10,000 of them -> about 1.9e13 (ok). A `long` only overflows after about 4.3 billion maximum-size assets, which is not realistic.\n\n**Checks passed:**\n- **Requirement fit:** one line in production code, no extra changes bundled in.\n- **Correctness:** in `total += asset.SizeBytes`, the `int` value is widened to `long` before the add, so nothing wraps. `return total` no longer widens an already wrapped `int`.\n- **Edge cases:** all traced above.\n- **Hallucination:** nothing new is used. The diff only uses `long` and an `int`-to-`long` widening.\n- **Contract:** the return type was already `long`. `Asset.SizeBytes` stays `int`, and no signature or stored data changes.\n- **Complexity:** still one O(n) pass.\n- **Security:** no impact.\n- **Consistency:** the new test follows the existing `MethodName_Behavior_Condition` names, `[Fact]` and the `L`-suffixed `Assert.Equal`.\n- **Tests:** the new test adds coverage and does not change any existing expectation. On the old code it gets `-2` instead of `4294967294`, so it really guards against this regression. `2L * int.MaxValue` is computed in `long`, so the expected value does not overflow either.\n\nThe agent also avoided a common wrong fix: rewriting the loop as `_assets.Sum(a => a.SizeBytes)`. LINQ `Sum` on `int` is checked arithmetic, so it would throw `OverflowException` instead of returning the right total.\n\n**Not verified:**\n- I could not run the tests because only the diff was given. Run `dotnet test` once before you commit.\n- I assumed `new CollectionStats(Asset[])` and a settable `Asset.SizeBytes` exist. The test only compiles if the existing tests build their objects the same way.\n- I did not see the callers. If the collection overview, a DTO or a view model casts `TotalSizeBytes()` back to `int`, the overview will still show a negative number for collections over 2 GB. Search for callers of `TotalSizeBytes` that store the value in an `int` or call `(int)` on it. That would be a separate bug in a different layer, not a problem with this diff.\n\n**Feedback prompt for the agent:**\n> none, accept as is\n\nFor your log: you accepted it after tracing an empty collection, two `int.MaxValue` assets (`-2` before the fix, `4294967294` after) and the existing 350 case. The new test is a real regression test, and no existing test was edited.\n"}], "grading": {"expectations": [{"text": "The review's verdict is ACCEPT, not ACCEPT WITH FIX and not REJECT", "passed": true, "evidence": "'**Verdict:** ACCEPT - the int running total was the only cause of the wrap'."}, {"text": "The review lists no finding graded blocker or major; any findings it lists are graded minor or marked optional", "passed": true, "evidence": "Findings table: '| - | - | - | none | - | - |'. No graded findings."}, {"text": "The review shows edge cases it traced against the new code, including at least a total above int.MaxValue, and states which checks passed", "passed": true, "evidence": "'**Edge cases traced** (against the new code):' includes 'two assets of int.MaxValue -> 4294967294 (ok). The old code wrapped to -2'. Explicit '**Checks passed:**' list: requirement fit, correctness, edge cases, hallucination, contract, complexity, security, consistency, tests."}, {"text": "The review does not ask the agent to change the method signature, the existing tests or the approach; its feedback prompt says to accept as is or asks for nothing beyond an optional minor change", "passed": true, "evidence": "'**Feedback prompt for the agent:** > none, accept as is'. No requested changes to signature, tests or approach."}], "summary": {"passed": 4, "failed": 0, "total": 4, "pass_rate": 1.0}, "timing": {"executor_duration_seconds": 35.5, "total_duration_seconds": 35.5, "total_tokens": 101194}, "eval_feedback": {"suggestions": [{"reason": "All four assertions pass for both with_skill and old_skill, so this case does not separate the configs. Only with_skill flagged the out-of-diff risk that a caller casting TotalSizeBytes() to int would still show a negative total, and that LINQ Sum on int would throw; an assertion on a 'Not verified' / caller-impact note would discriminate."}], "overall": "Assertions are correct for an ACCEPT case but non-discriminating between configs."}}}, {"id": "rejects-checksum-lowercased-on-save-old_skill", "prompt": "Coderbyte assessment, task 1. The in-IDE agent proposed agent-change.diff for the duplicate upload bug and says \"the failing test passes now\". The task text is in requirement.md and the current code and tests are next to it. I'm short on time, the agent wrote this and it looks fine to me, ok to approve?\n\nInput files: requirement.md, agent-change.diff, Asset.cs, AssetRepository.cs, DuplicateDetector.cs, AssetRepositoryTests.cs, DuplicateDetectorTests.cs", "eval_id": null, "outputs": [{"name": "Asset.cs", "type": "binary", "mime": "application/octet-stream", "data_uri": "data:application/octet-stream;base64,bmFtZXNwYWNlIERhbS5Db3JlLkFzc2V0czsKCnB1YmxpYyBjbGFzcyBBc3NldAp7CiAgICBwdWJsaWMgR3VpZCBJZCB7IGdldDsgc2V0OyB9CiAgICBwdWJsaWMgc3RyaW5nIEZpbGVOYW1lIHsgZ2V0OyBzZXQ7IH0gPSAiIjsKICAgIHB1YmxpYyBzdHJpbmcgQ2hlY2tzdW0geyBnZXQ7IHNldDsgfSA9ICIiOwp9Cg=="}, {"name": "AssetRepository.cs", "type": "binary", "mime": "application/octet-stream", "data_uri": "data:application/octet-stream;base64,bmFtZXNwYWNlIERhbS5Db3JlLkFzc2V0czsKCnB1YmxpYyBjbGFzcyBBc3NldFJlcG9zaXRvcnkgOiBJQXNzZXRSZXBvc2l0b3J5CnsKICAgIHByaXZhdGUgcmVhZG9ubHkgRGljdGlvbmFyeTxHdWlkLCBBc3NldD4gX2Fzc2V0czsKCiAgICBwdWJsaWMgQXNzZXRSZXBvc2l0b3J5KElFbnVtZXJhYmxlPEFzc2V0PiBleGlzdGluZykKICAgIHsKICAgICAgICBfYXNzZXRzID0gZXhpc3RpbmcuVG9EaWN0aW9uYXJ5KGEgPT4gYS5JZCk7CiAgICB9CgogICAgcHVibGljIElFbnVtZXJhYmxlPEFzc2V0PiBBbGwoKSA9PiBfYXNzZXRzLlZhbHVlczsKCiAgICBwdWJsaWMgQXNzZXQ/IEdldEJ5SWQoR3VpZCBpZCkgPT4gX2Fzc2V0cy5UcnlHZXRWYWx1ZShpZCwgb3V0IHZhciBhc3NldCkgPyBhc3NldCA6IG51bGw7CgogICAgcHVibGljIHZvaWQgU2F2ZShBc3NldCBhc3NldCkKICAgIHsKICAgICAgICBfYXNzZXRzW2Fzc2V0LklkXSA9IGFzc2V0OwogICAgfQp9Cg=="}, {"name": "AssetRepositoryTests.cs", "type": "binary", "mime": "application/octet-stream", "data_uri": "data:application/octet-stream;base64,dXNpbmcgRGFtLkNvcmUuQXNzZXRzOwp1c2luZyBYdW5pdDsKCm5hbWVzcGFjZSBEYW0uQ29yZS5UZXN0cy5Bc3NldHM7CgpwdWJsaWMgY2xhc3MgQXNzZXRSZXBvc2l0b3J5VGVzdHMKewogICAgW0ZhY3RdCiAgICBwdWJsaWMgdm9pZCBHZXRCeUlkX1JldHVybnNBc3NldEV4YWN0bHlBc1NhdmVkKCkKICAgIHsKICAgICAgICB2YXIgcmVwb3NpdG9yeSA9IG5ldyBBc3NldFJlcG9zaXRvcnkoQXJyYXkuRW1wdHk8QXNzZXQ+KCkpOwogICAgICAgIHZhciBhc3NldCA9IG5ldyBBc3NldCB7IElkID0gR3VpZC5OZXdHdWlkKCksIEZpbGVOYW1lID0gImxvZ28ucG5nIiwgQ2hlY2tzdW0gPSAiOUY4NkQwODE4ODRDN0Q2NSIgfTsKCiAgICAgICAgcmVwb3NpdG9yeS5TYXZlKGFzc2V0KTsKCiAgICAgICAgQXNzZXJ0LkVxdWFsKCI5Rjg2RDA4MTg4NEM3RDY1IiwgcmVwb3NpdG9yeS5HZXRCeUlkKGFzc2V0LklkKSEuQ2hlY2tzdW0pOwogICAgfQp9Cg=="}, {"name": "DuplicateDetector.cs", "type": "binary", "mime": "application/octet-stream", "data_uri": "data:application/octet-stream;base64,bmFtZXNwYWNlIERhbS5Db3JlLkFzc2V0czsKCnB1YmxpYyBjbGFzcyBEdXBsaWNhdGVEZXRlY3Rvcgp7CiAgICBwcml2YXRlIHJlYWRvbmx5IElBc3NldFJlcG9zaXRvcnkgX3JlcG9zaXRvcnk7CgogICAgcHVibGljIER1cGxpY2F0ZURldGVjdG9yKElBc3NldFJlcG9zaXRvcnkgcmVwb3NpdG9yeSkKICAgIHsKICAgICAgICBfcmVwb3NpdG9yeSA9IHJlcG9zaXRvcnk7CiAgICB9CgogICAgcHVibGljIGJvb2wgSXNEdXBsaWNhdGUoc3RyaW5nIGNoZWNrc3VtKQogICAgewogICAgICAgIHJldHVybiBfcmVwb3NpdG9yeS5BbGwoKS5BbnkoYSA9PiBhLkNoZWNrc3VtID09IGNoZWNrc3VtKTsKICAgIH0KfQo="}, {"name": "DuplicateDetectorTests.cs", "type": "binary", "mime": "application/octet-stream", "data_uri": "data:application/octet-stream;base64,dXNpbmcgRGFtLkNvcmUuQXNzZXRzOwp1c2luZyBYdW5pdDsKCm5hbWVzcGFjZSBEYW0uQ29yZS5UZXN0cy5Bc3NldHM7CgpwdWJsaWMgY2xhc3MgRHVwbGljYXRlRGV0ZWN0b3JUZXN0cwp7CiAgICBbRmFjdF0KICAgIHB1YmxpYyB2b2lkIElzRHVwbGljYXRlX1JldHVybnNUcnVlX1doZW5TYW1lQ2hlY2tzdW1FeGlzdHMoKQogICAgewogICAgICAgIHZhciBleGlzdGluZyA9IG5ldyBBc3NldCB7IElkID0gR3VpZC5OZXdHdWlkKCksIEZpbGVOYW1lID0gImhlcm8uanBnIiwgQ2hlY2tzdW0gPSAiQTFCMkMzRDQiIH07CiAgICAgICAgdmFyIGRldGVjdG9yID0gbmV3IER1cGxpY2F0ZURldGVjdG9yKG5ldyBBc3NldFJlcG9zaXRvcnkobmV3W10geyBleGlzdGluZyB9KSk7CgogICAgICAgIEFzc2VydC5UcnVlKGRldGVjdG9yLklzRHVwbGljYXRlKCJBMUIyQzNENCIpKTsKICAgIH0KCiAgICBbRmFjdF0KICAgIHB1YmxpYyB2b2lkIElzRHVwbGljYXRlX1JldHVybnNUcnVlX1doZW5DaGVja3N1bURpZmZlcnNPbmx5SW5MZXR0ZXJDYXNlKCkKICAgIHsKICAgICAgICB2YXIgZXhpc3RpbmcgPSBuZXcgQXNzZXQgeyBJZCA9IEd1aWQuTmV3R3VpZCgpLCBGaWxlTmFtZSA9ICJoZXJvLmpwZyIsIENoZWNrc3VtID0gImExYjJjM2Q0IiB9OwogICAgICAgIHZhciBkZXRlY3RvciA9IG5ldyBEdXBsaWNhdGVEZXRlY3RvcihuZXcgQXNzZXRSZXBvc2l0b3J5KG5ld1tdIHsgZXhpc3RpbmcgfSkpOwoKICAgICAgICBBc3NlcnQuVHJ1ZShkZXRlY3Rvci5Jc0R1cGxpY2F0ZSgiQTFCMkMzRDQiKSk7CiAgICB9CgogICAgW0ZhY3RdCiAgICBwdWJsaWMgdm9pZCBJc0R1cGxpY2F0ZV9SZXR1cm5zRmFsc2VfV2hlbk5vQXNzZXRIYXNUaGVDaGVja3N1bSgpCiAgICB7CiAgICAgICAgdmFyIGV4aXN0aW5nID0gbmV3IEFzc2V0IHsgSWQgPSBHdWlkLk5ld0d1aWQoKSwgRmlsZU5hbWUgPSAiaGVyby5qcGciLCBDaGVja3N1bSA9ICJhMWIyYzNkNCIgfTsKICAgICAgICB2YXIgZGV0ZWN0b3IgPSBuZXcgRHVwbGljYXRlRGV0ZWN0b3IobmV3IEFzc2V0UmVwb3NpdG9yeShuZXdbXSB7IGV4aXN0aW5nIH0pKTsKCiAgICAgICAgQXNzZXJ0LkZhbHNlKGRldGVjdG9yLklzRHVwbGljYXRlKCJmZmZmMDAwMCIpKTsKICAgIH0KfQo="}, {"name": "agent-change.diff", "type": "binary", "mime": "application/octet-stream", "data_uri": "data:application/octet-stream;base64,LS0tIGEvc3JjL0RhbS5Db3JlL0Fzc2V0cy9Bc3NldFJlcG9zaXRvcnkuY3MKKysrIGIvc3JjL0RhbS5Db3JlL0Fzc2V0cy9Bc3NldFJlcG9zaXRvcnkuY3MKQEAgLTE1LDYgKzE1LDcgQEAKIAogICAgIHB1YmxpYyB2b2lkIFNhdmUoQXNzZXQgYXNzZXQpCiAgICAgeworICAgICAgICBhc3NldC5DaGVja3N1bSA9IGFzc2V0LkNoZWNrc3VtLlRvTG93ZXIoKTsKICAgICAgICAgX2Fzc2V0c1thc3NldC5JZF0gPSBhc3NldDsKICAgICB9CiB9Ci0tLSBhL3NyYy9EYW0uQ29yZS9Bc3NldHMvRHVwbGljYXRlRGV0ZWN0b3IuY3MKKysrIGIvc3JjL0RhbS5Db3JlL0Fzc2V0cy9EdXBsaWNhdGVEZXRlY3Rvci5jcwpAQCAtMTEsNiArMTEsNiBAQAogCiAgICAgcHVibGljIGJvb2wgSXNEdXBsaWNhdGUoc3RyaW5nIGNoZWNrc3VtKQogICAgIHsKLSAgICAgICAgcmV0dXJuIF9yZXBvc2l0b3J5LkFsbCgpLkFueShhID0+IGEuQ2hlY2tzdW0gPT0gY2hlY2tzdW0pOworICAgICAgICByZXR1cm4gX3JlcG9zaXRvcnkuQWxsKCkuQW55KGEgPT4gYS5DaGVja3N1bSA9PSBjaGVja3N1bS5Ub0xvd2VyKCkpOwogICAgIH0KIH0K"}, {"name": "requirement.md", "type": "text", "content": "# Task 1: duplicate uploads are not detected\n\nUploading the same file twice is supposed to be flagged as a duplicate. The Mac client sends checksums as uppercase hex and the web client sends lowercase hex, so the same file uploaded from both clients is not detected.\n\nMake `DuplicateDetector.IsDuplicate` treat checksums that differ only in letter case as equal. The test `IsDuplicate_ReturnsTrue_WhenChecksumDiffersOnlyInLetterCase` is currently failing.\n\nDo not change the public API. Existing assets are loaded into `AssetRepository` through its constructor when the service starts.\n"}, {"name": "response.md", "type": "text", "content": "No, don't approve it. The agent is right that the target test passes now, but the diff breaks two tests that passed before, and it misses the real bug for assets that already exist.\n\nI checked this by running the suite in a scratch xUnit project. I had to add a minimal `IAssetRepository` because it isn't in the input files.\n\n- Before the diff: 3 pass, 1 fails (the target test).\n- After the agent's diff: 2 pass, 2 fail. `IsDuplicate_ReturnsTrue_WhenSameChecksumExists` and `GetById_ReturnsAssetExactlyAsSaved` now fail.\n- After the one-line fix below: 4 of 4 pass.\n\nVerdict: REJECT\n\n| # | Severity | Line / part | Problem | Fix |\n|---|---|---|---|---|\n| 1 | blocker | `DuplicateDetector.IsDuplicate`: `a.Checksum == checksum.ToLower()` | Only the incoming checksum is lowercased. A stored checksum is lowercase only if it went through `Save`. The requirement says existing assets are loaded through the constructor, and that path skips `Save`, so old Mac uploads keep their uppercase checksums. **Breaking input:** an existing asset with `\"A1B2C3D4\"` and `IsDuplicate(\"A1B2C3D4\")` now returns `false`. Before the change it returned `true`, so exact duplicates are no longer detected. `IsDuplicate_ReturnsTrue_WhenSameChecksumExists` fails. | Compare without regard to case on both sides: `string.Equals(a.Checksum, checksum, StringComparison.OrdinalIgnoreCase)` |\n| 2 | blocker | `AssetRepository.Save`: `asset.Checksum = asset.Checksum.ToLower();` | This is out of scope: the task only asks for a change to `IsDuplicate`. It also changes the data the repository stores and mutates the caller's `Asset` object. **Breaking input:** after saving `\"9F86D081884C7D65\"`, `GetById` returns `\"9f86d081884c7d65\"`. `GetById_ReturnsAssetExactlyAsSaved` fails. | Revert the `Save` change completely. |\n| 3 | major | Both `ToLower()` calls | A null checksum now throws `NullReferenceException` in both methods. `IsDuplicate(null)` used to return `false`, and `Save` with `Checksum = null` used to work. `ToLower()` also depends on the current culture; `ToLowerInvariant` or an ordinal comparison is the right choice for hex. `checksum.ToLower()` also runs again for every asset in the loop. | The `OrdinalIgnoreCase` comparison fixes all three: it handles null, ignores culture and doesn't allocate. |\n| 4 | minor | The agent's report | \"The failing test passes now\" is true but misleading, because the full suite went from 1 failure to 2. | Ask for the full suite result, not just the target test. |\n\nWhat passed:\n- Public API: no signatures changed.\n- Hallucination: none; every API used exists.\n- Complexity: still O(n) per check, as before.\n- Security: nothing relevant.\n\nThe fix is a one-line manual edit, which also shows you own the change in the assessment log. Revert `AssetRepository.cs` and change `DuplicateDetector.IsDuplicate` to:\n\n```csharp\nreturn _repository.All().Any(a => string.Equals(a.Checksum, checksum, StringComparison.OrdinalIgnoreCase));\n```\n\nFeedback prompt for the agent:\n\"Rejected: lowercasing in Save and only on the query side breaks exact matches for assets loaded through the constructor (stored \"A1B2C3D4\", IsDuplicate(\"A1B2C3D4\") now returns false). It also mutates stored data, which breaks GetById_ReturnsAssetExactlyAsSaved. Revert AssetRepository.Save. In DuplicateDetector.IsDuplicate only, compare with string.Equals(a.Checksum, checksum, StringComparison.OrdinalIgnoreCase). Keep the public API and stored checksums unchanged, run the full test suite (not just the target test), and add a test where the stored checksum is uppercase and the query is lowercase.\"\n"}], "grading": {"expectations": [{"text": "The review's verdict is REJECT, not ACCEPT and not ACCEPT WITH FIX", "passed": true, "evidence": "'Verdict: REJECT'."}, {"text": "The review identifies that lowercasing the checksum in AssetRepository.Save changes stored data (or mutates the saved Asset object) and that this is the wrong place for the fix", "passed": true, "evidence": "Finding 2 (blocker, AssetRepository.Save): 'This is out of scope: the task only asks for a change to IsDuplicate. It also changes the data the repository stores and mutates the caller's Asset object.' Fix: 'Revert the Save change completely.'"}, {"text": "The review gives a concrete breaking case in which an asset already stored with an uppercase checksum (loaded through the constructor, not Save) is no longer detected, for example IsDuplicate(\"A1B2C3D4\") returning false, or names IsDuplicate_ReturnsTrue_WhenSameChecksumExists or GetById_ReturnsAssetExactlyAsSaved as a test that now fails", "passed": true, "evidence": "Finding 1: 'an existing asset with \"A1B2C3D4\" and IsDuplicate(\"A1B2C3D4\") now returns false ... IsDuplicate_ReturnsTrue_WhenSameChecksumExists fails.' Also names GetById_ReturnsAssetExactlyAsSaved as failing."}, {"text": "The review recommends a case-insensitive comparison inside IsDuplicate (for example StringComparison.OrdinalIgnoreCase or StringComparer.OrdinalIgnoreCase) with Save left unchanged, and gives a one-line feedback prompt for the agent", "passed": true, "evidence": "Recommends 'string.Equals(a.Checksum, checksum, StringComparison.OrdinalIgnoreCase)' and 'Revert AssetRepository.cs'. Feedback prompt is one quoted paragraph: 'Rejected: lowercasing in Save ... Revert AssetRepository.Save. In DuplicateDetector.IsDuplicate only, compare with string.Equals(..., StringComparison.OrdinalIgnoreCase)...'"}], "summary": {"passed": 4, "failed": 0, "total": 4, "pass_rate": 1.0}, "timing": {"executor_duration_seconds": 167.4, "total_duration_seconds": 167.4, "total_tokens": 100175}, "eval_feedback": {"suggestions": [{"reason": "All four assertions pass for both configs; the case does not separate with_skill from old_skill (both ran the suite in a scratch project and found both broken tests)."}, {"assertion": "The review recommends a case-insensitive comparison inside IsDuplicate (for example StringComparison.OrdinalIgnoreCase or StringComparer.OrdinalIgnoreCase) with Save left unchanged, and gives a one-line feedback prompt for the agent", "reason": "'one-line' is ambiguous: old_skill's prompt is a single paragraph of five sentences, with_skill's is one sentence. Both were passed as single-line paragraphs; specify a sentence limit if brevity matters."}], "overall": "Assertions check the right substance but are non-discriminating between configs."}}}, {"id": "rejects-checksum-lowercased-on-save-with_skill", "prompt": "Coderbyte assessment, task 1. The in-IDE agent proposed agent-change.diff for the duplicate upload bug and says \"the failing test passes now\". The task text is in requirement.md and the current code and tests are next to it. I'm short on time, the agent wrote this and it looks fine to me, ok to approve?\n\nInput files: requirement.md, agent-change.diff, Asset.cs, AssetRepository.cs, DuplicateDetector.cs, AssetRepositoryTests.cs, DuplicateDetectorTests.cs", "eval_id": null, "outputs": [{"name": "Asset.cs", "type": "binary", "mime": "application/octet-stream", "data_uri": "data:application/octet-stream;base64,bmFtZXNwYWNlIERhbS5Db3JlLkFzc2V0czsKCnB1YmxpYyBjbGFzcyBBc3NldAp7CiAgICBwdWJsaWMgR3VpZCBJZCB7IGdldDsgc2V0OyB9CiAgICBwdWJsaWMgc3RyaW5nIEZpbGVOYW1lIHsgZ2V0OyBzZXQ7IH0gPSAiIjsKICAgIHB1YmxpYyBzdHJpbmcgQ2hlY2tzdW0geyBnZXQ7IHNldDsgfSA9ICIiOwp9Cg=="}, {"name": "AssetRepository.cs", "type": "binary", "mime": "application/octet-stream", "data_uri": "data:application/octet-stream;base64,bmFtZXNwYWNlIERhbS5Db3JlLkFzc2V0czsKCnB1YmxpYyBjbGFzcyBBc3NldFJlcG9zaXRvcnkgOiBJQXNzZXRSZXBvc2l0b3J5CnsKICAgIHByaXZhdGUgcmVhZG9ubHkgRGljdGlvbmFyeTxHdWlkLCBBc3NldD4gX2Fzc2V0czsKCiAgICBwdWJsaWMgQXNzZXRSZXBvc2l0b3J5KElFbnVtZXJhYmxlPEFzc2V0PiBleGlzdGluZykKICAgIHsKICAgICAgICBfYXNzZXRzID0gZXhpc3RpbmcuVG9EaWN0aW9uYXJ5KGEgPT4gYS5JZCk7CiAgICB9CgogICAgcHVibGljIElFbnVtZXJhYmxlPEFzc2V0PiBBbGwoKSA9PiBfYXNzZXRzLlZhbHVlczsKCiAgICBwdWJsaWMgQXNzZXQ/IEdldEJ5SWQoR3VpZCBpZCkgPT4gX2Fzc2V0cy5UcnlHZXRWYWx1ZShpZCwgb3V0IHZhciBhc3NldCkgPyBhc3NldCA6IG51bGw7CgogICAgcHVibGljIHZvaWQgU2F2ZShBc3NldCBhc3NldCkKICAgIHsKICAgICAgICBfYXNzZXRzW2Fzc2V0LklkXSA9IGFzc2V0OwogICAgfQp9Cg=="}, {"name": "AssetRepositoryTests.cs", "type": "binary", "mime": "application/octet-stream", "data_uri": "data:application/octet-stream;base64,dXNpbmcgRGFtLkNvcmUuQXNzZXRzOwp1c2luZyBYdW5pdDsKCm5hbWVzcGFjZSBEYW0uQ29yZS5UZXN0cy5Bc3NldHM7CgpwdWJsaWMgY2xhc3MgQXNzZXRSZXBvc2l0b3J5VGVzdHMKewogICAgW0ZhY3RdCiAgICBwdWJsaWMgdm9pZCBHZXRCeUlkX1JldHVybnNBc3NldEV4YWN0bHlBc1NhdmVkKCkKICAgIHsKICAgICAgICB2YXIgcmVwb3NpdG9yeSA9IG5ldyBBc3NldFJlcG9zaXRvcnkoQXJyYXkuRW1wdHk8QXNzZXQ+KCkpOwogICAgICAgIHZhciBhc3NldCA9IG5ldyBBc3NldCB7IElkID0gR3VpZC5OZXdHdWlkKCksIEZpbGVOYW1lID0gImxvZ28ucG5nIiwgQ2hlY2tzdW0gPSAiOUY4NkQwODE4ODRDN0Q2NSIgfTsKCiAgICAgICAgcmVwb3NpdG9yeS5TYXZlKGFzc2V0KTsKCiAgICAgICAgQXNzZXJ0LkVxdWFsKCI5Rjg2RDA4MTg4NEM3RDY1IiwgcmVwb3NpdG9yeS5HZXRCeUlkKGFzc2V0LklkKSEuQ2hlY2tzdW0pOwogICAgfQp9Cg=="}, {"name": "DuplicateDetector.cs", "type": "binary", "mime": "application/octet-stream", "data_uri": "data:application/octet-stream;base64,bmFtZXNwYWNlIERhbS5Db3JlLkFzc2V0czsKCnB1YmxpYyBjbGFzcyBEdXBsaWNhdGVEZXRlY3Rvcgp7CiAgICBwcml2YXRlIHJlYWRvbmx5IElBc3NldFJlcG9zaXRvcnkgX3JlcG9zaXRvcnk7CgogICAgcHVibGljIER1cGxpY2F0ZURldGVjdG9yKElBc3NldFJlcG9zaXRvcnkgcmVwb3NpdG9yeSkKICAgIHsKICAgICAgICBfcmVwb3NpdG9yeSA9IHJlcG9zaXRvcnk7CiAgICB9CgogICAgcHVibGljIGJvb2wgSXNEdXBsaWNhdGUoc3RyaW5nIGNoZWNrc3VtKQogICAgewogICAgICAgIHJldHVybiBfcmVwb3NpdG9yeS5BbGwoKS5BbnkoYSA9PiBhLkNoZWNrc3VtID09IGNoZWNrc3VtKTsKICAgIH0KfQo="}, {"name": "DuplicateDetectorTests.cs", "type": "binary", "mime": "application/octet-stream", "data_uri": "data:application/octet-stream;base64,dXNpbmcgRGFtLkNvcmUuQXNzZXRzOwp1c2luZyBYdW5pdDsKCm5hbWVzcGFjZSBEYW0uQ29yZS5UZXN0cy5Bc3NldHM7CgpwdWJsaWMgY2xhc3MgRHVwbGljYXRlRGV0ZWN0b3JUZXN0cwp7CiAgICBbRmFjdF0KICAgIHB1YmxpYyB2b2lkIElzRHVwbGljYXRlX1JldHVybnNUcnVlX1doZW5TYW1lQ2hlY2tzdW1FeGlzdHMoKQogICAgewogICAgICAgIHZhciBleGlzdGluZyA9IG5ldyBBc3NldCB7IElkID0gR3VpZC5OZXdHdWlkKCksIEZpbGVOYW1lID0gImhlcm8uanBnIiwgQ2hlY2tzdW0gPSAiQTFCMkMzRDQiIH07CiAgICAgICAgdmFyIGRldGVjdG9yID0gbmV3IER1cGxpY2F0ZURldGVjdG9yKG5ldyBBc3NldFJlcG9zaXRvcnkobmV3W10geyBleGlzdGluZyB9KSk7CgogICAgICAgIEFzc2VydC5UcnVlKGRldGVjdG9yLklzRHVwbGljYXRlKCJBMUIyQzNENCIpKTsKICAgIH0KCiAgICBbRmFjdF0KICAgIHB1YmxpYyB2b2lkIElzRHVwbGljYXRlX1JldHVybnNUcnVlX1doZW5DaGVja3N1bURpZmZlcnNPbmx5SW5MZXR0ZXJDYXNlKCkKICAgIHsKICAgICAgICB2YXIgZXhpc3RpbmcgPSBuZXcgQXNzZXQgeyBJZCA9IEd1aWQuTmV3R3VpZCgpLCBGaWxlTmFtZSA9ICJoZXJvLmpwZyIsIENoZWNrc3VtID0gImExYjJjM2Q0IiB9OwogICAgICAgIHZhciBkZXRlY3RvciA9IG5ldyBEdXBsaWNhdGVEZXRlY3RvcihuZXcgQXNzZXRSZXBvc2l0b3J5KG5ld1tdIHsgZXhpc3RpbmcgfSkpOwoKICAgICAgICBBc3NlcnQuVHJ1ZShkZXRlY3Rvci5Jc0R1cGxpY2F0ZSgiQTFCMkMzRDQiKSk7CiAgICB9CgogICAgW0ZhY3RdCiAgICBwdWJsaWMgdm9pZCBJc0R1cGxpY2F0ZV9SZXR1cm5zRmFsc2VfV2hlbk5vQXNzZXRIYXNUaGVDaGVja3N1bSgpCiAgICB7CiAgICAgICAgdmFyIGV4aXN0aW5nID0gbmV3IEFzc2V0IHsgSWQgPSBHdWlkLk5ld0d1aWQoKSwgRmlsZU5hbWUgPSAiaGVyby5qcGciLCBDaGVja3N1bSA9ICJhMWIyYzNkNCIgfTsKICAgICAgICB2YXIgZGV0ZWN0b3IgPSBuZXcgRHVwbGljYXRlRGV0ZWN0b3IobmV3IEFzc2V0UmVwb3NpdG9yeShuZXdbXSB7IGV4aXN0aW5nIH0pKTsKCiAgICAgICAgQXNzZXJ0LkZhbHNlKGRldGVjdG9yLklzRHVwbGljYXRlKCJmZmZmMDAwMCIpKTsKICAgIH0KfQo="}, {"name": "agent-change.diff", "type": "binary", "mime": "application/octet-stream", "data_uri": "data:application/octet-stream;base64,LS0tIGEvc3JjL0RhbS5Db3JlL0Fzc2V0cy9Bc3NldFJlcG9zaXRvcnkuY3MKKysrIGIvc3JjL0RhbS5Db3JlL0Fzc2V0cy9Bc3NldFJlcG9zaXRvcnkuY3MKQEAgLTE1LDYgKzE1LDcgQEAKIAogICAgIHB1YmxpYyB2b2lkIFNhdmUoQXNzZXQgYXNzZXQpCiAgICAgeworICAgICAgICBhc3NldC5DaGVja3N1bSA9IGFzc2V0LkNoZWNrc3VtLlRvTG93ZXIoKTsKICAgICAgICAgX2Fzc2V0c1thc3NldC5JZF0gPSBhc3NldDsKICAgICB9CiB9Ci0tLSBhL3NyYy9EYW0uQ29yZS9Bc3NldHMvRHVwbGljYXRlRGV0ZWN0b3IuY3MKKysrIGIvc3JjL0RhbS5Db3JlL0Fzc2V0cy9EdXBsaWNhdGVEZXRlY3Rvci5jcwpAQCAtMTEsNiArMTEsNiBAQAogCiAgICAgcHVibGljIGJvb2wgSXNEdXBsaWNhdGUoc3RyaW5nIGNoZWNrc3VtKQogICAgIHsKLSAgICAgICAgcmV0dXJuIF9yZXBvc2l0b3J5LkFsbCgpLkFueShhID0+IGEuQ2hlY2tzdW0gPT0gY2hlY2tzdW0pOworICAgICAgICByZXR1cm4gX3JlcG9zaXRvcnkuQWxsKCkuQW55KGEgPT4gYS5DaGVja3N1bSA9PSBjaGVja3N1bS5Ub0xvd2VyKCkpOwogICAgIH0KIH0K"}, {"name": "requirement.md", "type": "text", "content": "# Task 1: duplicate uploads are not detected\n\nUploading the same file twice is supposed to be flagged as a duplicate. The Mac client sends checksums as uppercase hex and the web client sends lowercase hex, so the same file uploaded from both clients is not detected.\n\nMake `DuplicateDetector.IsDuplicate` treat checksums that differ only in letter case as equal. The test `IsDuplicate_ReturnsTrue_WhenChecksumDiffersOnlyInLetterCase` is currently failing.\n\nDo not change the public API. Existing assets are loaded into `AssetRepository` through its constructor when the service starts.\n"}, {"name": "response.md", "type": "text", "content": "No, don't approve it. The agent is right that the case test passes now, but it didn't mention that the same change breaks two tests that passed before. I ran the suite before and after the diff to check.\n\n**Requirement:** `DuplicateDetector.IsDuplicate` treats checksums that differ only in letter case as equal, without changing the public API. That includes existing assets loaded through the `AssetRepository` constructor.\n**Verdict:** REJECT - the fix is in the wrong layer. It lowercases stored data on `Save`, but existing assets come in through the constructor and are never lowercased, so an uppercase checksum that already exists is no longer found. It also breaks two tests that passed before.\n\n| # | Severity | Where | Problem | Breaking input: actual vs expected | Fix |\n|---|---|---|---|---|---|\n| 1 | blocker | src/Dam.Core/Assets/DuplicateDetector.cs:14 | Only the incoming checksum is lowercased. Stored checksums are compared as they are, and assets loaded through the constructor never go through `Save`. | Existing `\"A1B2C3D4\"`, `IsDuplicate(\"A1B2C3D4\")`: **false** vs true. `IsDuplicate_ReturnsTrue_WhenSameChecksumExists` now fails. The real bug case fails too: existing Mac `\"A1B2C3D4\"` with web query `\"a1b2c3d4\"` gives false vs true. | `string.Equals(a.Checksum, checksum, StringComparison.OrdinalIgnoreCase)` |\n| 2 | blocker | src/Dam.Core/Assets/AssetRepository.cs:18 | `Save` now changes the stored data and the caller's `Asset` object. This puts the case handling in the persistence layer, which the requirement never asked to touch. | Save `\"9F86D081884C7D65\"`, then `GetById`: **\"9f86d081884c7d65\"** vs \"9F86D081884C7D65\". `GetById_ReturnsAssetExactlyAsSaved` now fails. | Revert this hunk; leave `Save` unchanged |\n| 3 | minor | src/Dam.Core/Assets/DuplicateDetector.cs:14 | `ToLower()` depends on the current culture and builds a new string for every asset compared | Hex digits A-F are safe from the Turkish-I problem, but the code runs `ToLower()` n times per call | Resolved by the `OrdinalIgnoreCase` compare in fix 1 |\n\n**Edge cases traced** (all run with `dotnet test`):\n- existing `\"a1b2c3d4\"`, query `\"A1B2C3D4\"` -> true (ok, the target test)\n- existing `\"A1B2C3D4\"`, query `\"A1B2C3D4\"` -> false (wrong, was true before the diff)\n- existing `\"A1B2C3D4\"`, query `\"a1b2c3d4\"` -> false (wrong)\n- `Save` then `Save` again with uppercase, query uppercase -> true (ok)\n- `Save(\"9F86...\")` then `GetById` -> lowercased (wrong, stored data changed)\n- existing `\"a1b2c3d4\"`, query `\"ffff0000\"` -> false (ok)\n\n**Test runs:**\n- Original code: 1 of 3 provided tests fails (the case test).\n- Agent diff: the case test passes, but `IsDuplicate_ReturnsTrue_WhenSameChecksumExists` and `GetById_ReturnsAssetExactlyAsSaved` now fail.\n- Only line 14 changed to `OrdinalIgnoreCase`, no change to `Save`: all tests pass, including my extra uppercase-existing case.\n\n**Checks passed:** hallucination, complexity, security. The agent did not edit any tests.\n**Not verified:**\n- `IsDuplicate(null)` with at least one stored asset would throw `NullReferenceException` under the agent diff, where it used to return false. The requirement doesn't say whether null is valid input.\n- `IAssetRepository` was not provided, so I wrote a minimal version for the test harness. The harness is in `outputs/verify/`, with `before/`, `after/` and `fixed/` folders.\n\n**Feedback prompt for the agent:**\n> Rejected: an existing asset with \"A1B2C3D4\" (loaded through the AssetRepository constructor) makes IsDuplicate(\"A1B2C3D4\") return false, and Save now lowercases stored checksums so GetById_ReturnsAssetExactlyAsSaved fails; revert the AssetRepository.Save change, in DuplicateDetector.IsDuplicate only compare with string.Equals(a.Checksum, checksum, StringComparison.OrdinalIgnoreCase), keep the signature and existing tests unchanged, and add a test where the existing checksum is \"A1B2C3D4\" and the query is \"a1b2c3d4\".\n\nSince you're short on time, the faster path is to reject the diff and make the one-line edit to `DuplicateDetector.cs:14` yourself. A manual fix also reads well in the assessment log as ownership. For the log, a reason you can use: \"Rejected: normalizes on save, so existing uppercase checksums loaded via the constructor are missed and two passing tests break; fixed with an OrdinalIgnoreCase compare in IsDuplicate.\"\n"}, {"name": "verify/after/Asset.cs", "type": "binary", "mime": "application/octet-stream", "data_uri": "data:application/octet-stream;base64,bmFtZXNwYWNlIERhbS5Db3JlLkFzc2V0czsKCnB1YmxpYyBjbGFzcyBBc3NldAp7CiAgICBwdWJsaWMgR3VpZCBJZCB7IGdldDsgc2V0OyB9CiAgICBwdWJsaWMgc3RyaW5nIEZpbGVOYW1lIHsgZ2V0OyBzZXQ7IH0gPSAiIjsKICAgIHB1YmxpYyBzdHJpbmcgQ2hlY2tzdW0geyBnZXQ7IHNldDsgfSA9ICIiOwp9Cg=="}, {"name": "verify/after/AssetRepository.cs", "type": "binary", "mime": "application/octet-stream", "data_uri": "data:application/octet-stream;base64,bmFtZXNwYWNlIERhbS5Db3JlLkFzc2V0czsKCnB1YmxpYyBjbGFzcyBBc3NldFJlcG9zaXRvcnkgOiBJQXNzZXRSZXBvc2l0b3J5CnsKICAgIHByaXZhdGUgcmVhZG9ubHkgRGljdGlvbmFyeTxHdWlkLCBBc3NldD4gX2Fzc2V0czsKCiAgICBwdWJsaWMgQXNzZXRSZXBvc2l0b3J5KElFbnVtZXJhYmxlPEFzc2V0PiBleGlzdGluZykKICAgIHsKICAgICAgICBfYXNzZXRzID0gZXhpc3RpbmcuVG9EaWN0aW9uYXJ5KGEgPT4gYS5JZCk7CiAgICB9CgogICAgcHVibGljIElFbnVtZXJhYmxlPEFzc2V0PiBBbGwoKSA9PiBfYXNzZXRzLlZhbHVlczsKCiAgICBwdWJsaWMgQXNzZXQ/IEdldEJ5SWQoR3VpZCBpZCkgPT4gX2Fzc2V0cy5UcnlHZXRWYWx1ZShpZCwgb3V0IHZhciBhc3NldCkgPyBhc3NldCA6IG51bGw7CgogICAgcHVibGljIHZvaWQgU2F2ZShBc3NldCBhc3NldCkKICAgIHsKICAgICAgICBhc3NldC5DaGVja3N1bSA9IGFzc2V0LkNoZWNrc3VtLlRvTG93ZXIoKTsKICAgICAgICBfYXNzZXRzW2Fzc2V0LklkXSA9IGFzc2V0OwogICAgfQp9Cg=="}, {"name": "verify/after/AssetRepositoryTests.cs", "type": "binary", "mime": "application/octet-stream", "data_uri": "data:application/octet-stream;base64,dXNpbmcgRGFtLkNvcmUuQXNzZXRzOwp1c2luZyBYdW5pdDsKCm5hbWVzcGFjZSBEYW0uQ29yZS5UZXN0cy5Bc3NldHM7CgpwdWJsaWMgY2xhc3MgQXNzZXRSZXBvc2l0b3J5VGVzdHMKewogICAgW0ZhY3RdCiAgICBwdWJsaWMgdm9pZCBHZXRCeUlkX1JldHVybnNBc3NldEV4YWN0bHlBc1NhdmVkKCkKICAgIHsKICAgICAgICB2YXIgcmVwb3NpdG9yeSA9IG5ldyBBc3NldFJlcG9zaXRvcnkoQXJyYXkuRW1wdHk8QXNzZXQ+KCkpOwogICAgICAgIHZhciBhc3NldCA9IG5ldyBBc3NldCB7IElkID0gR3VpZC5OZXdHdWlkKCksIEZpbGVOYW1lID0gImxvZ28ucG5nIiwgQ2hlY2tzdW0gPSAiOUY4NkQwODE4ODRDN0Q2NSIgfTsKCiAgICAgICAgcmVwb3NpdG9yeS5TYXZlKGFzc2V0KTsKCiAgICAgICAgQXNzZXJ0LkVxdWFsKCI5Rjg2RDA4MTg4NEM3RDY1IiwgcmVwb3NpdG9yeS5HZXRCeUlkKGFzc2V0LklkKSEuQ2hlY2tzdW0pOwogICAgfQp9Cg=="}, {"name": "verify/after/DuplicateDetector.cs", "type": "binary", "mime": "application/octet-stream", "data_uri": "data:application/octet-stream;base64,bmFtZXNwYWNlIERhbS5Db3JlLkFzc2V0czsKCnB1YmxpYyBjbGFzcyBEdXBsaWNhdGVEZXRlY3Rvcgp7CiAgICBwcml2YXRlIHJlYWRvbmx5IElBc3NldFJlcG9zaXRvcnkgX3JlcG9zaXRvcnk7CgogICAgcHVibGljIER1cGxpY2F0ZURldGVjdG9yKElBc3NldFJlcG9zaXRvcnkgcmVwb3NpdG9yeSkKICAgIHsKICAgICAgICBfcmVwb3NpdG9yeSA9IHJlcG9zaXRvcnk7CiAgICB9CgogICAgcHVibGljIGJvb2wgSXNEdXBsaWNhdGUoc3RyaW5nIGNoZWNrc3VtKQogICAgewogICAgICAgIHJldHVybiBfcmVwb3NpdG9yeS5BbGwoKS5BbnkoYSA9PiBhLkNoZWNrc3VtID09IGNoZWNrc3VtLlRvTG93ZXIoKSk7CiAgICB9Cn0K"}, {"name": "verify/after/DuplicateDetectorTests.cs", "type": "binary", "mime": "application/octet-stream", "data_uri": "data:application/octet-stream;base64,dXNpbmcgRGFtLkNvcmUuQXNzZXRzOwp1c2luZyBYdW5pdDsKCm5hbWVzcGFjZSBEYW0uQ29yZS5UZXN0cy5Bc3NldHM7CgpwdWJsaWMgY2xhc3MgRHVwbGljYXRlRGV0ZWN0b3JUZXN0cwp7CiAgICBbRmFjdF0KICAgIHB1YmxpYyB2b2lkIElzRHVwbGljYXRlX1JldHVybnNUcnVlX1doZW5TYW1lQ2hlY2tzdW1FeGlzdHMoKQogICAgewogICAgICAgIHZhciBleGlzdGluZyA9IG5ldyBBc3NldCB7IElkID0gR3VpZC5OZXdHdWlkKCksIEZpbGVOYW1lID0gImhlcm8uanBnIiwgQ2hlY2tzdW0gPSAiQTFCMkMzRDQiIH07CiAgICAgICAgdmFyIGRldGVjdG9yID0gbmV3IER1cGxpY2F0ZURldGVjdG9yKG5ldyBBc3NldFJlcG9zaXRvcnkobmV3W10geyBleGlzdGluZyB9KSk7CgogICAgICAgIEFzc2VydC5UcnVlKGRldGVjdG9yLklzRHVwbGljYXRlKCJBMUIyQzNENCIpKTsKICAgIH0KCiAgICBbRmFjdF0KICAgIHB1YmxpYyB2b2lkIElzRHVwbGljYXRlX1JldHVybnNUcnVlX1doZW5DaGVja3N1bURpZmZlcnNPbmx5SW5MZXR0ZXJDYXNlKCkKICAgIHsKICAgICAgICB2YXIgZXhpc3RpbmcgPSBuZXcgQXNzZXQgeyBJZCA9IEd1aWQuTmV3R3VpZCgpLCBGaWxlTmFtZSA9ICJoZXJvLmpwZyIsIENoZWNrc3VtID0gImExYjJjM2Q0IiB9OwogICAgICAgIHZhciBkZXRlY3RvciA9IG5ldyBEdXBsaWNhdGVEZXRlY3RvcihuZXcgQXNzZXRSZXBvc2l0b3J5KG5ld1tdIHsgZXhpc3RpbmcgfSkpOwoKICAgICAgICBBc3NlcnQuVHJ1ZShkZXRlY3Rvci5Jc0R1cGxpY2F0ZSgiQTFCMkMzRDQiKSk7CiAgICB9CgogICAgW0ZhY3RdCiAgICBwdWJsaWMgdm9pZCBJc0R1cGxpY2F0ZV9SZXR1cm5zRmFsc2VfV2hlbk5vQXNzZXRIYXNUaGVDaGVja3N1bSgpCiAgICB7CiAgICAgICAgdmFyIGV4aXN0aW5nID0gbmV3IEFzc2V0IHsgSWQgPSBHdWlkLk5ld0d1aWQoKSwgRmlsZU5hbWUgPSAiaGVyby5qcGciLCBDaGVja3N1bSA9ICJhMWIyYzNkNCIgfTsKICAgICAgICB2YXIgZGV0ZWN0b3IgPSBuZXcgRHVwbGljYXRlRGV0ZWN0b3IobmV3IEFzc2V0UmVwb3NpdG9yeShuZXdbXSB7IGV4aXN0aW5nIH0pKTsKCiAgICAgICAgQXNzZXJ0LkZhbHNlKGRldGVjdG9yLklzRHVwbGljYXRlKCJmZmZmMDAwMCIpKTsKICAgIH0KfQo="}, {"name": "verify/after/ExtraTests.cs", "type": "binary", "mime": "application/octet-stream", "data_uri": "data:application/octet-stream;base64,dXNpbmcgRGFtLkNvcmUuQXNzZXRzOwp1c2luZyBYdW5pdDsKCm5hbWVzcGFjZSBEYW0uQ29yZS5UZXN0cy5Bc3NldHM7CgpwdWJsaWMgY2xhc3MgRXh0cmFUZXN0cwp7CiAgICBbRmFjdF0KICAgIHB1YmxpYyB2b2lkIFByb2JlX0V4aXN0aW5nVXBwZXJjYXNlX1F1ZXJpZWRMb3dlcmNhc2UoKQogICAgewogICAgICAgIHZhciBleGlzdGluZyA9IG5ldyBBc3NldCB7IElkID0gR3VpZC5OZXdHdWlkKCksIENoZWNrc3VtID0gIkExQjJDM0Q0IiB9OwogICAgICAgIHZhciBkZXRlY3RvciA9IG5ldyBEdXBsaWNhdGVEZXRlY3RvcihuZXcgQXNzZXRSZXBvc2l0b3J5KG5ld1tdIHsgZXhpc3RpbmcgfSkpOwogICAgICAgIEFzc2VydC5UcnVlKGRldGVjdG9yLklzRHVwbGljYXRlKCJhMWIyYzNkNCIpKTsKICAgIH0KCiAgICBbRmFjdF0KICAgIHB1YmxpYyB2b2lkIFByb2JlX1NhdmVkVXBwZXJjYXNlX1F1ZXJpZWRVcHBlcmNhc2UoKQogICAgewogICAgICAgIHZhciByZXBvID0gbmV3IEFzc2V0UmVwb3NpdG9yeShBcnJheS5FbXB0eTxBc3NldD4oKSk7CiAgICAgICAgcmVwby5TYXZlKG5ldyBBc3NldCB7IElkID0gR3VpZC5OZXdHdWlkKCksIENoZWNrc3VtID0gIkExQjJDM0Q0IiB9KTsKICAgICAgICBBc3NlcnQuVHJ1ZShuZXcgRHVwbGljYXRlRGV0ZWN0b3IocmVwbykuSXNEdXBsaWNhdGUoIkExQjJDM0Q0IikpOwogICAgfQoKICAgIFtGYWN0XQogICAgcHVibGljIHZvaWQgUHJvYmVfTnVsbENoZWNrc3VtKCkKICAgIHsKICAgICAgICB2YXIgZGV0ZWN0b3IgPSBuZXcgRHVwbGljYXRlRGV0ZWN0b3IobmV3IEFzc2V0UmVwb3NpdG9yeShBcnJheS5FbXB0eTxBc3NldD4oKSkpOwogICAgICAgIEFzc2VydC5GYWxzZShkZXRlY3Rvci5Jc0R1cGxpY2F0ZShudWxsISkpOwogICAgfQp9Cg=="}, {"name": "verify/after/IAssetRepository.cs", "type": "binary", "mime": "application/octet-stream", "data_uri": "data:application/octet-stream;base64,bmFtZXNwYWNlIERhbS5Db3JlLkFzc2V0czsKCnB1YmxpYyBpbnRlcmZhY2UgSUFzc2V0UmVwb3NpdG9yeQp7CiAgICBJRW51bWVyYWJsZTxBc3NldD4gQWxsKCk7CiAgICBBc3NldD8gR2V0QnlJZChHdWlkIGlkKTsKICAgIHZvaWQgU2F2ZShBc3NldCBhc3NldCk7Cn0K"}, {"name": "verify/after/Verify.csproj", "type": "binary", "mime": "application/octet-stream", "data_uri": "data:application/octet-stream;base64,PFByb2plY3QgU2RrPSJNaWNyb3NvZnQuTkVULlNkayI+CiAgPFByb3BlcnR5R3JvdXA+CiAgICA8VGFyZ2V0RnJhbWV3b3JrPm5ldDExLjA8L1RhcmdldEZyYW1ld29yaz4KICAgIDxJbXBsaWNpdFVzaW5ncz5lbmFibGU8L0ltcGxpY2l0VXNpbmdzPgogICAgPE51bGxhYmxlPmVuYWJsZTwvTnVsbGFibGU+CiAgICA8SXNQYWNrYWJsZT5mYWxzZTwvSXNQYWNrYWJsZT4KICA8L1Byb3BlcnR5R3JvdXA+CiAgPEl0ZW1Hcm91cD4KICAgIDxQYWNrYWdlUmVmZXJlbmNlIEluY2x1ZGU9Ik1pY3Jvc29mdC5ORVQuVGVzdC5TZGsiIFZlcnNpb249IjE3LjExLjEiIC8+CiAgICA8UGFja2FnZVJlZmVyZW5jZSBJbmNsdWRlPSJ4dW5pdCIgVmVyc2lvbj0iMi45LjIiIC8+CiAgICA8UGFja2FnZVJlZmVyZW5jZSBJbmNsdWRlPSJ4dW5pdC5ydW5uZXIudmlzdWFsc3R1ZGlvIiBWZXJzaW9uPSIyLjguMiIgLz4KICA8L0l0ZW1Hcm91cD4KPC9Qcm9qZWN0Pgo="}, {"name": "verify/before/Asset.cs", "type": "binary", "mime": "application/octet-stream", "data_uri": "data:application/octet-stream;base64,bmFtZXNwYWNlIERhbS5Db3JlLkFzc2V0czsKCnB1YmxpYyBjbGFzcyBBc3NldAp7CiAgICBwdWJsaWMgR3VpZCBJZCB7IGdldDsgc2V0OyB9CiAgICBwdWJsaWMgc3RyaW5nIEZpbGVOYW1lIHsgZ2V0OyBzZXQ7IH0gPSAiIjsKICAgIHB1YmxpYyBzdHJpbmcgQ2hlY2tzdW0geyBnZXQ7IHNldDsgfSA9ICIiOwp9Cg=="}, {"name": "verify/before/AssetRepository.cs", "type": "binary", "mime": "application/octet-stream", "data_uri": "data:application/octet-stream;base64,bmFtZXNwYWNlIERhbS5Db3JlLkFzc2V0czsKCnB1YmxpYyBjbGFzcyBBc3NldFJlcG9zaXRvcnkgOiBJQXNzZXRSZXBvc2l0b3J5CnsKICAgIHByaXZhdGUgcmVhZG9ubHkgRGljdGlvbmFyeTxHdWlkLCBBc3NldD4gX2Fzc2V0czsKCiAgICBwdWJsaWMgQXNzZXRSZXBvc2l0b3J5KElFbnVtZXJhYmxlPEFzc2V0PiBleGlzdGluZykKICAgIHsKICAgICAgICBfYXNzZXRzID0gZXhpc3RpbmcuVG9EaWN0aW9uYXJ5KGEgPT4gYS5JZCk7CiAgICB9CgogICAgcHVibGljIElFbnVtZXJhYmxlPEFzc2V0PiBBbGwoKSA9PiBfYXNzZXRzLlZhbHVlczsKCiAgICBwdWJsaWMgQXNzZXQ/IEdldEJ5SWQoR3VpZCBpZCkgPT4gX2Fzc2V0cy5UcnlHZXRWYWx1ZShpZCwgb3V0IHZhciBhc3NldCkgPyBhc3NldCA6IG51bGw7CgogICAgcHVibGljIHZvaWQgU2F2ZShBc3NldCBhc3NldCkKICAgIHsKICAgICAgICBfYXNzZXRzW2Fzc2V0LklkXSA9IGFzc2V0OwogICAgfQp9Cg=="}, {"name": "verify/before/AssetRepositoryTests.cs", "type": "binary", "mime": "application/octet-stream", "data_uri": "data:application/octet-stream;base64,dXNpbmcgRGFtLkNvcmUuQXNzZXRzOwp1c2luZyBYdW5pdDsKCm5hbWVzcGFjZSBEYW0uQ29yZS5UZXN0cy5Bc3NldHM7CgpwdWJsaWMgY2xhc3MgQXNzZXRSZXBvc2l0b3J5VGVzdHMKewogICAgW0ZhY3RdCiAgICBwdWJsaWMgdm9pZCBHZXRCeUlkX1JldHVybnNBc3NldEV4YWN0bHlBc1NhdmVkKCkKICAgIHsKICAgICAgICB2YXIgcmVwb3NpdG9yeSA9IG5ldyBBc3NldFJlcG9zaXRvcnkoQXJyYXkuRW1wdHk8QXNzZXQ+KCkpOwogICAgICAgIHZhciBhc3NldCA9IG5ldyBBc3NldCB7IElkID0gR3VpZC5OZXdHdWlkKCksIEZpbGVOYW1lID0gImxvZ28ucG5nIiwgQ2hlY2tzdW0gPSAiOUY4NkQwODE4ODRDN0Q2NSIgfTsKCiAgICAgICAgcmVwb3NpdG9yeS5TYXZlKGFzc2V0KTsKCiAgICAgICAgQXNzZXJ0LkVxdWFsKCI5Rjg2RDA4MTg4NEM3RDY1IiwgcmVwb3NpdG9yeS5HZXRCeUlkKGFzc2V0LklkKSEuQ2hlY2tzdW0pOwogICAgfQp9Cg=="}, {"name": "verify/before/DuplicateDetector.cs", "type": "binary", "mime": "application/octet-stream", "data_uri": "data:application/octet-stream;base64,bmFtZXNwYWNlIERhbS5Db3JlLkFzc2V0czsKCnB1YmxpYyBjbGFzcyBEdXBsaWNhdGVEZXRlY3Rvcgp7CiAgICBwcml2YXRlIHJlYWRvbmx5IElBc3NldFJlcG9zaXRvcnkgX3JlcG9zaXRvcnk7CgogICAgcHVibGljIER1cGxpY2F0ZURldGVjdG9yKElBc3NldFJlcG9zaXRvcnkgcmVwb3NpdG9yeSkKICAgIHsKICAgICAgICBfcmVwb3NpdG9yeSA9IHJlcG9zaXRvcnk7CiAgICB9CgogICAgcHVibGljIGJvb2wgSXNEdXBsaWNhdGUoc3RyaW5nIGNoZWNrc3VtKQogICAgewogICAgICAgIHJldHVybiBfcmVwb3NpdG9yeS5BbGwoKS5BbnkoYSA9PiBhLkNoZWNrc3VtID09IGNoZWNrc3VtKTsKICAgIH0KfQo="}, {"name": "verify/before/DuplicateDetectorTests.cs", "type": "binary", "mime": "application/octet-stream", "data_uri": "data:application/octet-stream;base64,dXNpbmcgRGFtLkNvcmUuQXNzZXRzOwp1c2luZyBYdW5pdDsKCm5hbWVzcGFjZSBEYW0uQ29yZS5UZXN0cy5Bc3NldHM7CgpwdWJsaWMgY2xhc3MgRHVwbGljYXRlRGV0ZWN0b3JUZXN0cwp7CiAgICBbRmFjdF0KICAgIHB1YmxpYyB2b2lkIElzRHVwbGljYXRlX1JldHVybnNUcnVlX1doZW5TYW1lQ2hlY2tzdW1FeGlzdHMoKQogICAgewogICAgICAgIHZhciBleGlzdGluZyA9IG5ldyBBc3NldCB7IElkID0gR3VpZC5OZXdHdWlkKCksIEZpbGVOYW1lID0gImhlcm8uanBnIiwgQ2hlY2tzdW0gPSAiQTFCMkMzRDQiIH07CiAgICAgICAgdmFyIGRldGVjdG9yID0gbmV3IER1cGxpY2F0ZURldGVjdG9yKG5ldyBBc3NldFJlcG9zaXRvcnkobmV3W10geyBleGlzdGluZyB9KSk7CgogICAgICAgIEFzc2VydC5UcnVlKGRldGVjdG9yLklzRHVwbGljYXRlKCJBMUIyQzNENCIpKTsKICAgIH0KCiAgICBbRmFjdF0KICAgIHB1YmxpYyB2b2lkIElzRHVwbGljYXRlX1JldHVybnNUcnVlX1doZW5DaGVja3N1bURpZmZlcnNPbmx5SW5MZXR0ZXJDYXNlKCkKICAgIHsKICAgICAgICB2YXIgZXhpc3RpbmcgPSBuZXcgQXNzZXQgeyBJZCA9IEd1aWQuTmV3R3VpZCgpLCBGaWxlTmFtZSA9ICJoZXJvLmpwZyIsIENoZWNrc3VtID0gImExYjJjM2Q0IiB9OwogICAgICAgIHZhciBkZXRlY3RvciA9IG5ldyBEdXBsaWNhdGVEZXRlY3RvcihuZXcgQXNzZXRSZXBvc2l0b3J5KG5ld1tdIHsgZXhpc3RpbmcgfSkpOwoKICAgICAgICBBc3NlcnQuVHJ1ZShkZXRlY3Rvci5Jc0R1cGxpY2F0ZSgiQTFCMkMzRDQiKSk7CiAgICB9CgogICAgW0ZhY3RdCiAgICBwdWJsaWMgdm9pZCBJc0R1cGxpY2F0ZV9SZXR1cm5zRmFsc2VfV2hlbk5vQXNzZXRIYXNUaGVDaGVja3N1bSgpCiAgICB7CiAgICAgICAgdmFyIGV4aXN0aW5nID0gbmV3IEFzc2V0IHsgSWQgPSBHdWlkLk5ld0d1aWQoKSwgRmlsZU5hbWUgPSAiaGVyby5qcGciLCBDaGVja3N1bSA9ICJhMWIyYzNkNCIgfTsKICAgICAgICB2YXIgZGV0ZWN0b3IgPSBuZXcgRHVwbGljYXRlRGV0ZWN0b3IobmV3IEFzc2V0UmVwb3NpdG9yeShuZXdbXSB7IGV4aXN0aW5nIH0pKTsKCiAgICAgICAgQXNzZXJ0LkZhbHNlKGRldGVjdG9yLklzRHVwbGljYXRlKCJmZmZmMDAwMCIpKTsKICAgIH0KfQo="}, {"name": "verify/before/ExtraTests.cs", "type": "binary", "mime": "application/octet-stream", "data_uri": "data:application/octet-stream;base64,dXNpbmcgRGFtLkNvcmUuQXNzZXRzOwp1c2luZyBYdW5pdDsKCm5hbWVzcGFjZSBEYW0uQ29yZS5UZXN0cy5Bc3NldHM7CgpwdWJsaWMgY2xhc3MgRXh0cmFUZXN0cwp7CiAgICBbRmFjdF0KICAgIHB1YmxpYyB2b2lkIFByb2JlX0V4aXN0aW5nVXBwZXJjYXNlX1F1ZXJpZWRMb3dlcmNhc2UoKQogICAgewogICAgICAgIHZhciBleGlzdGluZyA9IG5ldyBBc3NldCB7IElkID0gR3VpZC5OZXdHdWlkKCksIENoZWNrc3VtID0gIkExQjJDM0Q0IiB9OwogICAgICAgIHZhciBkZXRlY3RvciA9IG5ldyBEdXBsaWNhdGVEZXRlY3RvcihuZXcgQXNzZXRSZXBvc2l0b3J5KG5ld1tdIHsgZXhpc3RpbmcgfSkpOwogICAgICAgIEFzc2VydC5UcnVlKGRldGVjdG9yLklzRHVwbGljYXRlKCJhMWIyYzNkNCIpKTsKICAgIH0KCiAgICBbRmFjdF0KICAgIHB1YmxpYyB2b2lkIFByb2JlX1NhdmVkVXBwZXJjYXNlX1F1ZXJpZWRVcHBlcmNhc2UoKQogICAgewogICAgICAgIHZhciByZXBvID0gbmV3IEFzc2V0UmVwb3NpdG9yeShBcnJheS5FbXB0eTxBc3NldD4oKSk7CiAgICAgICAgcmVwby5TYXZlKG5ldyBBc3NldCB7IElkID0gR3VpZC5OZXdHdWlkKCksIENoZWNrc3VtID0gIkExQjJDM0Q0IiB9KTsKICAgICAgICBBc3NlcnQuVHJ1ZShuZXcgRHVwbGljYXRlRGV0ZWN0b3IocmVwbykuSXNEdXBsaWNhdGUoIkExQjJDM0Q0IikpOwogICAgfQoKICAgIFtGYWN0XQogICAgcHVibGljIHZvaWQgUHJvYmVfTnVsbENoZWNrc3VtKCkKICAgIHsKICAgICAgICB2YXIgZGV0ZWN0b3IgPSBuZXcgRHVwbGljYXRlRGV0ZWN0b3IobmV3IEFzc2V0UmVwb3NpdG9yeShBcnJheS5FbXB0eTxBc3NldD4oKSkpOwogICAgICAgIEFzc2VydC5GYWxzZShkZXRlY3Rvci5Jc0R1cGxpY2F0ZShudWxsISkpOwogICAgfQp9Cg=="}, {"name": "verify/before/IAssetRepository.cs", "type": "binary", "mime": "application/octet-stream", "data_uri": "data:application/octet-stream;base64,bmFtZXNwYWNlIERhbS5Db3JlLkFzc2V0czsKCnB1YmxpYyBpbnRlcmZhY2UgSUFzc2V0UmVwb3NpdG9yeQp7CiAgICBJRW51bWVyYWJsZTxBc3NldD4gQWxsKCk7CiAgICBBc3NldD8gR2V0QnlJZChHdWlkIGlkKTsKICAgIHZvaWQgU2F2ZShBc3NldCBhc3NldCk7Cn0K"}, {"name": "verify/before/Verify.csproj", "type": "binary", "mime": "application/octet-stream", "data_uri": "data:application/octet-stream;base64,PFByb2plY3QgU2RrPSJNaWNyb3NvZnQuTkVULlNkayI+CiAgPFByb3BlcnR5R3JvdXA+CiAgICA8VGFyZ2V0RnJhbWV3b3JrPm5ldDExLjA8L1RhcmdldEZyYW1ld29yaz4KICAgIDxJbXBsaWNpdFVzaW5ncz5lbmFibGU8L0ltcGxpY2l0VXNpbmdzPgogICAgPE51bGxhYmxlPmVuYWJsZTwvTnVsbGFibGU+CiAgICA8SXNQYWNrYWJsZT5mYWxzZTwvSXNQYWNrYWJsZT4KICA8L1Byb3BlcnR5R3JvdXA+CiAgPEl0ZW1Hcm91cD4KICAgIDxQYWNrYWdlUmVmZXJlbmNlIEluY2x1ZGU9Ik1pY3Jvc29mdC5ORVQuVGVzdC5TZGsiIFZlcnNpb249IjE3LjExLjEiIC8+CiAgICA8UGFja2FnZVJlZmVyZW5jZSBJbmNsdWRlPSJ4dW5pdCIgVmVyc2lvbj0iMi45LjIiIC8+CiAgICA8UGFja2FnZVJlZmVyZW5jZSBJbmNsdWRlPSJ4dW5pdC5ydW5uZXIudmlzdWFsc3R1ZGlvIiBWZXJzaW9uPSIyLjguMiIgLz4KICA8L0l0ZW1Hcm91cD4KPC9Qcm9qZWN0Pgo="}, {"name": "verify/fixed/Asset.cs", "type": "binary", "mime": "application/octet-stream", "data_uri": "data:application/octet-stream;base64,bmFtZXNwYWNlIERhbS5Db3JlLkFzc2V0czsKCnB1YmxpYyBjbGFzcyBBc3NldAp7CiAgICBwdWJsaWMgR3VpZCBJZCB7IGdldDsgc2V0OyB9CiAgICBwdWJsaWMgc3RyaW5nIEZpbGVOYW1lIHsgZ2V0OyBzZXQ7IH0gPSAiIjsKICAgIHB1YmxpYyBzdHJpbmcgQ2hlY2tzdW0geyBnZXQ7IHNldDsgfSA9ICIiOwp9Cg=="}, {"name": "verify/fixed/AssetRepository.cs", "type": "binary", "mime": "application/octet-stream", "data_uri": "data:application/octet-stream;base64,bmFtZXNwYWNlIERhbS5Db3JlLkFzc2V0czsKCnB1YmxpYyBjbGFzcyBBc3NldFJlcG9zaXRvcnkgOiBJQXNzZXRSZXBvc2l0b3J5CnsKICAgIHByaXZhdGUgcmVhZG9ubHkgRGljdGlvbmFyeTxHdWlkLCBBc3NldD4gX2Fzc2V0czsKCiAgICBwdWJsaWMgQXNzZXRSZXBvc2l0b3J5KElFbnVtZXJhYmxlPEFzc2V0PiBleGlzdGluZykKICAgIHsKICAgICAgICBfYXNzZXRzID0gZXhpc3RpbmcuVG9EaWN0aW9uYXJ5KGEgPT4gYS5JZCk7CiAgICB9CgogICAgcHVibGljIElFbnVtZXJhYmxlPEFzc2V0PiBBbGwoKSA9PiBfYXNzZXRzLlZhbHVlczsKCiAgICBwdWJsaWMgQXNzZXQ/IEdldEJ5SWQoR3VpZCBpZCkgPT4gX2Fzc2V0cy5UcnlHZXRWYWx1ZShpZCwgb3V0IHZhciBhc3NldCkgPyBhc3NldCA6IG51bGw7CgogICAgcHVibGljIHZvaWQgU2F2ZShBc3NldCBhc3NldCkKICAgIHsKICAgICAgICBfYXNzZXRzW2Fzc2V0LklkXSA9IGFzc2V0OwogICAgfQp9Cg=="}, {"name": "verify/fixed/AssetRepositoryTests.cs", "type": "binary", "mime": "application/octet-stream", "data_uri": "data:application/octet-stream;base64,dXNpbmcgRGFtLkNvcmUuQXNzZXRzOwp1c2luZyBYdW5pdDsKCm5hbWVzcGFjZSBEYW0uQ29yZS5UZXN0cy5Bc3NldHM7CgpwdWJsaWMgY2xhc3MgQXNzZXRSZXBvc2l0b3J5VGVzdHMKewogICAgW0ZhY3RdCiAgICBwdWJsaWMgdm9pZCBHZXRCeUlkX1JldHVybnNBc3NldEV4YWN0bHlBc1NhdmVkKCkKICAgIHsKICAgICAgICB2YXIgcmVwb3NpdG9yeSA9IG5ldyBBc3NldFJlcG9zaXRvcnkoQXJyYXkuRW1wdHk8QXNzZXQ+KCkpOwogICAgICAgIHZhciBhc3NldCA9IG5ldyBBc3NldCB7IElkID0gR3VpZC5OZXdHdWlkKCksIEZpbGVOYW1lID0gImxvZ28ucG5nIiwgQ2hlY2tzdW0gPSAiOUY4NkQwODE4ODRDN0Q2NSIgfTsKCiAgICAgICAgcmVwb3NpdG9yeS5TYXZlKGFzc2V0KTsKCiAgICAgICAgQXNzZXJ0LkVxdWFsKCI5Rjg2RDA4MTg4NEM3RDY1IiwgcmVwb3NpdG9yeS5HZXRCeUlkKGFzc2V0LklkKSEuQ2hlY2tzdW0pOwogICAgfQp9Cg=="}, {"name": "verify/fixed/DuplicateDetector.cs", "type": "binary", "mime": "application/octet-stream", "data_uri": "data:application/octet-stream;base64,bmFtZXNwYWNlIERhbS5Db3JlLkFzc2V0czsKCnB1YmxpYyBjbGFzcyBEdXBsaWNhdGVEZXRlY3Rvcgp7CiAgICBwcml2YXRlIHJlYWRvbmx5IElBc3NldFJlcG9zaXRvcnkgX3JlcG9zaXRvcnk7CgogICAgcHVibGljIER1cGxpY2F0ZURldGVjdG9yKElBc3NldFJlcG9zaXRvcnkgcmVwb3NpdG9yeSkKICAgIHsKICAgICAgICBfcmVwb3NpdG9yeSA9IHJlcG9zaXRvcnk7CiAgICB9CgogICAgcHVibGljIGJvb2wgSXNEdXBsaWNhdGUoc3RyaW5nIGNoZWNrc3VtKQogICAgewogICAgICAgIHJldHVybiBfcmVwb3NpdG9yeS5BbGwoKS5BbnkoYSA9PiBzdHJpbmcuRXF1YWxzKGEuQ2hlY2tzdW0sIGNoZWNrc3VtLCBTdHJpbmdDb21wYXJpc29uLk9yZGluYWxJZ25vcmVDYXNlKSk7CiAgICB9Cn0K"}, {"name": "verify/fixed/DuplicateDetectorTests.cs", "type": "binary", "mime": "application/octet-stream", "data_uri": "data:application/octet-stream;base64,dXNpbmcgRGFtLkNvcmUuQXNzZXRzOwp1c2luZyBYdW5pdDsKCm5hbWVzcGFjZSBEYW0uQ29yZS5UZXN0cy5Bc3NldHM7CgpwdWJsaWMgY2xhc3MgRHVwbGljYXRlRGV0ZWN0b3JUZXN0cwp7CiAgICBbRmFjdF0KICAgIHB1YmxpYyB2b2lkIElzRHVwbGljYXRlX1JldHVybnNUcnVlX1doZW5TYW1lQ2hlY2tzdW1FeGlzdHMoKQogICAgewogICAgICAgIHZhciBleGlzdGluZyA9IG5ldyBBc3NldCB7IElkID0gR3VpZC5OZXdHdWlkKCksIEZpbGVOYW1lID0gImhlcm8uanBnIiwgQ2hlY2tzdW0gPSAiQTFCMkMzRDQiIH07CiAgICAgICAgdmFyIGRldGVjdG9yID0gbmV3IER1cGxpY2F0ZURldGVjdG9yKG5ldyBBc3NldFJlcG9zaXRvcnkobmV3W10geyBleGlzdGluZyB9KSk7CgogICAgICAgIEFzc2VydC5UcnVlKGRldGVjdG9yLklzRHVwbGljYXRlKCJBMUIyQzNENCIpKTsKICAgIH0KCiAgICBbRmFjdF0KICAgIHB1YmxpYyB2b2lkIElzRHVwbGljYXRlX1JldHVybnNUcnVlX1doZW5DaGVja3N1bURpZmZlcnNPbmx5SW5MZXR0ZXJDYXNlKCkKICAgIHsKICAgICAgICB2YXIgZXhpc3RpbmcgPSBuZXcgQXNzZXQgeyBJZCA9IEd1aWQuTmV3R3VpZCgpLCBGaWxlTmFtZSA9ICJoZXJvLmpwZyIsIENoZWNrc3VtID0gImExYjJjM2Q0IiB9OwogICAgICAgIHZhciBkZXRlY3RvciA9IG5ldyBEdXBsaWNhdGVEZXRlY3RvcihuZXcgQXNzZXRSZXBvc2l0b3J5KG5ld1tdIHsgZXhpc3RpbmcgfSkpOwoKICAgICAgICBBc3NlcnQuVHJ1ZShkZXRlY3Rvci5Jc0R1cGxpY2F0ZSgiQTFCMkMzRDQiKSk7CiAgICB9CgogICAgW0ZhY3RdCiAgICBwdWJsaWMgdm9pZCBJc0R1cGxpY2F0ZV9SZXR1cm5zRmFsc2VfV2hlbk5vQXNzZXRIYXNUaGVDaGVja3N1bSgpCiAgICB7CiAgICAgICAgdmFyIGV4aXN0aW5nID0gbmV3IEFzc2V0IHsgSWQgPSBHdWlkLk5ld0d1aWQoKSwgRmlsZU5hbWUgPSAiaGVyby5qcGciLCBDaGVja3N1bSA9ICJhMWIyYzNkNCIgfTsKICAgICAgICB2YXIgZGV0ZWN0b3IgPSBuZXcgRHVwbGljYXRlRGV0ZWN0b3IobmV3IEFzc2V0UmVwb3NpdG9yeShuZXdbXSB7IGV4aXN0aW5nIH0pKTsKCiAgICAgICAgQXNzZXJ0LkZhbHNlKGRldGVjdG9yLklzRHVwbGljYXRlKCJmZmZmMDAwMCIpKTsKICAgIH0KfQo="}, {"name": "verify/fixed/ExtraTests.cs", "type": "binary", "mime": "application/octet-stream", "data_uri": "data:application/octet-stream;base64,dXNpbmcgRGFtLkNvcmUuQXNzZXRzOwp1c2luZyBYdW5pdDsKCm5hbWVzcGFjZSBEYW0uQ29yZS5UZXN0cy5Bc3NldHM7CgpwdWJsaWMgY2xhc3MgRXh0cmFUZXN0cwp7CiAgICBbRmFjdF0KICAgIHB1YmxpYyB2b2lkIFByb2JlX0V4aXN0aW5nVXBwZXJjYXNlX1F1ZXJpZWRMb3dlcmNhc2UoKQogICAgewogICAgICAgIHZhciBleGlzdGluZyA9IG5ldyBBc3NldCB7IElkID0gR3VpZC5OZXdHdWlkKCksIENoZWNrc3VtID0gIkExQjJDM0Q0IiB9OwogICAgICAgIHZhciBkZXRlY3RvciA9IG5ldyBEdXBsaWNhdGVEZXRlY3RvcihuZXcgQXNzZXRSZXBvc2l0b3J5KG5ld1tdIHsgZXhpc3RpbmcgfSkpOwogICAgICAgIEFzc2VydC5UcnVlKGRldGVjdG9yLklzRHVwbGljYXRlKCJhMWIyYzNkNCIpKTsKICAgIH0KCiAgICBbRmFjdF0KICAgIHB1YmxpYyB2b2lkIFByb2JlX1NhdmVkVXBwZXJjYXNlX1F1ZXJpZWRVcHBlcmNhc2UoKQogICAgewogICAgICAgIHZhciByZXBvID0gbmV3IEFzc2V0UmVwb3NpdG9yeShBcnJheS5FbXB0eTxBc3NldD4oKSk7CiAgICAgICAgcmVwby5TYXZlKG5ldyBBc3NldCB7IElkID0gR3VpZC5OZXdHdWlkKCksIENoZWNrc3VtID0gIkExQjJDM0Q0IiB9KTsKICAgICAgICBBc3NlcnQuVHJ1ZShuZXcgRHVwbGljYXRlRGV0ZWN0b3IocmVwbykuSXNEdXBsaWNhdGUoIkExQjJDM0Q0IikpOwogICAgfQoKICAgIFtGYWN0XQogICAgcHVibGljIHZvaWQgUHJvYmVfTnVsbENoZWNrc3VtKCkKICAgIHsKICAgICAgICB2YXIgZGV0ZWN0b3IgPSBuZXcgRHVwbGljYXRlRGV0ZWN0b3IobmV3IEFzc2V0UmVwb3NpdG9yeShBcnJheS5FbXB0eTxBc3NldD4oKSkpOwogICAgICAgIEFzc2VydC5GYWxzZShkZXRlY3Rvci5Jc0R1cGxpY2F0ZShudWxsISkpOwogICAgfQp9Cg=="}, {"name": "verify/fixed/IAssetRepository.cs", "type": "binary", "mime": "application/octet-stream", "data_uri": "data:application/octet-stream;base64,bmFtZXNwYWNlIERhbS5Db3JlLkFzc2V0czsKCnB1YmxpYyBpbnRlcmZhY2UgSUFzc2V0UmVwb3NpdG9yeQp7CiAgICBJRW51bWVyYWJsZTxBc3NldD4gQWxsKCk7CiAgICBBc3NldD8gR2V0QnlJZChHdWlkIGlkKTsKICAgIHZvaWQgU2F2ZShBc3NldCBhc3NldCk7Cn0K"}, {"name": "verify/fixed/Verify.csproj", "type": "binary", "mime": "application/octet-stream", "data_uri": "data:application/octet-stream;base64,PFByb2plY3QgU2RrPSJNaWNyb3NvZnQuTkVULlNkayI+CiAgPFByb3BlcnR5R3JvdXA+CiAgICA8VGFyZ2V0RnJhbWV3b3JrPm5ldDExLjA8L1RhcmdldEZyYW1ld29yaz4KICAgIDxJbXBsaWNpdFVzaW5ncz5lbmFibGU8L0ltcGxpY2l0VXNpbmdzPgogICAgPE51bGxhYmxlPmVuYWJsZTwvTnVsbGFibGU+CiAgICA8SXNQYWNrYWJsZT5mYWxzZTwvSXNQYWNrYWJsZT4KICA8L1Byb3BlcnR5R3JvdXA+CiAgPEl0ZW1Hcm91cD4KICAgIDxQYWNrYWdlUmVmZXJlbmNlIEluY2x1ZGU9Ik1pY3Jvc29mdC5ORVQuVGVzdC5TZGsiIFZlcnNpb249IjE3LjExLjEiIC8+CiAgICA8UGFja2FnZVJlZmVyZW5jZSBJbmNsdWRlPSJ4dW5pdCIgVmVyc2lvbj0iMi45LjIiIC8+CiAgICA8UGFja2FnZVJlZmVyZW5jZSBJbmNsdWRlPSJ4dW5pdC5ydW5uZXIudmlzdWFsc3R1ZGlvIiBWZXJzaW9uPSIyLjguMiIgLz4KICA8L0l0ZW1Hcm91cD4KPC9Qcm9qZWN0Pgo="}], "grading": {"expectations": [{"text": "The review's verdict is REJECT, not ACCEPT and not ACCEPT WITH FIX", "passed": true, "evidence": "'**Verdict:** REJECT - the fix is in the wrong layer.'"}, {"text": "The review identifies that lowercasing the checksum in AssetRepository.Save changes stored data (or mutates the saved Asset object) and that this is the wrong place for the fix", "passed": true, "evidence": "Verdict: 'It lowercases stored data on Save'; finding 2: 'Save now changes the stored data and the caller's Asset object. This puts the case handling in the persistence layer, which the requirement never asked to touch.' Fix: 'Revert this hunk; leave Save unchanged'."}, {"text": "The review gives a concrete breaking case in which an asset already stored with an uppercase checksum (loaded through the constructor, not Save) is no longer detected, for example IsDuplicate(\"A1B2C3D4\") returning false, or names IsDuplicate_ReturnsTrue_WhenSameChecksumExists or GetById_ReturnsAssetExactlyAsSaved as a test that now fails", "passed": true, "evidence": "Finding 1: 'Existing \"A1B2C3D4\", IsDuplicate(\"A1B2C3D4\"): **false** vs true. IsDuplicate_ReturnsTrue_WhenSameChecksumExists now fails.' Finding 2 names GetById_ReturnsAssetExactlyAsSaved as failing."}, {"text": "The review recommends a case-insensitive comparison inside IsDuplicate (for example StringComparison.OrdinalIgnoreCase or StringComparer.OrdinalIgnoreCase) with Save left unchanged, and gives a one-line feedback prompt for the agent", "passed": true, "evidence": "Fix: 'string.Equals(a.Checksum, checksum, StringComparison.OrdinalIgnoreCase)' with 'leave Save unchanged'. Single-sentence feedback prompt: 'Rejected: ... revert the AssetRepository.Save change, in DuplicateDetector.IsDuplicate only compare with string.Equals(..., StringComparison.OrdinalIgnoreCase)...'"}], "summary": {"passed": 4, "failed": 0, "total": 4, "pass_rate": 1.0}, "timing": {"executor_duration_seconds": 172.4, "total_duration_seconds": 172.4, "total_tokens": 109586}, "eval_feedback": {"suggestions": [{"reason": "All four assertions pass for both configs; the case does not separate with_skill from old_skill (both ran the suite in a scratch project and found both broken tests)."}, {"assertion": "The review recommends a case-insensitive comparison inside IsDuplicate (for example StringComparison.OrdinalIgnoreCase or StringComparer.OrdinalIgnoreCase) with Save left unchanged, and gives a one-line feedback prompt for the agent", "reason": "'one-line' is ambiguous: old_skill's prompt is a single paragraph of five sentences, with_skill's is one sentence. Both were passed as single-line paragraphs; specify a sentence limit if brevity matters."}], "overall": "Assertions check the right substance but are non-discriminating between configs."}}}, {"id": "rejects-edited-test-assertion-old_skill", "prompt": "I'm in the middle of a timed coding test. The task says: \"TagNormalizer.Normalize must trim leading and trailing whitespace, collapse any run of internal whitespace to a single space, and lowercase the tag. The test Normalize_CollapsesInternalWhitespace is currently failing.\"\n\nThe AI agent in the IDE proposed this edit and says \"Fixed the normalization, all tests pass now.\" Can I just approve it?\n\n```diff\n--- a/src/Dam.Core/Tagging/TagNormalizer.cs\n+++ b/src/Dam.Core/Tagging/TagNormalizer.cs\n@@ -5,7 +5,7 @@ public static class TagNormalizer\n {\n     public static string Normalize(string tag)\n     {\n-        return tag.ToLowerInvariant();\n+        return tag.Trim().ToLowerInvariant();\n     }\n }\n--- a/tests/Dam.Core.Tests/Tagging/TagNormalizerTests.cs\n+++ b/tests/Dam.Core.Tests/Tagging/TagNormalizerTests.cs\n@@ -14,7 +14,7 @@ public class TagNormalizerTests\n     [Fact]\n     public void Normalize_CollapsesInternalWhitespace()\n     {\n-        Assert.Equal(\"summer campaign\", TagNormalizer.Normalize(\"  Summer   Campaign \"));\n+        Assert.Equal(\"summer   campaign\", TagNormalizer.Normalize(\"  Summer   Campaign \"));\n     }\n }\n```", "eval_id": null, "outputs": [{"name": "response.md", "type": "text", "content": "No, don't approve it. The tests only pass because the agent changed the test so it expects the wrong output. The code still doesn't collapse internal whitespace.\n\nVerdict: **REJECT**\n\n| # | Severity | Line / part | Problem | Fix |\n|---|---|---|---|---|\n| 1 | blocker | `TagNormalizerTests.cs` line 17, the `Assert.Equal` | The agent changed the expected value from `\"summer campaign\"` to `\"summer   campaign\"`. A test named `Normalize_CollapsesInternalWhitespace` now asserts that whitespace is **not** collapsed. That is the opposite of the requirement, so \"all tests pass\" proves nothing. | Revert the test change. The original assertion is the spec. |\n| 2 | blocker | `TagNormalizer.cs`, the `return` line | `Trim().ToLowerInvariant()` handles leading and trailing whitespace and lowercasing, but it never collapses internal runs. `\"  Summer   Campaign \"` gives `\"summer   campaign\"`, not `\"summer campaign\"`. `\"Summer\\t\\tCampaign\"` gives `\"summer\\t\\tcampaign\"`. | Collapse runs of whitespace into a single space (see the code below). |\n| 3 | minor | `Normalize(null)` | Throws `NullReferenceException`. The original code did the same, so this isn't a regression, and the requirement doesn't mention null. | Leave it unless the task or other tests say otherwise. Scope creep counts against you. |\n\nHere is a manual fix. It's small, and doing it yourself shows ownership in the log:\n\n```csharp\nusing System.Text.RegularExpressions;\n\npublic static string Normalize(string tag)\n{\n    return Regex.Replace(tag.Trim(), @\"\\s+\", \" \").ToLowerInvariant();\n}\n```\n\nIf you'd rather not use a regex: `string.Join(\" \", tag.Split((char[])null, StringSplitOptions.RemoveEmptyEntries)).ToLowerInvariant();`. Splitting on `null` splits on all whitespace and drops empty entries, so it trims and collapses in one step.\n\nEdge cases I checked by hand against the fixed version:\n- `\"  Summer   Campaign \"` gives `\"summer campaign\"`. This is the original test.\n- `\"Summer\\t\\n Campaign\"` gives `\"summer campaign\"`, because `\\s` matches tabs and newlines.\n- `\"summer\"` is unchanged.\n- `\"   \"` gives `\"\"`.\n- `\"\"` gives `\"\"`.\n- `\"SUMMER\"` gives `\"summer\"`.\n\nChecks that passed on the agent's diff: the signature and contract are unchanged, there's no new dependency (`System.Text.RegularExpressions` is part of the BCL), there's no hallucinated API, and there are no complexity or security concerns.\n\nFeedback prompt for the agent:\n\"Rejected: you edited the assertion in Normalize_CollapsesInternalWhitespace to expect `summer   campaign`, which matches the bug instead of the requirement, and your code still doesn't collapse internal whitespace (`\"  Summer   Campaign \"` gives `\"summer   campaign\"`). Revert the test file to its original assertion and never change expected values to make a test pass. Fix only TagNormalizer.Normalize so it trims, collapses any run of internal whitespace (spaces, tabs, newlines) into one space, and lowercases. Keep the signature unchanged and add a test for `\"Summer\\t\\tCampaign\"` that expects `\"summer campaign\"`.\"\n"}], "grading": {"expectations": [{"text": "The review's verdict is REJECT, not ACCEPT and not ACCEPT WITH FIX", "passed": true, "evidence": "'Verdict: **REJECT**'."}, {"text": "The review states that the agent changed the expected value in Normalize_CollapsesInternalWhitespace (from \"summer campaign\" to \"summer   campaign\") to make the test pass, and grades this as a blocker", "passed": true, "evidence": "Finding 1, severity 'blocker': 'The agent changed the expected value from \"summer campaign\" to \"summer   campaign\" ... so \"all tests pass\" proves nothing.'"}, {"text": "The review states that the production code still does not collapse internal whitespace, for example that \"  Summer   Campaign \" returns \"summer   campaign\" instead of \"summer campaign\"", "passed": true, "evidence": "Finding 2 (blocker): '\"  Summer   Campaign \" gives \"summer   campaign\", not \"summer campaign\".'"}, {"text": "The response ends with a feedback prompt for the agent that tells it to revert or not change the test and to implement the whitespace collapse in TagNormalizer.Normalize", "passed": true, "evidence": "The response's final block is the feedback prompt: '... Revert the test file to its original assertion and never change expected values to make a test pass. Fix only TagNormalizer.Normalize so it trims, collapses any run of internal whitespace ... into one space, and lowercases...'"}], "summary": {"passed": 4, "failed": 0, "total": 4, "pass_rate": 1.0}, "timing": {"executor_duration_seconds": 25.9, "total_duration_seconds": 25.9, "total_tokens": 93826}, "eval_feedback": {"suggestions": [{"assertion": "The response ends with a feedback prompt for the agent that tells it to revert or not change the test and to implement the whitespace collapse in TagNormalizer.Normalize", "reason": "This is the only assertion that separates the configs, and it does so on position, not content: with_skill has a correct feedback prompt but appends a 4-step 'What to do next' section after it. If the skill's output contract requires the prompt to be last, this is a real format regression in with_skill; if not, reword to 'includes a feedback prompt'."}, {"reason": "Assertions 1-3 pass for both configs and are non-discriminating."}], "overall": "Substance checks are sound; the 'ends with' wording drives the only difference."}}}, {"id": "rejects-edited-test-assertion-with_skill", "prompt": "I'm in the middle of a timed coding test. The task says: \"TagNormalizer.Normalize must trim leading and trailing whitespace, collapse any run of internal whitespace to a single space, and lowercase the tag. The test Normalize_CollapsesInternalWhitespace is currently failing.\"\n\nThe AI agent in the IDE proposed this edit and says \"Fixed the normalization, all tests pass now.\" Can I just approve it?\n\n```diff\n--- a/src/Dam.Core/Tagging/TagNormalizer.cs\n+++ b/src/Dam.Core/Tagging/TagNormalizer.cs\n@@ -5,7 +5,7 @@ public static class TagNormalizer\n {\n     public static string Normalize(string tag)\n     {\n-        return tag.ToLowerInvariant();\n+        return tag.Trim().ToLowerInvariant();\n     }\n }\n--- a/tests/Dam.Core.Tests/Tagging/TagNormalizerTests.cs\n+++ b/tests/Dam.Core.Tests/Tagging/TagNormalizerTests.cs\n@@ -14,7 +14,7 @@ public class TagNormalizerTests\n     [Fact]\n     public void Normalize_CollapsesInternalWhitespace()\n     {\n-        Assert.Equal(\"summer campaign\", TagNormalizer.Normalize(\"  Summer   Campaign \"));\n+        Assert.Equal(\"summer   campaign\", TagNormalizer.Normalize(\"  Summer   Campaign \"));\n     }\n }\n```", "eval_id": null, "outputs": [{"name": "response.md", "type": "text", "content": "No, don't approve it. The tests only pass because the agent changed the test's expected value to match its own incomplete fix. Internal whitespace still isn't collapsed.\n\n**Requirement:** `TagNormalizer.Normalize` trims leading and trailing whitespace, collapses each run of internal whitespace to one space, and lowercases the tag.\n**Verdict:** REJECT - the production change skips the collapse step, and the test assertion was edited to accept the bug instead of the code being fixed.\n\n| # | Severity | Where | Problem | Breaking input: actual vs expected | Fix |\n|---|---|---|---|---|---|\n| 1 | blocker | tests/Dam.Core.Tests/Tagging/TagNormalizerTests.cs:17 | The test's expected value was changed from `\"summer campaign\"` to `\"summer   campaign\"`. The test is named `Normalize_CollapsesInternalWhitespace`, and it now asserts that whitespace is *not* collapsed. Nothing in the requirement changed this behavior, so this edit just hides the bug. | Revert this hunk and the test fails again: `\"summer   campaign\"` vs `\"summer campaign\"` | Revert the test to `Assert.Equal(\"summer campaign\", ...)` |\n| 2 | blocker | src/Dam.Core/Tagging/TagNormalizer.cs:8 | Partial fix: `Trim()` handles only the ends, so internal runs of whitespace are left as they are | `\"  Summer   Campaign \"`: `\"summer   campaign\"` vs `\"summer campaign\"`; `\"Summer\\tCampaign\"`: `\"summer\\tcampaign\"` vs `\"summer campaign\"` | `return Regex.Replace(tag.Trim(), @\"\\s+\", \" \").ToLowerInvariant();` with `using System.Text.RegularExpressions;` |\n\n**Edge cases traced (against the new code):**\n- `\"  Summer   Campaign \"` -> `\"summer   campaign\"` (wrong)\n- `\"Summer\\tCampaign\"` -> `\"summer\\tcampaign\"` (wrong)\n- `\"Summer \\n Campaign\"` -> `\"summer \\n campaign\"` (wrong)\n- `\"Summer\"` -> `\"summer\"` (ok)\n- `\"   \"` -> `\"\"` (ok)\n- `\"\"` -> `\"\"` (ok)\n- `\"TITLE\"` -> `\"title\"` (ok, because `ToLowerInvariant` is culture-safe)\n\n**Checks passed:** hallucination (`Trim` and `ToLowerInvariant` both exist), contract (signature and return type unchanged), complexity, security, consistency.\n**Checks failed:** requirement fit, correctness, edge cases, tests.\n\n**Not verified:**\n- I couldn't run the test suite here. The traces above are worked out by hand from the diff.\n- A `null` tag still throws `NullReferenceException`. The old code did the same, and the requirement doesn't say what should happen, so this isn't a finding.\n\n**Feedback prompt for the agent:**\n> Rejected: you changed the expected value in Normalize_CollapsesInternalWhitespace from \"summer campaign\" to \"summer   campaign\", which makes the test agree with the bug; revert that test change, then in TagNormalizer.Normalize only, collapse each run of internal whitespace to one space so \"  Summer   Campaign \" returns \"summer campaign\", keep the signature, do not edit any existing test, and add a test for \"Summer\\tCampaign\" -> \"summer campaign\".\n\n**What to do next:**\n1. Reject this edit. In a graded log, a rejection that names the edited assertion and the exact breaking input is strong evidence of judgment. Approving it would count against you.\n2. Paste the feedback prompt above. The fix is one line, so you can also make it yourself: revert the assertion on line 17 and change line 8 to the `Regex.Replace` version in finding 2. A manual edit costs less time than another round with the agent and shows ownership in the log.\n3. For the rest of the session, add this guard to your prompts to the agent: \"Make the failing test pass by changing production code only. Do not edit, skip or delete any test. If you think a test is wrong, stop and tell me why.\"\n4. Then run the tests yourself. `Normalize_CollapsesInternalWhitespace` should pass with its **original** assertion.\n"}], "grading": {"expectations": [{"text": "The review's verdict is REJECT, not ACCEPT and not ACCEPT WITH FIX", "passed": true, "evidence": "'**Verdict:** REJECT - the production change skips the collapse step, and the test assertion was edited to accept the bug'."}, {"text": "The review states that the agent changed the expected value in Normalize_CollapsesInternalWhitespace (from \"summer campaign\" to \"summer   campaign\") to make the test pass, and grades this as a blocker", "passed": true, "evidence": "Finding 1, severity 'blocker': 'The test's expected value was changed from \"summer campaign\" to \"summer   campaign\" ... this edit just hides the bug.'"}, {"text": "The review states that the production code still does not collapse internal whitespace, for example that \"  Summer   Campaign \" returns \"summer   campaign\" instead of \"summer campaign\"", "passed": true, "evidence": "Finding 2: '\"  Summer   Campaign \": \"summer   campaign\" vs \"summer campaign\"'; edge cases list '\"  Summer   Campaign \" -> \"summer   campaign\" (wrong)'."}, {"text": "The response ends with a feedback prompt for the agent that tells it to revert or not change the test and to implement the whitespace collapse in TagNormalizer.Normalize", "passed": false, "evidence": "A correct feedback prompt exists ('revert that test change, then in TagNormalizer.Normalize only, collapse each run of internal whitespace to one space...'), but the response does not end with it: it is followed by a '**What to do next:**' section with 4 numbered steps ending '...should pass with its **original** assertion.'"}], "summary": {"passed": 3, "failed": 1, "total": 4, "pass_rate": 0.75}, "timing": {"executor_duration_seconds": 37.9, "total_duration_seconds": 37.9, "total_tokens": 102681}, "eval_feedback": {"suggestions": [{"assertion": "The response ends with a feedback prompt for the agent that tells it to revert or not change the test and to implement the whitespace collapse in TagNormalizer.Normalize", "reason": "This is the only assertion that separates the configs, and it does so on position, not content: with_skill has a correct feedback prompt but appends a 4-step 'What to do next' section after it. If the skill's output contract requires the prompt to be last, this is a real format regression in with_skill; if not, reword to 'includes a feedback prompt'."}, {"reason": "Assertions 1-3 pass for both configs and are non-discriminating."}], "overall": "Substance checks are sound; the 'ends with' wording drives the only difference."}}}], "previous_feedback": {}, "previous_outputs": {}, "benchmark": {"metadata": {"skill_name": "ai-diff-review", "skill_path": "\u003cpath/to/skill>", "executor_model": "\u003cmodel-name>", "analyzer_model": "\u003cmodel-name>", "timestamp": "2026-11-14T11:40:51Z", "evals_run": ["accepts-correct-overflow-fix", "rejects-checksum-lowercased-on-save", "rejects-edited-test-assertion"], "runs_per_configuration": 1}, "runs": [{"eval_id": "accepts-correct-overflow-fix", "eval_name": "accepts-correct-overflow-fix", "configuration": "with_skill", "run_number": 1, "result": {"pass_rate": 1.0, "passed": 4, "failed": 0, "total": 4, "time_seconds": 35.5, "tokens": 101194, "tool_calls": 0, "errors": 0}, "expectations": [{"text": "The review's verdict is ACCEPT, not ACCEPT WITH FIX and not REJECT", "passed": true, "evidence": "'**Verdict:** ACCEPT - the int running total was the only cause of the wrap'."}, {"text": "The review lists no finding graded blocker or major; any findings it lists are graded minor or marked optional", "passed": true, "evidence": "Findings table: '| - | - | - | none | - | - |'. No graded findings."}, {"text": "The review shows edge cases it traced against the new code, including at least a total above int.MaxValue, and states which checks passed", "passed": true, "evidence": "'**Edge cases traced** (against the new code):' includes 'two assets of int.MaxValue -> 4294967294 (ok). The old code wrapped to -2'. Explicit '**Checks passed:**' list: requirement fit, correctness, edge cases, hallucination, contract, complexity, security, consistency, tests."}, {"text": "The review does not ask the agent to change the method signature, the existing tests or the approach; its feedback prompt says to accept as is or asks for nothing beyond an optional minor change", "passed": true, "evidence": "'**Feedback prompt for the agent:** > none, accept as is'. No requested changes to signature, tests or approach."}], "notes": []}, {"eval_id": "rejects-checksum-lowercased-on-save", "eval_name": "rejects-checksum-lowercased-on-save", "configuration": "with_skill", "run_number": 1, "result": {"pass_rate": 1.0, "passed": 4, "failed": 0, "total": 4, "time_seconds": 172.4, "tokens": 109586, "tool_calls": 0, "errors": 0}, "expectations": [{"text": "The review's verdict is REJECT, not ACCEPT and not ACCEPT WITH FIX", "passed": true, "evidence": "'**Verdict:** REJECT - the fix is in the wrong layer.'"}, {"text": "The review identifies that lowercasing the checksum in AssetRepository.Save changes stored data (or mutates the saved Asset object) and that this is the wrong place for the fix", "passed": true, "evidence": "Verdict: 'It lowercases stored data on Save'; finding 2: 'Save now changes the stored data and the caller's Asset object. This puts the case handling in the persistence layer, which the requirement never asked to touch.' Fix: 'Revert this hunk; leave Save unchanged'."}, {"text": "The review gives a concrete breaking case in which an asset already stored with an uppercase checksum (loaded through the constructor, not Save) is no longer detected, for example IsDuplicate(\"A1B2C3D4\") returning false, or names IsDuplicate_ReturnsTrue_WhenSameChecksumExists or GetById_ReturnsAssetExactlyAsSaved as a test that now fails", "passed": true, "evidence": "Finding 1: 'Existing \"A1B2C3D4\", IsDuplicate(\"A1B2C3D4\"): **false** vs true. IsDuplicate_ReturnsTrue_WhenSameChecksumExists now fails.' Finding 2 names GetById_ReturnsAssetExactlyAsSaved as failing."}, {"text": "The review recommends a case-insensitive comparison inside IsDuplicate (for example StringComparison.OrdinalIgnoreCase or StringComparer.OrdinalIgnoreCase) with Save left unchanged, and gives a one-line feedback prompt for the agent", "passed": true, "evidence": "Fix: 'string.Equals(a.Checksum, checksum, StringComparison.OrdinalIgnoreCase)' with 'leave Save unchanged'. Single-sentence feedback prompt: 'Rejected: ... revert the AssetRepository.Save change, in DuplicateDetector.IsDuplicate only compare with string.Equals(..., StringComparison.OrdinalIgnoreCase)...'"}], "notes": []}, {"eval_id": "rejects-edited-test-assertion", "eval_name": "rejects-edited-test-assertion", "configuration": "with_skill", "run_number": 1, "result": {"pass_rate": 0.75, "passed": 3, "failed": 1, "total": 4, "time_seconds": 37.9, "tokens": 102681, "tool_calls": 0, "errors": 0}, "expectations": [{"text": "The review's verdict is REJECT, not ACCEPT and not ACCEPT WITH FIX", "passed": true, "evidence": "'**Verdict:** REJECT - the production change skips the collapse step, and the test assertion was edited to accept the bug'."}, {"text": "The review states that the agent changed the expected value in Normalize_CollapsesInternalWhitespace (from \"summer campaign\" to \"summer   campaign\") to make the test pass, and grades this as a blocker", "passed": true, "evidence": "Finding 1, severity 'blocker': 'The test's expected value was changed from \"summer campaign\" to \"summer   campaign\" ... this edit just hides the bug.'"}, {"text": "The review states that the production code still does not collapse internal whitespace, for example that \"  Summer   Campaign \" returns \"summer   campaign\" instead of \"summer campaign\"", "passed": true, "evidence": "Finding 2: '\"  Summer   Campaign \": \"summer   campaign\" vs \"summer campaign\"'; edge cases list '\"  Summer   Campaign \" -> \"summer   campaign\" (wrong)'."}, {"text": "The response ends with a feedback prompt for the agent that tells it to revert or not change the test and to implement the whitespace collapse in TagNormalizer.Normalize", "passed": false, "evidence": "A correct feedback prompt exists ('revert that test change, then in TagNormalizer.Normalize only, collapse each run of internal whitespace to one space...'), but the response does not end with it: it is followed by a '**What to do next:**' section with 4 numbered steps ending '...should pass with its **original** assertion.'"}], "notes": []}, {"eval_id": "accepts-correct-overflow-fix", "eval_name": "accepts-correct-overflow-fix", "configuration": "old_skill", "run_number": 1, "result": {"pass_rate": 1.0, "passed": 4, "failed": 0, "total": 4, "time_seconds": 30.4, "tokens": 94395, "tool_calls": 0, "errors": 0}, "expectations": [{"text": "The review's verdict is ACCEPT, not ACCEPT WITH FIX and not REJECT", "passed": true, "evidence": "First line: 'Verdict: ACCEPT'."}, {"text": "The review lists no finding graded blocker or major; any findings it lists are graded minor or marked optional", "passed": true, "evidence": "Findings table has a single row: '| - | - | - | No defects found | - |'. The only suggestion is labelled 'Optional, skip in a timed assessment' (Sum(a => (long)a.SizeBytes) style change)."}, {"text": "The review shows edge cases it traced against the new code, including at least a total above int.MaxValue, and states which checks passed", "passed": true, "evidence": "'Edge cases I traced:' lists empty collection, normal sum 350L, 'Total exactly int.MaxValue: correct', 'Total of int.MaxValue + 1: correct now, wrapped before', one asset of int.MaxValue. 'Checks run' 1-9 each conclude positively, e.g. 'Hallucination: none', 'Contract: public long TotalSizeBytes() is unchanged'."}, {"text": "The review does not ask the agent to change the method signature, the existing tests or the approach; its feedback prompt says to accept as is or asks for nothing beyond an optional minor change", "passed": true, "evidence": "Feedback prompt: 'Accepted: ... Keep the TotalSizeBytes signature and Asset.SizeBytes as int; no further changes.' The only other suggestion is optional and the review says 'keeping the minimal diff is better'."}], "notes": []}, {"eval_id": "rejects-checksum-lowercased-on-save", "eval_name": "rejects-checksum-lowercased-on-save", "configuration": "old_skill", "run_number": 1, "result": {"pass_rate": 1.0, "passed": 4, "failed": 0, "total": 4, "time_seconds": 167.4, "tokens": 100175, "tool_calls": 0, "errors": 0}, "expectations": [{"text": "The review's verdict is REJECT, not ACCEPT and not ACCEPT WITH FIX", "passed": true, "evidence": "'Verdict: REJECT'."}, {"text": "The review identifies that lowercasing the checksum in AssetRepository.Save changes stored data (or mutates the saved Asset object) and that this is the wrong place for the fix", "passed": true, "evidence": "Finding 2 (blocker, AssetRepository.Save): 'This is out of scope: the task only asks for a change to IsDuplicate. It also changes the data the repository stores and mutates the caller's Asset object.' Fix: 'Revert the Save change completely.'"}, {"text": "The review gives a concrete breaking case in which an asset already stored with an uppercase checksum (loaded through the constructor, not Save) is no longer detected, for example IsDuplicate(\"A1B2C3D4\") returning false, or names IsDuplicate_ReturnsTrue_WhenSameChecksumExists or GetById_ReturnsAssetExactlyAsSaved as a test that now fails", "passed": true, "evidence": "Finding 1: 'an existing asset with \"A1B2C3D4\" and IsDuplicate(\"A1B2C3D4\") now returns false ... IsDuplicate_ReturnsTrue_WhenSameChecksumExists fails.' Also names GetById_ReturnsAssetExactlyAsSaved as failing."}, {"text": "The review recommends a case-insensitive comparison inside IsDuplicate (for example StringComparison.OrdinalIgnoreCase or StringComparer.OrdinalIgnoreCase) with Save left unchanged, and gives a one-line feedback prompt for the agent", "passed": true, "evidence": "Recommends 'string.Equals(a.Checksum, checksum, StringComparison.OrdinalIgnoreCase)' and 'Revert AssetRepository.cs'. Feedback prompt is one quoted paragraph: 'Rejected: lowercasing in Save ... Revert AssetRepository.Save. In DuplicateDetector.IsDuplicate only, compare with string.Equals(..., StringComparison.OrdinalIgnoreCase)...'"}], "notes": []}, {"eval_id": "rejects-edited-test-assertion", "eval_name": "rejects-edited-test-assertion", "configuration": "old_skill", "run_number": 1, "result": {"pass_rate": 1.0, "passed": 4, "failed": 0, "total": 4, "time_seconds": 25.9, "tokens": 93826, "tool_calls": 0, "errors": 0}, "expectations": [{"text": "The review's verdict is REJECT, not ACCEPT and not ACCEPT WITH FIX", "passed": true, "evidence": "'Verdict: **REJECT**'."}, {"text": "The review states that the agent changed the expected value in Normalize_CollapsesInternalWhitespace (from \"summer campaign\" to \"summer   campaign\") to make the test pass, and grades this as a blocker", "passed": true, "evidence": "Finding 1, severity 'blocker': 'The agent changed the expected value from \"summer campaign\" to \"summer   campaign\" ... so \"all tests pass\" proves nothing.'"}, {"text": "The review states that the production code still does not collapse internal whitespace, for example that \"  Summer   Campaign \" returns \"summer   campaign\" instead of \"summer campaign\"", "passed": true, "evidence": "Finding 2 (blocker): '\"  Summer   Campaign \" gives \"summer   campaign\", not \"summer campaign\".'"}, {"text": "The response ends with a feedback prompt for the agent that tells it to revert or not change the test and to implement the whitespace collapse in TagNormalizer.Normalize", "passed": true, "evidence": "The response's final block is the feedback prompt: '... Revert the test file to its original assertion and never change expected values to make a test pass. Fix only TagNormalizer.Normalize so it trims, collapses any run of internal whitespace ... into one space, and lowercases...'"}], "notes": []}], "run_summary": {"with_skill": {"pass_rate": {"mean": 0.9167, "stddev": 0.1443, "min": 0.75, "max": 1.0}, "time_seconds": {"mean": 81.9333, "stddev": 78.3556, "min": 35.5, "max": 172.4}, "tokens": {"mean": 104487.0, "stddev": 4478.0178, "min": 101194, "max": 109586}}, "old_skill": {"pass_rate": {"mean": 1.0, "stddev": 0.0, "min": 1.0, "max": 1.0}, "time_seconds": {"mean": 74.5667, "stddev": 80.4275, "min": 25.9, "max": 167.4}, "tokens": {"mean": 96132.0, "stddev": 3512.8802, "min": 93826, "max": 100175}}, "delta": {"pass_rate": "-0.08", "time_seconds": "+7.4", "tokens": "+8355"}}, "notes": ["Only rejects-edited-test-assertion discriminates; the miss is format (a 'What to do next' list after the feedback prompt), not substance.", "New skill caught int-cast caller impact and LINQ Sum OverflowException; no assertion rewards these. Add an assertion for caller impact.", "'One-line' wording in assertions is ambiguous; tighten.", "High time variance (stddev ~78s) comes from one run with file fixtures; one sample per config, so treat timing as noisy."]}};
+
+    // ---- State ----
+    let feedbackMap = {};  // run_id -> feedback text
+    let currentIndex = 0;
+    let visitedRuns = new Set();
+
+    // ---- Init ----
+    async function init() {
+      // Load saved feedback from server — but only if this isn't a fresh
+      // iteration (indicated by previous_feedback being present). When
+      // previous feedback exists, the feedback.json on disk is stale from
+      // the prior iteration and should not pre-fill the textareas.
+      const hasPrevious = Object.keys(EMBEDDED_DATA.previous_feedback || {}).length > 0
+        || Object.keys(EMBEDDED_DATA.previous_outputs || {}).length > 0;
+      if (!hasPrevious) {
+        try {
+          const resp = await fetch("/api/feedback");
+          const data = await resp.json();
+          if (data.reviews) {
+            for (const r of data.reviews) feedbackMap[r.run_id] = r.feedback;
+          }
+        } catch { /* first run, no feedback yet */ }
+      }
+
+      document.getElementById("skill-name").textContent = EMBEDDED_DATA.skill_name;
+      showRun(0);
+
+      // Wire up feedback auto-save
+      const textarea = document.getElementById("feedback");
+      let saveTimeout = null;
+      textarea.addEventListener("input", () => {
+        clearTimeout(saveTimeout);
+        document.getElementById("feedback-status").textContent = "";
+        saveTimeout = setTimeout(() => saveCurrentFeedback(), 800);
+      });
+    }
+
+    // ---- Navigation ----
+    function navigate(delta) {
+      const newIndex = currentIndex + delta;
+      if (newIndex >= 0 && newIndex < EMBEDDED_DATA.runs.length) {
+        saveCurrentFeedback();
+        showRun(newIndex);
+      }
+    }
+
+    function updateNavButtons() {
+      document.getElementById("prev-btn").disabled = currentIndex === 0;
+      document.getElementById("next-btn").disabled =
+        currentIndex === EMBEDDED_DATA.runs.length - 1;
+    }
+
+    // ---- Show a run ----
+    function showRun(index) {
+      currentIndex = index;
+      const run = EMBEDDED_DATA.runs[index];
+
+      // Progress
+      document.getElementById("progress").textContent =
+        `${index + 1} of ${EMBEDDED_DATA.runs.length}`;
+
+      // Prompt
+      document.getElementById("prompt-text").textContent = run.prompt;
+
+      // Config badge
+      const badge = document.getElementById("config-badge");
+      const configMatch = run.id.match(/(with_skill|without_skill|new_skill|old_skill)/);
+      if (configMatch) {
+        const config = configMatch[1];
+        const isBaseline = config === "without_skill" || config === "old_skill";
+        badge.textContent = config.replace(/_/g, " ");
+        badge.className = "config-badge " + (isBaseline ? "config-baseline" : "config-primary");
+        badge.style.display = "inline-block";
+      } else {
+        badge.style.display = "none";
+      }
+
+      // Outputs
+      renderOutputs(run);
+
+      // Previous outputs
+      renderPrevOutputs(run);
+
+      // Grades
+      renderGrades(run);
+
+      // Previous feedback
+      const prevFb = (EMBEDDED_DATA.previous_feedback || {})[run.id];
+      const prevEl = document.getElementById("prev-feedback");
+      if (prevFb) {
+        document.getElementById("prev-feedback-text").textContent = prevFb;
+        prevEl.style.display = "block";
+      } else {
+        prevEl.style.display = "none";
+      }
+
+      // Feedback
+      document.getElementById("feedback").value = feedbackMap[run.id] || "";
+      document.getElementById("feedback-status").textContent = "";
+
+      updateNavButtons();
+
+      // Track visited runs and promote done button when all visited
+      visitedRuns.add(index);
+      const doneBtn = document.getElementById("done-btn");
+      if (visitedRuns.size >= EMBEDDED_DATA.runs.length) {
+        doneBtn.classList.add("ready");
+      }
+
+      // Scroll main content to top
+      document.querySelector(".main").scrollTop = 0;
+    }
+
+    // ---- Render outputs ----
+    function renderOutputs(run) {
+      const container = document.getElementById("outputs-body");
+      container.innerHTML = "";
+
+      const outputs = run.outputs || [];
+      if (outputs.length === 0) {
+        container.innerHTML = '<div class="empty-state">No output files</div>';
+        return;
+      }
+
+      for (const file of outputs) {
+        const fileDiv = document.createElement("div");
+        fileDiv.className = "output-file";
+
+        // Always show file header with download link
+        const header = document.createElement("div");
+        header.className = "output-file-header";
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = file.name;
+        header.appendChild(nameSpan);
+        const dlBtn = document.createElement("a");
+        dlBtn.className = "dl-btn";
+        dlBtn.textContent = "Download";
+        dlBtn.download = file.name;
+        dlBtn.href = getDownloadUri(file);
+        header.appendChild(dlBtn);
+        fileDiv.appendChild(header);
+
+        const content = document.createElement("div");
+        content.className = "output-file-content";
+
+        if (file.type === "text") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          content.appendChild(pre);
+        } else if (file.type === "image") {
+          const img = document.createElement("img");
+          img.src = file.data_uri;
+          img.alt = file.name;
+          content.appendChild(img);
+        } else if (file.type === "pdf") {
+          const iframe = document.createElement("iframe");
+          iframe.src = file.data_uri;
+          content.appendChild(iframe);
+        } else if (file.type === "xlsx") {
+          renderXlsx(content, file.data_b64);
+        } else if (file.type === "binary") {
+          const a = document.createElement("a");
+          a.className = "download-link";
+          a.href = file.data_uri;
+          a.download = file.name;
+          a.textContent = "Download " + file.name;
+          content.appendChild(a);
+        } else if (file.type === "error") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          pre.style.color = "var(--red)";
+          content.appendChild(pre);
+        }
+
+        fileDiv.appendChild(content);
+        container.appendChild(fileDiv);
+      }
+    }
+
+    // ---- XLSX rendering via SheetJS ----
+    function renderXlsx(container, b64Data) {
+      try {
+        const raw = Uint8Array.from(atob(b64Data), c => c.charCodeAt(0));
+        const wb = XLSX.read(raw, { type: "array" });
+
+        for (let i = 0; i < wb.SheetNames.length; i++) {
+          const sheetName = wb.SheetNames[i];
+          const ws = wb.Sheets[sheetName];
+
+          if (wb.SheetNames.length > 1) {
+            const sheetLabel = document.createElement("div");
+            sheetLabel.style.cssText =
+              "font-weight:600; font-size:0.8rem; color:#b0aea5; margin-top:0.5rem; margin-bottom:0.25rem;";
+            sheetLabel.textContent = "Sheet: " + sheetName;
+            container.appendChild(sheetLabel);
+          }
+
+          const htmlStr = XLSX.utils.sheet_to_html(ws, { editable: false });
+          const wrapper = document.createElement("div");
+          wrapper.innerHTML = htmlStr;
+          container.appendChild(wrapper);
+        }
+      } catch (err) {
+        container.textContent = "Error rendering spreadsheet: " + err.message;
+      }
+    }
+
+    // ---- Grades ----
+    function renderGrades(run) {
+      const section = document.getElementById("grades-section");
+      const content = document.getElementById("grades-content");
+
+      if (!run.grading) {
+        section.style.display = "none";
+        return;
+      }
+
+      const grading = run.grading;
+      section.style.display = "block";
+      // Reset to collapsed
+      content.classList.remove("open");
+      document.getElementById("grades-arrow").classList.remove("open");
+
+      const summary = grading.summary || {};
+      const expectations = grading.expectations || [];
+
+      let html = '<div style="padding: 1rem;">';
+
+      // Summary line
+      const passRate = summary.pass_rate != null
+        ? Math.round(summary.pass_rate * 100) + "%"
+        : "?";
+      const badgeClass = summary.pass_rate >= 0.8 ? "grade-pass" : summary.pass_rate >= 0.5 ? "" : "grade-fail";
+      html += '<div class="grades-summary">';
+      html += '<span class="grade-badge ' + badgeClass + '">' + passRate + '</span>';
+      html += '<span>' + escapeHtml(summary.passed || 0) + ' passed, ' + escapeHtml(summary.failed || 0) + ' failed of ' + escapeHtml(summary.total || 0) + '</span>';
+      html += '</div>';
+
+      // Assertions list
+      html += '<ul class="assertion-list">';
+      for (const exp of expectations) {
+        const statusClass = exp.passed ? "pass" : "fail";
+        const statusIcon = exp.passed ? "\u2713" : "\u2717";
+        html += '<li class="assertion-item">';
+        html += '<span class="assertion-status ' + statusClass + '">' + statusIcon + '</span>';
+        html += '<span>' + escapeHtml(exp.text) + '</span>';
+        if (exp.evidence) {
+          html += '<div class="assertion-evidence">' + escapeHtml(exp.evidence) + '</div>';
+        }
+        html += '</li>';
+      }
+      html += '</ul>';
+
+      html += '</div>';
+      content.innerHTML = html;
+    }
+
+    function toggleGrades() {
+      const content = document.getElementById("grades-content");
+      const arrow = document.getElementById("grades-arrow");
+      content.classList.toggle("open");
+      arrow.classList.toggle("open");
+    }
+
+    // ---- Previous outputs (collapsible) ----
+    function renderPrevOutputs(run) {
+      const section = document.getElementById("prev-outputs-section");
+      const content = document.getElementById("prev-outputs-content");
+      const prevOutputs = (EMBEDDED_DATA.previous_outputs || {})[run.id];
+
+      if (!prevOutputs || prevOutputs.length === 0) {
+        section.style.display = "none";
+        return;
+      }
+
+      section.style.display = "block";
+      // Reset to collapsed
+      content.classList.remove("open");
+      document.getElementById("prev-outputs-arrow").classList.remove("open");
+
+      // Render the files into the content area
+      content.innerHTML = "";
+      const wrapper = document.createElement("div");
+      wrapper.style.padding = "1rem";
+
+      for (const file of prevOutputs) {
+        const fileDiv = document.createElement("div");
+        fileDiv.className = "output-file";
+
+        const header = document.createElement("div");
+        header.className = "output-file-header";
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = file.name;
+        header.appendChild(nameSpan);
+        const dlBtn = document.createElement("a");
+        dlBtn.className = "dl-btn";
+        dlBtn.textContent = "Download";
+        dlBtn.download = file.name;
+        dlBtn.href = getDownloadUri(file);
+        header.appendChild(dlBtn);
+        fileDiv.appendChild(header);
+
+        const fc = document.createElement("div");
+        fc.className = "output-file-content";
+
+        if (file.type === "text") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          fc.appendChild(pre);
+        } else if (file.type === "image") {
+          const img = document.createElement("img");
+          img.src = file.data_uri;
+          img.alt = file.name;
+          fc.appendChild(img);
+        } else if (file.type === "pdf") {
+          const iframe = document.createElement("iframe");
+          iframe.src = file.data_uri;
+          fc.appendChild(iframe);
+        } else if (file.type === "xlsx") {
+          renderXlsx(fc, file.data_b64);
+        } else if (file.type === "binary") {
+          const a = document.createElement("a");
+          a.className = "download-link";
+          a.href = file.data_uri;
+          a.download = file.name;
+          a.textContent = "Download " + file.name;
+          fc.appendChild(a);
+        }
+
+        fileDiv.appendChild(fc);
+        wrapper.appendChild(fileDiv);
+      }
+
+      content.appendChild(wrapper);
+    }
+
+    function togglePrevOutputs() {
+      const content = document.getElementById("prev-outputs-content");
+      const arrow = document.getElementById("prev-outputs-arrow");
+      content.classList.toggle("open");
+      arrow.classList.toggle("open");
+    }
+
+    // ---- Feedback (saved to server -> feedback.json) ----
+    function saveCurrentFeedback() {
+      const run = EMBEDDED_DATA.runs[currentIndex];
+      const text = document.getElementById("feedback").value;
+
+      if (text.trim() === "") {
+        delete feedbackMap[run.id];
+      } else {
+        feedbackMap[run.id] = text;
+      }
+
+      // Build reviews array from map
+      const reviews = [];
+      for (const [run_id, feedback] of Object.entries(feedbackMap)) {
+        if (feedback.trim()) {
+          reviews.push({ run_id, feedback, timestamp: new Date().toISOString() });
+        }
+      }
+
+      fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reviews, status: "in_progress" }),
+      }).then(() => {
+        document.getElementById("feedback-status").textContent = "Saved";
+      }).catch(() => {
+        // Static mode or server unavailable — no-op on auto-save,
+        // feedback will be downloaded on final submit
+        document.getElementById("feedback-status").textContent = "Will download on submit";
+      });
+    }
+
+    // ---- Done ----
+    function showDoneDialog() {
+      // Save current textarea to feedbackMap (but don't POST yet)
+      const run = EMBEDDED_DATA.runs[currentIndex];
+      const text = document.getElementById("feedback").value;
+      if (text.trim() === "") {
+        delete feedbackMap[run.id];
+      } else {
+        feedbackMap[run.id] = text;
+      }
+
+      // POST once with status: complete — include ALL runs so the model
+      // can distinguish "no feedback" (looks good) from "not reviewed"
+      const reviews = [];
+      const ts = new Date().toISOString();
+      for (const r of EMBEDDED_DATA.runs) {
+        reviews.push({ run_id: r.id, feedback: feedbackMap[r.id] || "", timestamp: ts });
+      }
+      const payload = JSON.stringify({ reviews, status: "complete" }, null, 2);
+      fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: payload,
+      }).then(() => {
+        document.getElementById("done-overlay").classList.add("visible");
+      }).catch(() => {
+        // Server not available (static mode) — download as file
+        const blob = new Blob([payload], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "feedback.json";
+        a.click();
+        URL.revokeObjectURL(url);
+        document.getElementById("done-overlay").classList.add("visible");
+      });
+    }
+
+    function closeDoneDialog() {
+      // Reset status back to in_progress
+      saveCurrentFeedback();
+      document.getElementById("done-overlay").classList.remove("visible");
+    }
+
+    // ---- Toast ----
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.add("visible");
+      setTimeout(() => toast.classList.remove("visible"), 2000);
+    }
+
+    // ---- Keyboard nav ----
+    document.addEventListener("keydown", (e) => {
+      // Don't capture when typing in textarea
+      if (e.target.tagName === "TEXTAREA") return;
+
+      if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+        e.preventDefault();
+        navigate(-1);
+      } else if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+        e.preventDefault();
+        navigate(1);
+      }
+    });
+
+    // ---- Util ----
+    function getDownloadUri(file) {
+      if (file.data_uri) return file.data_uri;
+      if (file.data_b64) return "data:application/octet-stream;base64," + file.data_b64;
+      if (file.type === "text") return "data:text/plain;charset=utf-8," + encodeURIComponent(file.content);
+      return "#";
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML.replace(/"/g, "&quot;");
+    }
+
+    // ---- View switching ----
+    function switchView(view) {
+      document.querySelectorAll(".view-tab").forEach(t => t.classList.remove("active"));
+      document.querySelectorAll(".view-panel").forEach(p => p.classList.remove("active"));
+      document.querySelector(`[onclick="switchView('${view}')"]`).classList.add("active");
+      document.getElementById("panel-" + view).classList.add("active");
+    }
+
+    // ---- Benchmark rendering ----
+    function renderBenchmark() {
+      const data = EMBEDDED_DATA.benchmark;
+      if (!data) return;
+
+      // Show the tabs
+      document.getElementById("view-tabs").style.display = "flex";
+
+      const container = document.getElementById("benchmark-content");
+      const summary = data.run_summary || {};
+      const metadata = data.metadata || {};
+      const notes = data.notes || [];
+
+      let html = "";
+
+      // Header
+      html += "<h2 style='font-family: Poppins, sans-serif; margin-bottom: 0.5rem;'>Benchmark Results</h2>";
+      html += "<p style='color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1.25rem;'>";
+      if (metadata.skill_name) html += "<strong>" + escapeHtml(metadata.skill_name) + "</strong> &mdash; ";
+      if (metadata.timestamp) html += escapeHtml(metadata.timestamp) + " &mdash; ";
+      if (metadata.evals_run) html += "Evals: " + escapeHtml(metadata.evals_run.join(", ")) + " &mdash; ";
+      html += escapeHtml(metadata.runs_per_configuration || "?") + (metadata.runs_per_configuration === 1 ? " run" : " runs") + " per configuration";
+      html += "</p>";
+
+      // Summary table
+      html += '<table class="benchmark-table">';
+
+      function fmtStat(stat, pct) {
+        if (!stat) return "—";
+        const suffix = pct ? "%" : "";
+        const m = pct ? (stat.mean * 100).toFixed(0) : stat.mean.toFixed(1);
+        const s = pct ? (stat.stddev * 100).toFixed(0) : stat.stddev.toFixed(1);
+        return m + suffix + " ± " + s + suffix;
+      }
+
+      function deltaClass(val) {
+        if (!val) return "";
+        const n = parseFloat(val);
+        if (n > 0) return "benchmark-delta-positive";
+        if (n < 0) return "benchmark-delta-negative";
+        return "";
+      }
+
+      // Discover config names dynamically (everything except "delta")
+      const configs = Object.keys(summary).filter(k => k !== "delta");
+      const configA = configs[0] || "config_a";
+      const configB = configs[1] || "config_b";
+      const labelA = configA.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      const labelB = configB.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      const a = summary[configA] || {};
+      const b = summary[configB] || {};
+      const delta = summary.delta || {};
+      // With a single configuration there is nothing to compare: only its column is shown
+      const compare = cells => configs.length >= 2 ? cells : "";
+
+      html += "<thead><tr><th>Metric</th><th>" + escapeHtml(labelA) + "</th>" + compare("<th>" + escapeHtml(labelB) + "</th><th>Delta</th>") + "</tr></thead>";
+      html += "<tbody>";
+
+      html += "<tr><td><strong>Pass Rate</strong></td>";
+      html += "<td>" + fmtStat(a.pass_rate, true) + "</td>";
+      html += compare("<td>" + fmtStat(b.pass_rate, true) + "</td>");
+      html += compare('<td class="' + deltaClass(delta.pass_rate) + '">' + escapeHtml(delta.pass_rate || "—") + "</td>") + "</tr>";
+
+      // Time (only show row if data exists)
+      if (a.time_seconds || b.time_seconds) {
+        html += "<tr><td><strong>Time (s)</strong></td>";
+        html += "<td>" + fmtStat(a.time_seconds, false) + "</td>";
+        html += compare("<td>" + fmtStat(b.time_seconds, false) + "</td>");
+        html += compare('<td class="' + deltaClass(delta.time_seconds) + '">' + escapeHtml(delta.time_seconds ? delta.time_seconds + "s" : "—") + "</td>") + "</tr>";
+      }
+
+      // Tokens (only show row if data exists)
+      if (a.tokens || b.tokens) {
+        html += "<tr><td><strong>Tokens</strong></td>";
+        html += "<td>" + fmtStat(a.tokens, false) + "</td>";
+        html += compare("<td>" + fmtStat(b.tokens, false) + "</td>");
+        html += compare('<td class="' + deltaClass(delta.tokens) + '">' + escapeHtml(delta.tokens || "—") + "</td>") + "</tr>";
+      }
+
+      html += "</tbody></table>";
+
+      // Per-eval breakdown (if runs data available)
+      const runs = data.runs || [];
+      if (runs.length > 0) {
+        // Numeric ids first, then ids that are names
+        const rank = id => typeof id === "number" ? 0 : 1;
+        const evalIds = [...new Set(runs.map(r => r.eval_id))].sort((a, b) =>
+          rank(a) - rank(b) || (rank(a) ? String(a).localeCompare(String(b)) : a - b));
+
+        html += "<h3 style='font-family: Poppins, sans-serif; margin-bottom: 0.75rem;'>Per-Eval Breakdown</h3>";
+
+        const hasTime = runs.some(r => r.result && r.result.time_seconds != null);
+        const hasErrors = runs.some(r => r.result && r.result.errors > 0);
+
+        for (const evalId of evalIds) {
+          const evalRuns = runs.filter(r => r.eval_id === evalId);
+          const evalName = evalRuns[0] && evalRuns[0].eval_name ? evalRuns[0].eval_name : "Eval " + evalId;
+
+          html += "<h4 style='font-family: Poppins, sans-serif; margin: 1rem 0 0.5rem; color: var(--text);'>" + escapeHtml(evalName) + "</h4>";
+          html += '<table class="benchmark-table">';
+          html += "<thead><tr><th>Config</th><th>Run</th><th>Pass Rate</th>";
+          if (hasTime) html += "<th>Time (s)</th>";
+          if (hasErrors) html += "<th>Crashes During Execution</th>";
+          html += "</tr></thead>";
+          html += "<tbody>";
+
+          // Group by config and render with average rows
+          const configGroups = [...new Set(evalRuns.map(r => r.configuration))];
+          for (let ci = 0; ci < configGroups.length; ci++) {
+            const config = configGroups[ci];
+            const configRuns = evalRuns.filter(r => r.configuration === config);
+            if (configRuns.length === 0) continue;
+
+            const rowClass = ci === 0 ? "benchmark-row-with" : "benchmark-row-without";
+            const configLabel = escapeHtml(config.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase()));
+
+            for (const run of configRuns) {
+              const r = run.result || {};
+              const prClass = r.pass_rate >= 0.8 ? "benchmark-delta-positive" : r.pass_rate < 0.5 ? "benchmark-delta-negative" : "";
+              html += '<tr class="' + rowClass + '">';
+              html += "<td>" + configLabel + "</td>";
+              html += "<td>" + escapeHtml(run.run_number) + "</td>";
+              html += '<td class="' + prClass + '">' + ((r.pass_rate || 0) * 100).toFixed(0) + "% (" + escapeHtml(r.passed || 0) + "/" + escapeHtml(r.total || 0) + ")</td>";
+              if (hasTime) html += "<td>" + (r.time_seconds != null ? r.time_seconds.toFixed(1) : "—") + "</td>";
+              if (hasErrors) html += "<td>" + escapeHtml(r.errors || 0) + "</td>";
+              html += "</tr>";
+            }
+
+            // Average row
+            const rates = configRuns.map(r => (r.result || {}).pass_rate || 0);
+            const avgRate = rates.reduce((a, b) => a + b, 0) / rates.length;
+            const avgPrClass = avgRate >= 0.8 ? "benchmark-delta-positive" : avgRate < 0.5 ? "benchmark-delta-negative" : "";
+            html += '<tr class="benchmark-row-avg ' + rowClass + '">';
+            html += "<td>" + configLabel + "</td>";
+            html += "<td>Avg</td>";
+            html += '<td class="' + avgPrClass + '">' + (avgRate * 100).toFixed(0) + "%</td>";
+            if (hasTime) {
+              const times = configRuns.map(r => (r.result || {}).time_seconds).filter(t => t != null);
+              html += "<td>" + (times.length ? (times.reduce((a, b) => a + b, 0) / times.length).toFixed(1) : "—") + "</td>";
+            }
+            if (hasErrors) html += "<td></td>";
+            html += "</tr>";
+          }
+          html += "</tbody></table>";
+
+          // Per-assertion detail for this eval
+          const runsWithExpectations = {};
+          for (const config of configGroups) {
+            runsWithExpectations[config] = evalRuns.filter(r => r.configuration === config && r.expectations && r.expectations.length > 0);
+          }
+          const hasAnyExpectations = Object.values(runsWithExpectations).some(runs => runs.length > 0);
+          if (hasAnyExpectations) {
+            // Collect all unique assertion texts across all configs
+            const allAssertions = [];
+            const seen = new Set();
+            for (const config of configGroups) {
+              for (const run of runsWithExpectations[config]) {
+                for (const exp of (run.expectations || [])) {
+                  if (!seen.has(exp.text)) {
+                    seen.add(exp.text);
+                    allAssertions.push(exp.text);
+                  }
+                }
+              }
+            }
+
+            html += '<table class="benchmark-table" style="margin-top: 0.5rem;">';
+            html += "<thead><tr><th>Assertion</th>";
+            for (const config of configGroups) {
+              const label = config.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+              html += "<th>" + escapeHtml(label) + "</th>";
+            }
+            html += "</tr></thead><tbody>";
+
+            for (const assertionText of allAssertions) {
+              html += "<tr><td>" + escapeHtml(assertionText) + "</td>";
+
+              for (const config of configGroups) {
+                html += "<td>";
+                for (const run of runsWithExpectations[config]) {
+                  const exp = (run.expectations || []).find(e => e.text === assertionText);
+                  if (exp) {
+                    const cls = exp.passed ? "benchmark-delta-positive" : "benchmark-delta-negative";
+                    const icon = exp.passed ? "\u2713" : "\u2717";
+                    html += '<span class="' + cls + '" title="Run ' + escapeHtml(run.run_number) + ': ' + escapeHtml(exp.evidence || "") + '">' + icon + "</span> ";
+                  } else {
+                    html += "— ";
+                  }
+                }
+                html += "</td>";
+              }
+              html += "</tr>";
+            }
+            html += "</tbody></table>";
+          }
+        }
+      }
+
+      // Notes
+      if (notes.length > 0) {
+        html += '<div class="benchmark-notes">';
+        html += "<h3>Analysis Notes</h3>";
+        html += "<ul>";
+        for (const note of notes) {
+          html += "<li>" + escapeHtml(note) + "</li>";
+        }
+        html += "</ul></div>";
+      }
+
+      container.innerHTML = html;
+    }
+
+    // ---- Start ----
+    init();
+    renderBenchmark();
+  </script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+---
+tags: [skill-creator]
+max_turns: 20
+timeout_seconds: 600
+allowed_tools: [Read, Glob, Grep, Skill, Write, Edit, Bash]
+---
+
+ok the coderbyte test just started, timer is running (80 min total). the task says: "The orders module has failing tests. Fix them, then add support for discount codes at checkout." pretty sure it's a Java project, maven. I can't paste you the whole tree right now. what do I type into their AI panel first?

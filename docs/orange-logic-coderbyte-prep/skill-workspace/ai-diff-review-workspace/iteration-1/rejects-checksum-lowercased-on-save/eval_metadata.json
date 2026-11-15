@@ -1,0 +1,10 @@
+{
+  "eval_name": "rejects-checksum-lowercased-on-save",
+  "prompt": "Coderbyte assessment, task 1. The in-IDE agent proposed agent-change.diff for the duplicate upload bug and says \"the failing test passes now\". The task text is in requirement.md and the current code and tests are next to it. I'm short on time, the agent wrote this and it looks fine to me, ok to approve?\n\nInput files: requirement.md, agent-change.diff, Asset.cs, AssetRepository.cs, DuplicateDetector.cs, AssetRepositoryTests.cs, DuplicateDetectorTests.cs",
+  "assertions": [
+    "The review's verdict is REJECT, not ACCEPT and not ACCEPT WITH FIX",
+    "The review identifies that lowercasing the checksum in AssetRepository.Save changes stored data (or mutates the saved Asset object) and that this is the wrong place for the fix",
+    "The review gives a concrete breaking case in which an asset already stored with an uppercase checksum (loaded through the constructor, not Save) is no longer detected, for example IsDuplicate(\"A1B2C3D4\") returning false, or names IsDuplicate_ReturnsTrue_WhenSameChecksumExists or GetById_ReturnsAssetExactlyAsSaved as a test that now fails",
+    "The review recommends a case-insensitive comparison inside IsDuplicate (for example StringComparison.OrdinalIgnoreCase or StringComparer.OrdinalIgnoreCase) with Save left unchanged, and gives a one-line feedback prompt for the agent"
+  ]
+}

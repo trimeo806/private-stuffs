@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "e4Y4vhHxgoU=",
+  "success": true,
+  "projectFilePath": "/Users/nguyenthanhtri/workspace/private-stuffs/docs/orange-logic-coderbyte-prep/skill-workspace/tdd-implement-workspace/iteration-1/csharp-tag-merge-xunit/without_skill/run-2/outputs/src/AssetLibrary/AssetLibrary.csproj",
+  "expectedPackageFiles": [
+    "/Users/nguyenthanhtri/.nuget/packages/microsoft.netcore.app.ref/8.0.34/microsoft.netcore.app.ref.8.0.34.nupkg.sha512",
+    "/Users/nguyenthanhtri/.nuget/packages/microsoft.aspnetcore.app.ref/8.0.34/microsoft.aspnetcore.app.ref.8.0.34.nupkg.sha512"
+  ],
+  "logs": []
+}

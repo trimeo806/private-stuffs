@@ -1,0 +1,831 @@
+{
+  "metadata": {
+    "skill_name": "edge-case-tests",
+    "skill_path": "<path/to/skill>",
+    "executor_model": "<model-name>",
+    "analyzer_model": "<model-name>",
+    "timestamp": "2026-11-14T12:06:40Z",
+    "evals_run": [
+      "csharp-asset-pager-xunit",
+      "ide-prompt-slugify-vitest",
+      "python-storage-report-pytest"
+    ],
+    "runs_per_configuration": 3
+  },
+  "runs": [
+    {
+      "eval_id": "csharp-asset-pager-xunit",
+      "eval_name": "csharp-asset-pager-xunit",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 5,
+        "failed": 0,
+        "total": 5,
+        "time_seconds": 74.8,
+        "tokens": 102332,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "New tests are added inside the AssetLibrary.Tests project using xUnit, with at least one [Theory] that takes its cases from [InlineData] or [MemberData], and no other test framework or package is added",
+          "passed": true,
+          "evidence": "New file AssetLibrary.Tests/AssetPagerEdgeCaseTests.cs uses 'using Xunit;' with [Theory]/[InlineData] (e.g. Throws_out_of_range_when_page_size_is_outside_one_to_one_hundred with [InlineData(0)], [InlineData(-1)], [InlineData(101)]). Only new file vs input; AssetLibrary.Tests.csproj unchanged (no package added). "
+        },
+        {
+          "text": "The tests include a page past the last page that expects empty Items, and an invalid page or pageSize (0, negative, or above 100) that expects ArgumentOutOfRangeException",
+          "passed": true,
+          "evidence": "Returns_empty_items_with_totals_filled_when_page_is_past_the_end: GetPage(MakeAssets(4), 3, 2) -> Assert.Empty(result.Items); Throws_out_of_range_when_page_size_is_outside_one_to_one_hundred asserts ArgumentOutOfRangeException for 0, -1, 101."
+        },
+        {
+          "text": "The final response reports that TotalPages is computed with integer division and is too low when the asset count is not a multiple of pageSize, as a bug in production code, and AssetPager.cs is not modified during the run",
+          "passed": true,
+          "evidence": "Response: 'Rows 1-3: expected TotalPages 3 / 1 / 2, got 2 / 0 / 1. Cause: AssetPager.cs:24, ordered.Count / pageSize is floor division.' Under '### Suspected bugs'; 'I left production code alone'. diff -rq against evals/csharp-asset-pager-xunit/files shows AssetPager.cs identical; mtime 18:52:41 equals the input copy time."
+        },
+        {
+          "text": "The response contains an edge-case table with an input, an expected result and a reason for each row, and every new test method name describes a behavior rather than a ticket, task or case number",
+          "passed": true,
+          "evidence": "Table columns '# | Case | Input | Expected | Why it matters | Source', 15 rows each with input, expected and a 'Why it matters' reason. Test names are behavioral: Throws_out_of_range_when_page_is_below_one, Total_pages_rounds_up_to_cover_every_asset, Does_not_modify_the_input_list. No ticket/case numbers in names."
+        },
+        {
+          "text": "The tests include a very large page number (int.MaxValue or near it) with a pageSize above 1 that expects empty Items, and the final response reports the (page - 1) * pageSize overflow in AssetPager.cs as a suspected bug rather than leaving it only as an untested or uncovered note",
+          "passed": true,
+          "evidence": "Test Returns_empty_items_when_huge_page_would_overflow_the_offset with [InlineData(int.MaxValue, 2)] and [InlineData(int.MaxValue, 100)] asserts Assert.Empty(result.Items). Response: 'Row 5: expected empty Items for a huge page, got the first page. Cause: AssetPager.cs:26, (page - 1) * pageSize is int math and wraps negative.' listed under Suspected bugs. Re-ran in scratch copy: Failed 7, Passed 17, Total 24, matching the response."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "csharp-asset-pager-xunit",
+      "eval_name": "csharp-asset-pager-xunit",
+      "configuration": "with_skill",
+      "run_number": 2,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 5,
+        "failed": 0,
+        "total": 5,
+        "time_seconds": 75.5,
+        "tokens": 102431,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "New tests are added inside the AssetLibrary.Tests project using xUnit, with at least one [Theory] that takes its cases from [InlineData] or [MemberData], and no other test framework or package is added",
+          "passed": true,
+          "evidence": "New file AssetLibrary.Tests/AssetPagerEdgeCaseTests.cs uses 'using Xunit;' with [Theory]/[InlineData] (e.g. Total_pages_is_the_count_divided_by_page_size_rounded_up with five [InlineData] rows). Only new file vs input; AssetLibrary.Tests.csproj unchanged (no package added). "
+        },
+        {
+          "text": "The tests include a page past the last page that expects empty Items, and an invalid page or pageSize (0, negative, or above 100) that expects ArgumentOutOfRangeException",
+          "passed": true,
+          "evidence": "Returns_empty_items_with_totals_when_page_is_past_the_end: GetPage(MakeAssets(4), 3, 2) -> Assert.Empty(result.Items); Throws_out_of_range_when_page_size_is_outside_one_to_one_hundred asserts ArgumentOutOfRangeException for 0, -1, 101, int.MaxValue."
+        },
+        {
+          "text": "The final response reports that TotalPages is computed with integer division and is too low when the asset count is not a multiple of pageSize, as a bug in production code, and AssetPager.cs is not modified during the run",
+          "passed": true,
+          "evidence": "Response: 'Case 5: TotalPages uses floor division. (11, 5) should give 3 and returns 2 ... Cause: AssetPager.cs, var totalPages = ordered.Count / pageSize;' under '### Suspected bugs'; 'I didn't change AssetPager.cs.' diff -rq against evals/csharp-asset-pager-xunit/files shows AssetPager.cs identical; mtime 18:52:41 equals the input copy time."
+        },
+        {
+          "text": "The response contains an edge-case table with an input, an expected result and a reason for each row, and every new test method name describes a behavior rather than a ticket, task or case number",
+          "passed": true,
+          "evidence": "Table columns '# | Case | Input | Expected | Why it matters | Source', 11 rows each with a reason. Test names are behavioral: Throws_argument_null_when_assets_is_null, Accepts_page_size_at_the_limits, Breaks_name_ties_that_differ_only_in_case_by_id_ascending. No ticket/case numbers in names."
+        },
+        {
+          "text": "The tests include a very large page number (int.MaxValue or near it) with a pageSize above 1 that expects empty Items, and the final response reports the (page - 1) * pageSize overflow in AssetPager.cs as a suspected bug rather than leaving it only as an untested or uncovered note",
+          "passed": true,
+          "evidence": "Test Returns_empty_items_when_page_number_is_huge with [InlineData(int.MaxValue, 2)] and [InlineData(int.MaxValue, 100)] asserts Assert.Empty(result.Items). Response: 'Case 8: a huge page number returns page 1's items instead of an empty page. For page = int.MaxValue, (page - 1) * pageSize wraps to a negative number.' under Suspected bugs. Re-ran in scratch copy: Failed 5, Passed 19, Total 24, matching the response."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "csharp-asset-pager-xunit",
+      "eval_name": "csharp-asset-pager-xunit",
+      "configuration": "with_skill",
+      "run_number": 3,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 5,
+        "failed": 0,
+        "total": 5,
+        "time_seconds": 81.1,
+        "tokens": 106742,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "New tests are added inside the AssetLibrary.Tests project using xUnit, with at least one [Theory] that takes its cases from [InlineData] or [MemberData], and no other test framework or package is added",
+          "passed": true,
+          "evidence": "New file AssetLibrary.Tests/AssetPagerEdgeCaseTests.cs uses 'using Xunit;' with [Theory]/[InlineData] (e.g. Total_pages_is_the_ceiling_of_count_over_page_size with seven [InlineData] rows). Only new file vs input; AssetLibrary.Tests.csproj unchanged (no package added). "
+        },
+        {
+          "text": "The tests include a page past the last page that expects empty Items, and an invalid page or pageSize (0, negative, or above 100) that expects ArgumentOutOfRangeException",
+          "passed": true,
+          "evidence": "Returns_empty_items_with_totals_when_page_is_past_the_end: GetPage(MakeAssets(4), 3, 2) -> Assert.Empty(result.Items); Throws_out_of_range_when_page_size_is_outside_one_to_one_hundred asserts ArgumentOutOfRangeException for 0, -1, 101, int.MaxValue; page 0/-1/int.MinValue also covered."
+        },
+        {
+          "text": "The final response reports that TotalPages is computed with integer division and is too low when the asset count is not a multiple of pageSize, as a bug in production code, and AssetPager.cs is not modified during the run",
+          "passed": true,
+          "evidence": "Response: 'Case 5, TotalPages uses floor division. For 5 assets and size 2 it should be 3 but returns 2 ... Cause: AssetLibrary/AssetPager.cs, the line var totalPages = ordered.Count / pageSize;' under '### Suspected bugs'; 'I left the production code unchanged'. diff -rq against evals/csharp-asset-pager-xunit/files shows AssetPager.cs identical; mtime 18:52:41 equals the input copy time."
+        },
+        {
+          "text": "The response contains an edge-case table with an input, an expected result and a reason for each row, and every new test method name describes a behavior rather than a ticket, task or case number",
+          "passed": true,
+          "evidence": "Table columns '# | Case | Input | Expected | Why it matters | Source', 13 rows each with a reason. Test names are behavioral: Second_page_continues_after_the_first_in_sort_order, Returns_empty_page_with_zero_totals_for_an_empty_list, Breaks_name_ties_by_id_ascending_including_case_variants. No ticket/case numbers in names."
+        },
+        {
+          "text": "The tests include a very large page number (int.MaxValue or near it) with a pageSize above 1 that expects empty Items, and the final response reports the (page - 1) * pageSize overflow in AssetPager.cs as a suspected bug rather than leaving it only as an untested or uncovered note",
+          "passed": true,
+          "evidence": "Test Returns_empty_items_when_page_is_so_large_the_offset_overflows with [InlineData(int.MaxValue, 2)], [InlineData(int.MaxValue, 100)] asserts Assert.Empty(result.Items). Response: 'Case 8, the skip offset overflows. page = int.MaxValue, pageSize = 100 should return empty Items but returns the first 5 assets. Cause: ... .Skip((page - 1) * pageSize).' under Suspected bugs. Re-ran in scratch copy: Failed 8, Passed 20, Total 28, matching the response."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "ide-prompt-slugify-vitest",
+      "eval_name": "ide-prompt-slugify-vitest",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 50.8,
+        "tokens": 95097,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The response gives one paste-ready prompt in a code block that names slugifyFileName, src/slugify.ts and Vitest as the test framework",
+          "passed": true,
+          "evidence": "Single fenced prompt block: 'Write edge-case tests for slugifyFileName in src/slugify.ts. ... Use the same framework (Vitest: import { describe, expect, it } from \"vitest\")'."
+        },
+        {
+          "text": "The pasted prompt tells the in-IDE assistant not to modify src/slugify.ts, and to report an expectation that disagrees with the code as a suspected bug instead of changing the expectation",
+          "passed": true,
+          "evidence": "Prompt: '5. Do not modify src/slugify.ts or any production code. If an expectation disagrees with the code, keep the expectation and list it as a suspected bug.'"
+        },
+        {
+          "text": "The pasted prompt asks for an edge-case table with input, expected and why before writing tests, and names at least four concrete file-name cases such as an empty string, whitespace only, an uppercase extension, accented letters, multiple dots or a leading dot",
+          "passed": true,
+          "evidence": "Prompt: '2. First show a table: case, input, expected, why.' then step 4 'Then add the tests'. Concrete cases: \"Caf\u00e9.png\", \"\u00c9T\u00c9 2024.JPG\", \"report.tar.gz\", \".env\", \".env.local\", \"\", \"   \", \"!!!.png\"."
+        },
+        {
+          "text": "src/slugify.ts is not modified during the run",
+          "passed": true,
+          "evidence": "diff -rq against evals/ide-prompt-slugify-vitest/files shows src/slugify.ts identical, and its mtime equals the input copy time (18:52:41); response: 'I didn't change any files' / 'Nothing was changed in your files.'"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "ide-prompt-slugify-vitest",
+      "eval_name": "ide-prompt-slugify-vitest",
+      "configuration": "with_skill",
+      "run_number": 2,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 45.9,
+        "tokens": 94651,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The response gives one paste-ready prompt in a code block that names slugifyFileName, src/slugify.ts and Vitest as the test framework",
+          "passed": true,
+          "evidence": "Single fenced prompt block: 'Write edge-case tests for slugifyFileName in src/slugify.ts. ... Use the same framework (Vitest: ...)'."
+        },
+        {
+          "text": "The pasted prompt tells the in-IDE assistant not to modify src/slugify.ts, and to report an expectation that disagrees with the code as a suspected bug instead of changing the expectation",
+          "passed": true,
+          "evidence": "Prompt: '5. Do not modify src/slugify.ts or any other production code. If an expected value disagrees with what the code does, keep the expected value and list the case under \"Suspected bugs\"'"
+        },
+        {
+          "text": "The pasted prompt asks for an edge-case table with input, expected and why before writing tests, and names at least four concrete file-name cases such as an empty string, whitespace only, an uppercase extension, accented letters, multiple dots or a leading dot",
+          "passed": true,
+          "evidence": "Prompt: '2. Before editing anything, show me a table with these columns: case, input, expected, why.' Concrete cases: \"Caf\u00e9.png\", \"\u00c9COLE Notes.TXT\", \"My.Photo.v2.JPG\", \".env\", \"report.\", \"\", \"   \"."
+        },
+        {
+          "text": "src/slugify.ts is not modified during the run",
+          "passed": true,
+          "evidence": "diff -rq against evals/ide-prompt-slugify-vitest/files shows src/slugify.ts identical, and its mtime equals the input copy time (18:52:41); response: 'I didn't change any files' / 'Nothing was changed in your files.'"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "ide-prompt-slugify-vitest",
+      "eval_name": "ide-prompt-slugify-vitest",
+      "configuration": "with_skill",
+      "run_number": 3,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 50.7,
+        "tokens": 93793,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The response gives one paste-ready prompt in a code block that names slugifyFileName, src/slugify.ts and Vitest as the test framework",
+          "passed": true,
+          "evidence": "Single fenced prompt block: 'Write edge-case tests for slugifyFileName in src/slugify.ts. ... Use the same framework (Vitest: import { describe, expect, it } from \"vitest\")'."
+        },
+        {
+          "text": "The pasted prompt tells the in-IDE assistant not to modify src/slugify.ts, and to report an expectation that disagrees with the code as a suspected bug instead of changing the expectation",
+          "passed": true,
+          "evidence": "Prompt: '5. Do not modify src/slugify.ts, src/slugify.test.ts or any other existing file. If an expectation disagrees with the code, keep the expectation, let the test fail, and list it under \"Suspected bugs\"'"
+        },
+        {
+          "text": "The pasted prompt asks for an edge-case table with input, expected and why before writing tests, and names at least four concrete file-name cases such as an empty string, whitespace only, an uppercase extension, accented letters, multiple dots or a leading dot",
+          "passed": true,
+          "evidence": "Prompt: '2. First show me a table: case, input, expected, why.' then step 4 'Then create all tests'. Concrete cases: \"Caf\u00e9.png\", \"Photo.JPG\", \"archive.tar.GZ\", \".env\", \"\", \"   \", \"!!!\"."
+        },
+        {
+          "text": "src/slugify.ts is not modified during the run",
+          "passed": true,
+          "evidence": "diff -rq against evals/ide-prompt-slugify-vitest/files shows src/slugify.ts identical, and its mtime equals the input copy time (18:52:41); response: 'I didn't change any files' / 'Nothing was changed in your files.'"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "python-storage-report-pytest",
+      "eval_name": "python-storage-report-pytest",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 5,
+        "failed": 0,
+        "total": 5,
+        "time_seconds": 67.3,
+        "tokens": 102290,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "New tests are written for pytest under the tests folder, and at least one test uses pytest.mark.parametrize; no unittest.TestCase class or new test dependency is introduced",
+          "passed": true,
+          "evidence": "New file tests/test_storage_report_edge_cases.py with several @pytest.mark.parametrize tests (e.g. test_reads_extension_after_last_dot_or_reports_none). No unittest.TestCase; pyproject.toml unchanged (no new dependency). Re-ran in scratch copy: 3 failed, 14 passed, matching the response."
+        },
+        {
+          "text": "The tests include extensions that differ only in case (for example \"a.JPG\" and \"b.jpg\") expecting one lowercase group, and two extensions with equal totals expecting them ordered by extension ascending",
+          "passed": true,
+          "evidence": "test_groups_extensions_case_insensitively_and_reports_lowercase: ['a.JPG', 'b.jpg', 'c.Jpg'] -> [('jpg', 30)]; test_breaks_total_ties_by_extension_ascending: png/jpg/gif all 50 -> [('gif', 50), ('jpg', 50), ('png', 50)]."
+        },
+        {
+          "text": "The final response reports that summarize_by_extension does not merge mixed-case extensions as a bug in storage_report.py, and storage_report.py is not modified during the run",
+          "passed": true,
+          "evidence": "Response: 'Cases 1 and 2: expected [(\"jpg\", 30)], got [(\"JPG\", 10), (\"Jpg\", 10), (\"jpg\", 10)]. Likely cause: storage_report.py:10 returns ext without .lower()' under '### Suspected bugs'; 'Production code was left unchanged'. diff -rq against evals/python-storage-report-pytest/files shows storage_report.py identical; mtime equals the input copy time (18:52:41)."
+        },
+        {
+          "text": "A test asserts that a negative size raises ValueError using pytest.raises",
+          "passed": true,
+          "evidence": "test_raises_value_error_for_negative_size uses 'with pytest.raises(ValueError): summarize_by_extension(files)' for size -1 and -5."
+        },
+        {
+          "text": "The response contains an edge-case table in which every row has an input, an expected result, a reason naming the bug that row would catch, and a source marking it as stated in README.md or assumed, and every row marked as from the README matches what README.md actually says",
+          "passed": true,
+          "evidence": "Table columns 'Input | Expected | Why it matters | Source'; all 11 rows have a bug-naming reason (e.g. 'rpartition returns an empty extension, reported as \"\"') and Source spec/assumed. Spec rows match README (lowercase, last dot, (none) for no/leading/trailing dot, ValueError, sort desc + ties asc, [] for empty). Zero size correctly marked 'assumed'. Row 10's '(none)' before 'abc' is a literal application of 'ties by extension ascending'."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "python-storage-report-pytest",
+      "eval_name": "python-storage-report-pytest",
+      "configuration": "with_skill",
+      "run_number": 2,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 5,
+        "failed": 0,
+        "total": 5,
+        "time_seconds": 64.0,
+        "tokens": 101700,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "New tests are written for pytest under the tests folder, and at least one test uses pytest.mark.parametrize; no unittest.TestCase class or new test dependency is introduced",
+          "passed": true,
+          "evidence": "New tests appended to the existing tests/test_storage_report.py (original test unchanged) using @pytest.mark.parametrize (test_name_without_extension_is_reported_as_none, test_extension_is_text_after_last_dot). No unittest.TestCase; pyproject.toml unchanged (no new dependency). Re-ran in scratch copy: 5 failed, 14 passed, matching the response."
+        },
+        {
+          "text": "The tests include extensions that differ only in case (for example \"a.JPG\" and \"b.jpg\") expecting one lowercase group, and two extensions with equal totals expecting them ordered by extension ascending",
+          "passed": true,
+          "evidence": "test_merges_extensions_that_differ_only_in_case_and_reports_lowercase: a.JPG/b.jpg/c.Jpg -> [('jpg', 175)]; test_ties_on_total_are_sorted_by_extension_ascending: zip/doc/mp4 all 10 -> doc, mp4, zip."
+        },
+        {
+          "text": "The final response reports that summarize_by_extension does not merge mixed-case extensions as a bug in storage_report.py, and storage_report.py is not modified during the run",
+          "passed": true,
+          "evidence": "Response: 'Cases 1, 2, 10: expected lowercase jpg / pdf / zip, got JPG, jpg, Jpg as separate groups ... Likely cause: storage_report.py:10, return ext does not lowercase.' under '### Suspected bugs'; 'Production code is left unchanged'. diff -rq against evals/python-storage-report-pytest/files shows storage_report.py identical; mtime equals the input copy time (18:52:41)."
+        },
+        {
+          "text": "A test asserts that a negative size raises ValueError using pytest.raises",
+          "passed": true,
+          "evidence": "test_negative_size_raises_value_error: 'with pytest.raises(ValueError): summarize_by_extension([{\"name\": \"a.txt\", \"size\": -1}])'."
+        },
+        {
+          "text": "The response contains an edge-case table in which every row has an input, an expected result, a reason naming the bug that row would catch, and a source marking it as stated in README.md or assumed, and every row marked as from the README matches what README.md actually says",
+          "passed": true,
+          "evidence": "Table columns 'Input | Expected | Why it matters | Source'; all 13 rows have a bug-naming reason and Source spec/assumed. Zero size and input-not-mutated marked 'assumed'. Spec rows match README."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "python-storage-report-pytest",
+      "eval_name": "python-storage-report-pytest",
+      "configuration": "with_skill",
+      "run_number": 3,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 5,
+        "failed": 0,
+        "total": 5,
+        "time_seconds": 66.8,
+        "tokens": 100631,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "New tests are written for pytest under the tests folder, and at least one test uses pytest.mark.parametrize; no unittest.TestCase class or new test dependency is introduced",
+          "passed": true,
+          "evidence": "New file tests/test_storage_report_edge_cases.py with @pytest.mark.parametrize (test_reports_name_without_extension_as_none, test_uses_text_after_last_dot, test_rejects_negative_size). No unittest.TestCase; pyproject.toml unchanged (no new dependency). Re-ran in scratch copy: 4 failed, 11 passed, matching the response."
+        },
+        {
+          "text": "The tests include extensions that differ only in case (for example \"a.JPG\" and \"b.jpg\") expecting one lowercase group, and two extensions with equal totals expecting them ordered by extension ascending",
+          "passed": true,
+          "evidence": "test_groups_extensions_case_insensitively: a.JPG/b.jpg/c.Jpg -> [('jpg', 16)]; test_breaks_ties_by_extension_ascending: png/gif/README/jpg all 10 -> (none), gif, jpg, png."
+        },
+        {
+          "text": "The final response reports that summarize_by_extension does not merge mixed-case extensions as a bug in storage_report.py, and storage_report.py is not modified during the run",
+          "passed": true,
+          "evidence": "Response: 'Cases 1 and 2: expected [(\"jpg\", 16)] ... got [(\"JPG\", 10), (\"jpg\", 5), (\"Jpg\", 1)] ... Likely cause: storage_report.py:10, extension_of returns ext without .lower().' under '### Suspected bugs'; 'Production code is left unchanged'. diff -rq against evals/python-storage-report-pytest/files shows storage_report.py identical; mtime equals the input copy time (18:52:41)."
+        },
+        {
+          "text": "A test asserts that a negative size raises ValueError using pytest.raises",
+          "passed": true,
+          "evidence": "test_rejects_negative_size: 'with pytest.raises(ValueError): summarize_by_extension(files)' for size -1."
+        },
+        {
+          "text": "The response contains an edge-case table in which every row has an input, an expected result, a reason naming the bug that row would catch, and a source marking it as stated in README.md or assumed, and every row marked as from the README matches what README.md actually says",
+          "passed": true,
+          "evidence": "Table columns 'Input | Expected | Why it matters | Source'; all 12 rows have a bug-naming reason and a source (spec, assumed, or 'spec / assumed' for the multi-dot row). Zero size marked 'assumed'. Spec rows match README."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "csharp-asset-pager-xunit",
+      "eval_name": "csharp-asset-pager-xunit",
+      "configuration": "old_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.6,
+        "passed": 3,
+        "failed": 2,
+        "total": 5,
+        "time_seconds": 184.0,
+        "tokens": 104961,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "New tests are added inside the AssetLibrary.Tests project using xUnit, with at least one [Theory] that takes its cases from [InlineData] or [MemberData], and no other test framework or package is added",
+          "passed": true,
+          "evidence": "New xUnit tests added to the existing AssetLibrary.Tests/AssetPagerTests.cs (original Returns_first_page_in_name_order kept verbatim), with [Theory]/[InlineData] (e.g. Throws_out_of_range_when_page_size_is_outside_one_to_one_hundred with [InlineData(0)], [InlineData(-5)], [InlineData(101)], [InlineData(int.MaxValue)]). csproj identical to input, no package added. Re-ran in scratch copy: Failed 4, Passed 16, Total 20."
+        },
+        {
+          "text": "The tests include a page past the last page that expects empty Items, and an invalid page or pageSize (0, negative, or above 100) that expects ArgumentOutOfRangeException",
+          "passed": true,
+          "evidence": "Returns_empty_items_with_totals_for_page_after_last: GetPage(MakeAssets(5), 4, 2) -> Assert.Empty(result.Items); page 0/-1/int.MinValue and pageSize 0/-5/101/int.MaxValue assert ArgumentOutOfRangeException."
+        },
+        {
+          "text": "The final response reports that TotalPages is computed with integer division and is too low when the asset count is not a multiple of pageSize, as a bug in production code, and AssetPager.cs is not modified during the run",
+          "passed": true,
+          "evidence": "Response: 'Integer division rounds down. With 5 assets and a page size of 2 you get 2 pages, but 3 are needed.' under '## The bug (fix this first)'; 'I didn't change production code'. diff -rq shows AssetPager.cs identical to input; mtime 17:01:57 equals that run\u2019s input copy time."
+        },
+        {
+          "text": "The response contains an edge-case table with an input, an expected result and a reason for each row, and every new test method name describes a behavior rather than a ticket, task or case number",
+          "passed": false,
+          "evidence": "Table columns are '# | Case | Input | Expected | Source' with no reason/why column, so rows have input and expected but no reason. (Test names are behavioral, but the table half fails.)"
+        },
+        {
+          "text": "The tests include a very large page number (int.MaxValue or near it) with a pageSize above 1 that expects empty Items, and the final response reports the (page - 1) * pageSize overflow in AssetPager.cs as a suspected bug rather than leaving it only as an untested or uncovered note",
+          "passed": false,
+          "evidence": "No test uses a huge page number (int.MaxValue appears only as a pageSize). The response says 'One thing I didn't cover: very large page numbers such as int.MaxValue ... (page - 1) * pageSize can overflow' \u2014 left as an uncovered note, which the assertion explicitly excludes."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "csharp-asset-pager-xunit",
+      "eval_name": "csharp-asset-pager-xunit",
+      "configuration": "old_skill",
+      "run_number": 2,
+      "result": {
+        "pass_rate": 0.6,
+        "passed": 3,
+        "failed": 2,
+        "total": 5,
+        "time_seconds": 78.0,
+        "tokens": 101598,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "New tests are added inside the AssetLibrary.Tests project using xUnit, with at least one [Theory] that takes its cases from [InlineData] or [MemberData], and no other test framework or package is added",
+          "passed": true,
+          "evidence": "New xUnit tests added to the existing AssetLibrary.Tests/AssetPagerTests.cs (original Returns_first_page_in_name_order kept verbatim), with [Theory]/[InlineData] (e.g. Total_pages_rounds_up_to_include_partial_last_page with five [InlineData] rows). csproj identical to input, no package added. Re-ran in scratch copy: Failed 6, Passed 15, Total 21."
+        },
+        {
+          "text": "The tests include a page past the last page that expects empty Items, and an invalid page or pageSize (0, negative, or above 100) that expects ArgumentOutOfRangeException",
+          "passed": true,
+          "evidence": "Returns_empty_items_with_totals_for_page_after_last: GetPage(MakeAssets(5), 4, 2) -> Assert.Empty(result.Items); page 0/-1/int.MinValue and pageSize 0/-5/101/int.MaxValue assert ArgumentOutOfRangeException."
+        },
+        {
+          "text": "The final response reports that TotalPages is computed with integer division and is too low when the asset count is not a multiple of pageSize, as a bug in production code, and AssetPager.cs is not modified during the run",
+          "passed": true,
+          "evidence": "Response: 'This rounds down. With 5 assets and a page size of 2 you get 2 pages instead of 3' for 'var totalPages = ordered.Count / pageSize;' under '## The bug'; 'I didn't change your production code.' diff -rq against evals/csharp-asset-pager-xunit/files shows AssetPager.cs identical; mtime 18:52:41 equals the input copy time."
+        },
+        {
+          "text": "The response contains an edge-case table with an input, an expected result and a reason for each row, and every new test method name describes a behavior rather than a ticket, task or case number",
+          "passed": false,
+          "evidence": "Table columns are '# | Case | Input | Expected | Source' with no reason/why column, so rows have input and expected but no reason. (Test names are behavioral, but the table half fails.)"
+        },
+        {
+          "text": "The tests include a very large page number (int.MaxValue or near it) with a pageSize above 1 that expects empty Items, and the final response reports the (page - 1) * pageSize overflow in AssetPager.cs as a suspected bug rather than leaving it only as an untested or uncovered note",
+          "passed": false,
+          "evidence": "No test with a huge page number, and the response never mentions the (page - 1) * pageSize overflow."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "csharp-asset-pager-xunit",
+      "eval_name": "csharp-asset-pager-xunit",
+      "configuration": "old_skill",
+      "run_number": 3,
+      "result": {
+        "pass_rate": 0.6,
+        "passed": 3,
+        "failed": 2,
+        "total": 5,
+        "time_seconds": 66.1,
+        "tokens": 96298,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "New tests are added inside the AssetLibrary.Tests project using xUnit, with at least one [Theory] that takes its cases from [InlineData] or [MemberData], and no other test framework or package is added",
+          "passed": true,
+          "evidence": "New xUnit tests added to the existing AssetLibrary.Tests/AssetPagerTests.cs (original Returns_first_page_in_name_order kept verbatim), with [Theory]/[InlineData] (e.g. Total_pages_rounds_up_to_cover_every_asset with four [InlineData] rows). csproj identical to input, no package added. Re-ran in scratch copy: Failed 3, Passed 17, Total 20."
+        },
+        {
+          "text": "The tests include a page past the last page that expects empty Items, and an invalid page or pageSize (0, negative, or above 100) that expects ArgumentOutOfRangeException",
+          "passed": true,
+          "evidence": "Page_after_the_last_returns_empty_items_with_totals_filled: GetPage(Assets(4), 3, 2) -> Assert.Empty(result.Items); page 0/-1/int.MinValue and pageSize 0/-1/101 assert ArgumentOutOfRangeException."
+        },
+        {
+          "text": "The final response reports that TotalPages is computed with integer division and is too low when the asset count is not a multiple of pageSize, as a bug in production code, and AssetPager.cs is not modified during the run",
+          "passed": true,
+          "evidence": "Response: 'AssetLibrary/AssetPager.cs uses integer division, which rounds down ... So 5 assets with pageSize 2 gives 2 pages instead of 3' under '## The bug'; 'I did not edit AssetPager.cs.' diff -rq against evals/csharp-asset-pager-xunit/files shows AssetPager.cs identical; mtime 18:52:41 equals the input copy time."
+        },
+        {
+          "text": "The response contains an edge-case table with an input, an expected result and a reason for each row, and every new test method name describes a behavior rather than a ticket, task or case number",
+          "passed": false,
+          "evidence": "Table columns are '# | Case | Input | Expected | Source' with no reason/why column, so rows have input and expected but no reason. (Test names are behavioral, but the table half fails.)"
+        },
+        {
+          "text": "The tests include a very large page number (int.MaxValue or near it) with a pageSize above 1 that expects empty Items, and the final response reports the (page - 1) * pageSize overflow in AssetPager.cs as a suspected bug rather than leaving it only as an untested or uncovered note",
+          "passed": false,
+          "evidence": "No test with a huge page number, and the response never mentions the (page - 1) * pageSize overflow."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "ide-prompt-slugify-vitest",
+      "eval_name": "ide-prompt-slugify-vitest",
+      "configuration": "old_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.5,
+        "passed": 2,
+        "failed": 2,
+        "total": 4,
+        "time_seconds": 58.4,
+        "tokens": 97956,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The response gives one paste-ready prompt in a code block that names slugifyFileName, src/slugify.ts and Vitest as the test framework",
+          "passed": true,
+          "evidence": "Single fenced prompt: 'Add edge-case tests for slugifyFileName to src/slugify.test.ts using the existing Vitest setup ... Do not modify src/slugify.ts'. Names all three."
+        },
+        {
+          "text": "The pasted prompt tells the in-IDE assistant not to modify src/slugify.ts, and to report an expectation that disagrees with the code as a suspected bug instead of changing the expectation",
+          "passed": false,
+          "evidence": "Prompt says 'Do not modify src/slugify.ts' and 'Do not change production code even if you think a test will fail', but never tells the assistant to keep a disagreeing expectation and report it as a suspected bug."
+        },
+        {
+          "text": "The pasted prompt asks for an edge-case table with input, expected and why before writing tests, and names at least four concrete file-name cases such as an empty string, whitespace only, an uppercase extension, accented letters, multiple dots or a leading dot",
+          "passed": false,
+          "evidence": "The prompt hands the agent a pre-filled table (test name, input, expected) and says 'Add exactly these cases'; it does not ask the agent to produce an edge-case table with input, expected and why before writing tests, and there is no why column."
+        },
+        {
+          "text": "src/slugify.ts is not modified during the run",
+          "passed": true,
+          "evidence": "diff -rq against evals/ide-prompt-slugify-vitest/files shows src/slugify.ts identical, and its mtime equals the input copy time (17:01:57); response: 'The pass and fail results above come from running the same logic in plain Node.'"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "ide-prompt-slugify-vitest",
+      "eval_name": "ide-prompt-slugify-vitest",
+      "configuration": "old_skill",
+      "run_number": 2,
+      "result": {
+        "pass_rate": 0.75,
+        "passed": 3,
+        "failed": 1,
+        "total": 4,
+        "time_seconds": 69.2,
+        "tokens": 96003,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The response gives one paste-ready prompt in a code block that names slugifyFileName, src/slugify.ts and Vitest as the test framework",
+          "passed": true,
+          "evidence": "Single fenced prompt: 'Edit only src/slugify.test.ts. Do not modify src/slugify.ts ... Add edge case tests for slugifyFileName using the existing Vitest setup'."
+        },
+        {
+          "text": "The pasted prompt tells the in-IDE assistant not to modify src/slugify.ts, and to report an expectation that disagrees with the code as a suspected bug instead of changing the expectation",
+          "passed": true,
+          "evidence": "Prompt: 'Do not modify src/slugify.ts or any other file.' and 'Do not change the expected values to match the current output. If a test fails, leave it failing and tell me which one.' Borderline: keeps the expectation and reports the mismatch, but does not use 'suspected bug' framing."
+        },
+        {
+          "text": "The pasted prompt asks for an edge-case table with input, expected and why before writing tests, and names at least four concrete file-name cases such as an empty string, whitespace only, an uppercase extension, accented letters, multiple dots or a leading dot",
+          "passed": false,
+          "evidence": "The prompt supplies its own table ('Write exactly these tests ... | # | Test name | Input | Expected |') and does not ask the agent to show a table with a why column before writing tests. The response's own table (Case/Input/Expected/Source) is outside the prompt."
+        },
+        {
+          "text": "src/slugify.ts is not modified during the run",
+          "passed": true,
+          "evidence": "diff -rq against evals/ide-prompt-slugify-vitest/files shows src/slugify.ts identical, and its mtime equals the input copy time (18:52:41); response: 'I did not edit your production file.'"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "ide-prompt-slugify-vitest",
+      "eval_name": "ide-prompt-slugify-vitest",
+      "configuration": "old_skill",
+      "run_number": 3,
+      "result": {
+        "pass_rate": 0.25,
+        "passed": 1,
+        "failed": 3,
+        "total": 4,
+        "time_seconds": 90.8,
+        "tokens": 96575,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The response gives one paste-ready prompt in a code block that names slugifyFileName, src/slugify.ts and Vitest as the test framework",
+          "passed": true,
+          "evidence": "First fenced prompt: 'Add edge-case tests for slugifyFileName to src/slugify.test.ts ... Do not change src/slugify.ts ... using the vitest imports already in the file.' Note: the response also offers a second paste-ready prompt that edits src/slugify.ts."
+        },
+        {
+          "text": "The pasted prompt tells the in-IDE assistant not to modify src/slugify.ts, and to report an expectation that disagrees with the code as a suspected bug instead of changing the expectation",
+          "passed": false,
+          "evidence": "Prompt has 'Do not change src/slugify.ts' and 'Do not change an expected value to make a test pass', but no instruction to report a disagreement as a suspected bug. The response then offers a second prompt telling the assistant to edit src/slugify.ts."
+        },
+        {
+          "text": "The pasted prompt asks for an edge-case table with input, expected and why before writing tests, and names at least four concrete file-name cases such as an empty string, whitespace only, an uppercase extension, accented letters, multiple dots or a leading dot",
+          "passed": false,
+          "evidence": "Prompt lists fixed tests ('Tests to add (it name | input | expected)') and does not ask the agent for an edge-case table with input, expected and why before writing tests."
+        },
+        {
+          "text": "src/slugify.ts is not modified during the run",
+          "passed": false,
+          "evidence": "Final content matches the input, but src/slugify.ts mtime is 19:01:27 while every other input file is 18:52:41, and the response says 'I checked that fix on the local copy and all 12 tests passed. I then put your src/slugify.ts back unchanged.' The file was edited and restored during the run."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "python-storage-report-pytest",
+      "eval_name": "python-storage-report-pytest",
+      "configuration": "old_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.8,
+        "passed": 4,
+        "failed": 1,
+        "total": 5,
+        "time_seconds": 61.3,
+        "tokens": 99587,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "New tests are written for pytest under the tests folder, and at least one test uses pytest.mark.parametrize; no unittest.TestCase class or new test dependency is introduced",
+          "passed": true,
+          "evidence": "New tests added to tests/test_storage_report.py (original test kept) with @pytest.mark.parametrize('name', ['Makefile', '.gitignore', 'notes.']). No unittest.TestCase; pyproject.toml unchanged (no new dependency). Re-ran in scratch copy: 3 failed, 10 passed, matching the response."
+        },
+        {
+          "text": "The tests include extensions that differ only in case (for example \"a.JPG\" and \"b.jpg\") expecting one lowercase group, and two extensions with equal totals expecting them ordered by extension ascending",
+          "passed": true,
+          "evidence": "test_merges_extensions_case_insensitively_and_reports_lowercase: a.JPG/b.jpg/c.Jpg -> [('jpg', 35)]; test_breaks_ties_by_extension_ascending: zip/csv/Makefile all 10 -> (none), csv, zip."
+        },
+        {
+          "text": "The final response reports that summarize_by_extension does not merge mixed-case extensions as a bug in storage_report.py, and storage_report.py is not modified during the run",
+          "passed": true,
+          "evidence": "Response: 'Extensions are not lowercased or merged across case ... a.JPG, b.jpg and c.Jpg come back as three groups' under '## Bugs found'; 'I didn't change storage_report.py.' diff -rq against evals/python-storage-report-pytest/files shows storage_report.py identical; mtime equals the input copy time (17:01:57)."
+        },
+        {
+          "text": "A test asserts that a negative size raises ValueError using pytest.raises",
+          "passed": true,
+          "evidence": "test_raises_value_error_for_negative_size: 'with pytest.raises(ValueError): summarize_by_extension(files)'."
+        },
+        {
+          "text": "The response contains an edge-case table in which every row has an input, an expected result, a reason naming the bug that row would catch, and a source marking it as stated in README.md or assumed, and every row marked as from the README matches what README.md actually says",
+          "passed": false,
+          "evidence": "Table columns are '# | Case | Input | Expected | Source': rows have input, expected and source but no reason naming the bug each row would catch."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "python-storage-report-pytest",
+      "eval_name": "python-storage-report-pytest",
+      "configuration": "old_skill",
+      "run_number": 2,
+      "result": {
+        "pass_rate": 0.8,
+        "passed": 4,
+        "failed": 1,
+        "total": 5,
+        "time_seconds": 53.1,
+        "tokens": 95307,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "New tests are written for pytest under the tests folder, and at least one test uses pytest.mark.parametrize; no unittest.TestCase class or new test dependency is introduced",
+          "passed": true,
+          "evidence": "New tests added to tests/test_storage_report.py (original kept) with @pytest.mark.parametrize('name', ['Makefile', '.gitignore', 'notes.']). No unittest.TestCase; pyproject.toml unchanged (no new dependency). Re-ran in scratch copy: 2 failed, 12 passed, matching the response."
+        },
+        {
+          "text": "The tests include extensions that differ only in case (for example \"a.JPG\" and \"b.jpg\") expecting one lowercase group, and two extensions with equal totals expecting them ordered by extension ascending",
+          "passed": true,
+          "evidence": "test_merges_extensions_case_insensitively_and_reports_lowercase: A.JPG/b.jpg/c.Jpg -> [('jpg', 16)]; test_breaks_total_ties_by_extension_ascending: zip/csv/md all 10 -> csv, md, zip."
+        },
+        {
+          "text": "The final response reports that summarize_by_extension does not merge mixed-case extensions as a bug in storage_report.py, and storage_report.py is not modified during the run",
+          "passed": true,
+          "evidence": "Response: 'Extensions are not compared case-insensitively. A.JPG, b.jpg and c.Jpg come back as three separate rows' under '## Findings (bugs in storage_report.py)'; 'I did not touch storage_report.py.' diff -rq against evals/python-storage-report-pytest/files shows storage_report.py identical; mtime equals the input copy time (18:52:41)."
+        },
+        {
+          "text": "A test asserts that a negative size raises ValueError using pytest.raises",
+          "passed": true,
+          "evidence": "test_raises_value_error_for_size_just_below_zero: 'with pytest.raises(ValueError): summarize_by_extension([{\"name\": \"a.txt\", \"size\": -1}])'."
+        },
+        {
+          "text": "The response contains an edge-case table in which every row has an input, an expected result, a reason naming the bug that row would catch, and a source marking it as stated in README.md or assumed, and every row marked as from the README matches what README.md actually says",
+          "passed": false,
+          "evidence": "Table columns are '# | Case | Input | Expected | Source | Result': rows have input, expected and source but no reason naming the bug each row would catch."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "python-storage-report-pytest",
+      "eval_name": "python-storage-report-pytest",
+      "configuration": "old_skill",
+      "run_number": 3,
+      "result": {
+        "pass_rate": 0.8,
+        "passed": 4,
+        "failed": 1,
+        "total": 5,
+        "time_seconds": 52.9,
+        "tokens": 93987,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "New tests are written for pytest under the tests folder, and at least one test uses pytest.mark.parametrize; no unittest.TestCase class or new test dependency is introduced",
+          "passed": true,
+          "evidence": "New tests added to tests/test_storage_report.py (original kept) with @pytest.mark.parametrize('name', [...], ids=['no_dot', 'leading_dot_only', 'trailing_dot']). No unittest.TestCase; pyproject.toml unchanged (no new dependency). Re-ran in scratch copy: 3 failed, 9 passed, matching the response."
+        },
+        {
+          "text": "The tests include extensions that differ only in case (for example \"a.JPG\" and \"b.jpg\") expecting one lowercase group, and two extensions with equal totals expecting them ordered by extension ascending",
+          "passed": true,
+          "evidence": "test_merges_extensions_case_insensitively_and_reports_lowercase: a.JPG/b.jpg/c.Jpg -> [('jpg', 35)]; test_sorts_by_total_descending_then_extension_ascending_on_ties: zip 50/csv 50 -> csv before zip."
+        },
+        {
+          "text": "The final response reports that summarize_by_extension does not merge mixed-case extensions as a bug in storage_report.py, and storage_report.py is not modified during the run",
+          "passed": true,
+          "evidence": "Response: 'Case is not normalized. The extension is returned as written.' under '## Bugs and fixes', and the table row 'FAIL: returns jpg, JPG and Jpg as separate entries'; 'I didn't change the production code.' diff -rq against evals/python-storage-report-pytest/files shows storage_report.py identical; mtime equals the input copy time (18:52:41)."
+        },
+        {
+          "text": "A test asserts that a negative size raises ValueError using pytest.raises",
+          "passed": true,
+          "evidence": "test_raises_value_error_for_negative_size: 'with pytest.raises(ValueError): summarize_by_extension(files)'."
+        },
+        {
+          "text": "The response contains an edge-case table in which every row has an input, an expected result, a reason naming the bug that row would catch, and a source marking it as stated in README.md or assumed, and every row marked as from the README matches what README.md actually says",
+          "passed": false,
+          "evidence": "Table columns are '# | Case | Input | Expected | Source | Result': rows have input, expected and source but no reason naming the bug each row would catch."
+        }
+      ],
+      "notes": []
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {
+        "mean": 1.0,
+        "stddev": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 64.1,
+        "stddev": 12.4433,
+        "min": 45.9,
+        "max": 81.1
+      },
+      "tokens": {
+        "mean": 99963.0,
+        "stddev": 4422.9592,
+        "min": 93793,
+        "max": 106742
+      }
+    },
+    "old_skill": {
+      "pass_rate": {
+        "mean": 0.6333,
+        "stddev": 0.182,
+        "min": 0.25,
+        "max": 0.8
+      },
+      "time_seconds": {
+        "mean": 79.3111,
+        "stddev": 41.1043,
+        "min": 52.9,
+        "max": 184.0
+      },
+      "tokens": {
+        "mean": 98030.2222,
+        "stddev": 3467.4426,
+        "min": 93987,
+        "max": 104961
+      }
+    },
+    "delta": {
+      "pass_rate": "+0.37",
+      "time_seconds": "-15.2",
+      "tokens": "+1933"
+    }
+  },
+  "notes": [
+    "New 100% vs old 63%. Old misses: no why column, no huge-page overflow test, IDE prompt lacks suspected-bug rule and table-first step.",
+    "Token cost down from +13k (iter-1) to +1.9k after reference trim.",
+    "Non-discriminating: csharp #1-3, python #1-4."
+  ]
+}

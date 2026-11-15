@@ -1,0 +1,8 @@
+schema_version: "1.1"
+name: solution-md-from-messy-notes
+expected_outcome: |
+  A SOLUTION.md file of at most 250 words with Approach, How I used AI (a table of
+  prompt intent, kept/rejected/changed, reason), Verification, Trade-offs and Known
+  limits. The AI table names the rejected upscaling suggestion and the changed
+  error swallowing with their reasons. Verification lists only the four tests from
+  the notes. Known limits names WebP and HEIC. Nothing appears that is not in the notes.

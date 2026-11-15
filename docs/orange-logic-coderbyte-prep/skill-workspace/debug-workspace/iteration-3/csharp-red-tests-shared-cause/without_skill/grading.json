@@ -1,0 +1,50 @@
+{
+  "expectations": [
+    {
+      "text": "The trace shows dotnet test being run before the diagnosis is given, and the response names the four failing tests from that real output.",
+      "passed": true,
+      "evidence": "Ran dotnet test, 4 failed 4 passed, failures listed by name."
+    },
+    {
+      "text": "The response attributes GetPage_FirstPage_ReturnsNewestFirst and GetPage_SecondPage_ReturnsNextNewest to one shared cause: the second OrderBy(a => a.Id) in AssetCatalog.GetPage discarding the UploadedAt sort, with ThenBy as the fix direction.",
+      "passed": true,
+      "evidence": "Cause A groups both ordering tests, recommends ThenBy."
+    },
+    {
+      "text": "The response identifies integer division (_assets.Count / pageSize) as the cause of GetPage_TotalPages_RoundsUp, showing 5 items with page size 2 gives 2 instead of 3.",
+      "passed": true,
+      "evidence": "Cause B: line 28 integer division, 5/2=2 vs 3."
+    },
+    {
+      "text": "The response identifies _assets.Max on an empty list throwing InvalidOperationException (Sequence contains no elements) as the cause of GetSummary_EmptyCatalog_IsAllZero.",
+      "passed": true,
+      "evidence": "Cause C: line 35 Max on empty throws InvalidOperationException."
+    },
+    {
+      "text": "At the end of the run, AssetCatalog.cs and AssetCatalogTests.cs are unchanged from the originals: no fix was applied.",
+      "passed": true,
+      "evidence": "diff -rq: no repo changes."
+    },
+    {
+      "text": "The response ends with a paste-ready prompt for the in-IDE agent that names the cause with file and line and says what must stay unchanged (signatures, existing tests).",
+      "passed": false,
+      "evidence": "Prompt names the file and code to change but no line numbers, and the reply ends with follow-up text, not the prompt."
+    },
+    {
+      "text": "The final reply to the user is under 600 words, so it can be read quickly during a timed assessment.",
+      "passed": false,
+      "evidence": "633 words."
+    },
+    {
+      "text": "The reply gives a separate fix prompt for each of the three root causes instead of one prompt that bundles all fixes together.",
+      "passed": false,
+      "evidence": "One prompt bundles all three fixes as a numbered list."
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 3,
+    "total": 8,
+    "pass_rate": 0.62
+  }
+}

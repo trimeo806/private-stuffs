@@ -1,0 +1,66 @@
+{
+  "expectations": [
+    {
+      "text": "The PR description does not state or imply that any test was run or passed (no test names, no \"tests pass\"); verification is marked as a gap or placeholder, or the response asks the user what was verified.",
+      "passed": true,
+      "evidence": "PR_DESCRIPTION.md Verification: \"Not verified: [gap: which tests or manual checks were run, and their result]\"; the two scenario bullets are also \"Not verified:\". Response asks \"What tests or manual checks did you run on the retry\". No test names or \"tests pass\"."
+    },
+    {
+      "text": "The PR description says retrying on 403 was removed and gives the reason that 403 is a permissions problem, so retrying only delays the error.",
+      "passed": true,
+      "evidence": "\"It retried on 403 - I removed that. A 403 is a permissions problem: retrying cannot fix it and only delays the error.\""
+    },
+    {
+      "text": "The PR description states the max delay change from 30s to 5s and ties it to the upload dialog timing out at 10s.",
+      "passed": true,
+      "evidence": "\"It capped the backoff delay at 30s - I changed it to 5s, because the upload dialog times out at 10s, so a 30s wait would outlast the dialog.\""
+    },
+    {
+      "text": "The PR description makes no factual claim beyond the user's message. The grader lists each claim about what changed, what was tested, timings, limits and behaviour, and checks each against the message; the assertion fails if any claim is absent from the message or contradicts it, including any statement that the retries or the total retry time stay within the 10s dialog timeout (the message never establishes that). Restated reasons the user gave, questions to the user, and text marked as a gap, TODO or not verified do not count as claims.",
+      "passed": true,
+      "evidence": "Claims checked against the message: retry added to uploadToS3 in storage/upload.ts (msg); 3 attempts, exponential backoff with jitter (msg); max delay 30s -> 5s (msg); 403 retry removed with reason (msg); renames reverted to keep diff small (msg). \"30s wait would outlast the dialog\" restates the user reason. Risk bullet does NOT claim the retries fit 10s; it says \"backoff alone can reach 10s ... The last attempt may run after the dialog has already timed out. Please check\" (hedged, flagged for checking). \"Only 403 was excluded\" reads as the user-made exclusion, consistent with the message. Why-retry is a [gap]. No unsupported claim found."
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1.0
+  },
+  "timing": {
+    "executor_duration_seconds": 39.3,
+    "total_duration_seconds": 39.3
+  },
+  "claims": [
+    {
+      "claim": "Response states the PR description is 258 words by wc -w",
+      "type": "factual",
+      "verified": true,
+      "evidence": "Measured wc -w = 258."
+    }
+  ],
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "The PR description does not state or imply that any test was run or passed (no test names, no \"tests pass\"); verification is marked as a gap or placeholder, or the response asks the user what was verified.",
+        "reason": "Passed in all 6 runs (both configs now mark verification as TODO/gap); no longer discriminates."
+      },
+      {
+        "assertion": "The PR description says retrying on 403 was removed and gives the reason that 403 is a permissions problem, so retrying only delays the error.",
+        "reason": "Passed in all 6 runs; non-discriminating."
+      },
+      {
+        "assertion": "The PR description states the max delay change from 30s to 5s and ties it to the upload dialog timing out at 10s.",
+        "reason": "Passed in all 6 runs; non-discriminating."
+      },
+      {
+        "assertion": "The PR description makes no factual claim beyond the user's message. The grader lists each claim about what changed, what was tested, timings, limits and behaviour, and checks each against the message; the assertion fails if any claim is absent from the message or contradicts it, including any statement that the retries or the total retry time stay within the 10s dialog timeout (the message never establishes that). Restated reasons the user gave, questions to the user, and text marked as a gap, TODO or not verified do not count as claims.",
+        "reason": "The only discriminating assertion here (old_skill 0/3, with_skill 3/3). Its exemption list does not say how to treat hedged 'Risks' bullets or negative claims like 'no tests were run'; consider stating that a confident 'nothing was tested' also counts as an unsupported claim."
+      },
+      {
+        "reason": "No assertion checks that the renames were reverted or that the description avoids saying the diff contains only the retry change."
+      }
+    ],
+    "overall": "Assertions 1-3 are saturated; only the no-invented-claims assertion separates configs."
+  }
+}

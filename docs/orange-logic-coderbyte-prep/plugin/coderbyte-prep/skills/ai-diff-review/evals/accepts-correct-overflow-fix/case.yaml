@@ -1,0 +1,9 @@
+schema_version: "1.1"
+name: accepts-correct-overflow-fix
+expected_outcome: |
+  The diff is correct and minimal: a long accumulator removes the int overflow,
+  the signature is unchanged, no existing test is modified, and the new test
+  covers a total above int.MaxValue. The review gives the verdict ACCEPT, lists
+  no blocker or major findings, shows the checks that passed and the edge cases
+  it traced (such as an empty collection and a total above int.MaxValue), and
+  does not invent problems or ask the agent to rewrite the change.

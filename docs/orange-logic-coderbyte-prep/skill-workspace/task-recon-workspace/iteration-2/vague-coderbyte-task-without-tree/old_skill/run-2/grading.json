@@ -1,0 +1,56 @@
+{
+  "expectations": [
+    {
+      "text": "The response gives a paste-ready prompt for the Coderbyte in-IDE AI that explicitly tells the agent not to edit or create files yet (an instruction only against writing code is not enough) and asks it for requirements, assumptions, edge cases and a step plan.",
+      "passed": false,
+      "evidence": "The prompt says 'Before writing any code, do recon' and 'do not edit or delete existing tests'. It doesn't forbid editing or creating files in general."
+    },
+    {
+      "text": "The response records at least three ambiguities of the discount code feature as assumptions with a chosen default, drawn from: percentage versus fixed amount, stacking several codes, expired or unknown codes, code case sensitivity, rounding, and a discount larger than the order total.",
+      "passed": true,
+      "evidence": "A1 case-insensitive, trimmed; A2 PERCENT and FIXED; A3 'codes don't stack'; A5 invalid throws."
+    },
+    {
+      "text": "The step plan puts fixing the failing tests in the orders module before implementing discount codes, and leaves at least 20 of the 80 minutes for the written section.",
+      "passed": true,
+      "evidence": "Steps 2-3 fix failures before steps 4-7 discount; 'Total 60 min (80 minus the 20 for Section 2)'."
+    },
+    {
+      "text": "The response asks for missing inputs such as the file tree or the failing test output in no more than one consolidated question, and contains no Java implementation code.",
+      "passed": false,
+      "evidence": "'Open questions' has two separate bullets: task text about codes, and 'JUnit 4 or 5, and is there an existing `checkout(...)` method name'. That is more than one question."
+    },
+    {
+      "text": "The step plan includes a step that writes the chosen assumptions and what was cut into a README or notes file, and that step sits above the cut line.",
+      "passed": false,
+      "evidence": "No README or notes step in the plan (steps 1-8 + buffer)."
+    }
+  ],
+  "summary": {
+    "passed": 2,
+    "failed": 3,
+    "total": 5,
+    "pass_rate": 0.4
+  },
+  "timing": {
+    "executor_duration_seconds": 33.4,
+    "total_duration_seconds": 33.4
+  },
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "The response records at least three ambiguities of the discount code feature as assumptions with a chosen default, drawn from: percentage versus fixed amount, stacking several codes, expired or unknown codes, code case sensitivity, rounding, and a discount larger than the order total.",
+        "reason": "Passed in all 6 runs. Non-discriminating; raise the bar (e.g. at least five, or require each default to show up in the edge cases)."
+      },
+      {
+        "assertion": "The step plan puts fixing the failing tests in the orders module before implementing discount codes, and leaves at least 20 of the 80 minutes for the written section.",
+        "reason": "Passed in all 6 runs. Non-discriminating."
+      },
+      {
+        "assertion": "The response asks for missing inputs such as the file tree or the failing test output in no more than one consolidated question, and contains no Java implementation code.",
+        "reason": "Ambiguous: with_skill runs end with a closing 'confirm the plan' line besides their one question, and with_skill run-3 has an inline `enum DiscountType { PERCENTAGE, FIXED }` declaration. I treated plan confirmation as not a missing-input question and a one-line type sketch as not implementation code; state both rules."
+      }
+    ],
+    "overall": "Assertions 1, 4 and 5 discriminate; 2 and 3 are saturated."
+  }
+}

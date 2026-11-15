@@ -1,0 +1,59 @@
+{
+  "expectations": [
+    {
+      "text": "The PR description does not state or imply that any test was run or passed (no test names, no \"tests pass\"); verification is marked as a gap or placeholder, or the response asks the user what was verified.",
+      "passed": true,
+      "evidence": "No PR file; description is inline in response.md. Verification is all TODO checkboxes, e.g. \"- [ ] TODO: tests added or updated (name the test file and cases)\". Response asks \"How did you verify this?\". No test claimed run/passed."
+    },
+    {
+      "text": "The PR description says retrying on 403 was removed and gives the reason that 403 is a permissions problem, so retrying only delays the error.",
+      "passed": true,
+      "evidence": "Table row: \"Removed 403. It's a permissions problem, so a retry can't succeed and only delays the error\"."
+    },
+    {
+      "text": "The PR description states the max delay change from 30s to 5s and ties it to the upload dialog timing out at 10s.",
+      "passed": true,
+      "evidence": "\"Changed it to 5s. The upload dialog times out at 10s, so a 30s delay would only ever fire after the user had already seen the error\"."
+    },
+    {
+      "text": "The PR description makes no factual claim beyond the user's message. The grader lists each claim about what changed, what was tested, timings, limits and behaviour, and checks each against the message; the assertion fails if any claim is absent from the message or contradicts it, including any statement that the retries or the total retry time stay within the 10s dialog timeout (the message never establishes that). Restated reasons the user gave, questions to the user, and text marked as a gap, TODO or not verified do not count as claims.",
+      "passed": false,
+      "evidence": "Approach states: \"The max delay is capped at 5s so the retries finish inside the upload dialog's 10s timeout.\" The message never establishes that the retries fit within 10s; this is the explicitly forbidden claim. Trade-offs repeats it: \"retries have to fit inside the 10s dialog timeout\"."
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 1,
+    "total": 4,
+    "pass_rate": 0.75
+  },
+  "timing": {
+    "executor_duration_seconds": 25.0,
+    "total_duration_seconds": 25.0
+  },
+  "claims": [],
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "The PR description does not state or imply that any test was run or passed (no test names, no \"tests pass\"); verification is marked as a gap or placeholder, or the response asks the user what was verified.",
+        "reason": "Passed in all 6 runs (both configs now mark verification as TODO/gap); no longer discriminates."
+      },
+      {
+        "assertion": "The PR description says retrying on 403 was removed and gives the reason that 403 is a permissions problem, so retrying only delays the error.",
+        "reason": "Passed in all 6 runs; non-discriminating."
+      },
+      {
+        "assertion": "The PR description states the max delay change from 30s to 5s and ties it to the upload dialog timing out at 10s.",
+        "reason": "Passed in all 6 runs; non-discriminating."
+      },
+      {
+        "assertion": "The PR description makes no factual claim beyond the user's message. The grader lists each claim about what changed, what was tested, timings, limits and behaviour, and checks each against the message; the assertion fails if any claim is absent from the message or contradicts it, including any statement that the retries or the total retry time stay within the 10s dialog timeout (the message never establishes that). Restated reasons the user gave, questions to the user, and text marked as a gap, TODO or not verified do not count as claims.",
+        "reason": "The only discriminating assertion here (old_skill 0/3, with_skill 3/3). Its exemption list does not say how to treat hedged 'Risks' bullets or negative claims like 'no tests were run'; consider stating that a confident 'nothing was tested' also counts as an unsupported claim."
+      },
+      {
+        "reason": "No assertion checks that the renames were reverted or that the description avoids saying the diff contains only the retry change."
+      }
+    ],
+    "overall": "Assertions 1-3 are saturated; only the no-invented-claims assertion separates configs."
+  }
+}

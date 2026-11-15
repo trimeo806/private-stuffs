@@ -1,0 +1,6 @@
+sku,quantity,reason
+AB-1,5,restock
+ab-1,-2,sale
+CD-7,2.5,adjustment
+CD-7,3,restock
+

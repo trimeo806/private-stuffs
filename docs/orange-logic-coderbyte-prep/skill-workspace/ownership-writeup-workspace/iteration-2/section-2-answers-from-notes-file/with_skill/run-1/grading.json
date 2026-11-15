@@ -1,0 +1,68 @@
+{
+  "expectations": [
+    {
+      "text": "The response gives an answer to each of the three questions, and each answer is between 60 and 120 words measured by `wc -w` on the answer text alone (question line excluded). If the response states a word count for an answer, that count is within 2 of the measured count.",
+      "passed": true,
+      "evidence": "Measured by extracting each answer body (question line excluded) from outputs/response.md and running wc -w: Q1=95, Q2=98, Q3=98 (all 60-120). Response states \"95, 98 and 98\": each diff 0."
+    },
+    {
+      "text": "The answer to the rejected-suggestion question names the agent splitting lines on commas (line.split(\",\")), gives the quoted comma in a title such as \"Sunset, Bali\" as the reason, and says it was replaced with csv.DictReader or the csv module.",
+      "passed": true,
+      "evidence": "Q2: \"it split each line with line.split(\\\",\\\"). I rejected it: titles can contain quoted commas, and row 2 of sample.csv, \\\"Sunset, Bali\\\", would become two fields ... I told it to use csv.DictReader\"."
+    },
+    {
+      "text": "The answers mention no event absent from session-notes.md: no teammate or code reviewer, no production incident, no tests beyond the four listed, no performance or large-file measurement presented as done.",
+      "passed": true,
+      "evidence": "No teammate/reviewer, incident or perf run. Tests cited are the notes four: \"Four pytest tests pass: quoted comma in a title, empty keywords, a bad date, an unknown asset_id.\" Q3: \"I only tried the 50-row sample.csv, so large files and streaming are unverified\"; \"test at production volume before release\" is advice."
+    },
+    {
+      "text": "The answers are written in the first person, and the risks answer ties at least one named risk to a concrete example from the notes (for example the comma split or the silently skipped bad-date rows).",
+      "passed": true,
+      "evidence": "First person throughout (\"I kept the plan\", \"I rejected it\"). Q3 ties risk to examples: \"the agent's line.split(\\\",\\\") parser works until a title has a quoted comma, like \\\"Sunset, Bali\\\"\" and \"its date validation dropped bad rows with a bare continue\"."
+    },
+    {
+      "text": "The answers add no practice, habit or check that session-notes.md does not record. The grader lists each first-person action claim in the three answers (for example \"I reviewed every diff\", \"I checked each output against sample.csv\", \"I kept secrets out of the prompt\", \"I wrote the tests\") and checks each against the notes; the assertion fails if any is absent from the notes. General risk statements that are not presented as something I did do not count.",
+      "passed": true,
+      "evidence": "First-person actions: gave plan-only prompt with import_metadata.py, sample.csv, README (notes prompt 1); kept plan + dataclass (notes); asked for parse_rows then rights_expiry validation (prompts 2-3); rejected split, told it to use csv.DictReader (notes); changed silent continue to ImportReport (notes); \"I only tried the 50-row sample.csv\" (notes). \"I kept the decisions\" and \"I caught two problems\" summarise recorded rejections. No test authorship, diff review or secrets habit claimed. Mitigations are general, not presented as done."
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 0,
+    "total": 5,
+    "pass_rate": 1.0
+  },
+  "timing": {
+    "executor_duration_seconds": 63.1,
+    "total_duration_seconds": 63.1
+  },
+  "claims": [
+    {
+      "claim": "Response lists its own additions not from the notes",
+      "type": "process",
+      "verified": true,
+      "evidence": "Each with_skill response has a 'mine, not from your notes' section naming them."
+    }
+  ],
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "The answer to the rejected-suggestion question names the agent splitting lines on commas (line.split(\",\")), gives the quoted comma in a title such as \"Sunset, Bali\" as the reason, and says it was replaced with csv.DictReader or the csv module.",
+        "reason": "Passed in all 6 runs; non-discriminating."
+      },
+      {
+        "assertion": "The answers are written in the first person, and the risks answer ties at least one named risk to a concrete example from the notes (for example the comma split or the silently skipped bad-date rows).",
+        "reason": "Passed in all 6 runs; non-discriminating."
+      },
+      {
+        "assertion": "The answers mention no event absent from session-notes.md: no teammate or code reviewer, no production incident, no tests beyond the four listed, no performance or large-file measurement presented as done.",
+        "reason": "Passed in all 6 runs because its explicit list (teammate, incident, extra tests, perf) is never hit; the real failures (invented review habits, test authorship) are caught only by the last assertion. Consider merging or adding authorship ('I wrote the tests') to this list."
+      },
+      {
+        "assertion": "The response gives an answer to each of the three questions, and each answer is between 60 and 120 words measured by `wc -w` on the answer text alone (question line excluded). If the response states a word count for an answer, that count is within 2 of the measured count.",
+        "reason": "A stated range ('about 80-110 words') is not a per-answer count; the assertion should say whether a range claim must also match. Also note wc -w counts markdown bullet hyphens, which decided old_skill/run-3 Q3 (122 vs 118)."
+      }
+    ],
+    "overall": "Assertions 1 and 5 discriminate; 2-4 are saturated."
+  }
+}

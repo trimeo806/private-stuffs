@@ -1,0 +1,54 @@
+{
+  "expectations": [
+    {
+      "text": "New tests are written for pytest under the tests folder, and at least one test uses pytest.mark.parametrize; no unittest.TestCase class or new test dependency is introduced",
+      "passed": true,
+      "evidence": "New file tests/test_storage_report_edge_cases.py with several @pytest.mark.parametrize tests (e.g. test_reads_extension_after_last_dot_or_reports_none). No unittest.TestCase; pyproject.toml unchanged (no new dependency). Re-ran in scratch copy: 3 failed, 14 passed, matching the response."
+    },
+    {
+      "text": "The tests include extensions that differ only in case (for example \"a.JPG\" and \"b.jpg\") expecting one lowercase group, and two extensions with equal totals expecting them ordered by extension ascending",
+      "passed": true,
+      "evidence": "test_groups_extensions_case_insensitively_and_reports_lowercase: ['a.JPG', 'b.jpg', 'c.Jpg'] -> [('jpg', 30)]; test_breaks_total_ties_by_extension_ascending: png/jpg/gif all 50 -> [('gif', 50), ('jpg', 50), ('png', 50)]."
+    },
+    {
+      "text": "The final response reports that summarize_by_extension does not merge mixed-case extensions as a bug in storage_report.py, and storage_report.py is not modified during the run",
+      "passed": true,
+      "evidence": "Response: 'Cases 1 and 2: expected [(\"jpg\", 30)], got [(\"JPG\", 10), (\"Jpg\", 10), (\"jpg\", 10)]. Likely cause: storage_report.py:10 returns ext without .lower()' under '### Suspected bugs'; 'Production code was left unchanged'. diff -rq against evals/python-storage-report-pytest/files shows storage_report.py identical; mtime equals the input copy time (18:52:41)."
+    },
+    {
+      "text": "A test asserts that a negative size raises ValueError using pytest.raises",
+      "passed": true,
+      "evidence": "test_raises_value_error_for_negative_size uses 'with pytest.raises(ValueError): summarize_by_extension(files)' for size -1 and -5."
+    },
+    {
+      "text": "The response contains an edge-case table in which every row has an input, an expected result, a reason naming the bug that row would catch, and a source marking it as stated in README.md or assumed, and every row marked as from the README matches what README.md actually says",
+      "passed": true,
+      "evidence": "Table columns 'Input | Expected | Why it matters | Source'; all 11 rows have a bug-naming reason (e.g. 'rpartition returns an empty extension, reported as \"\"') and Source spec/assumed. Spec rows match README (lowercase, last dot, (none) for no/leading/trailing dot, ValueError, sort desc + ties asc, [] for empty). Zero size correctly marked 'assumed'. Row 10's '(none)' before 'abc' is a literal application of 'ties by extension ascending'."
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 0,
+    "total": 5,
+    "pass_rate": 1.0
+  },
+  "timing": {
+    "executor_duration_seconds": 67.3,
+    "total_duration_seconds": 67.3
+  },
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "reason": "Assertions 1-4 are non-discriminating: all 6 runs (old and new skill) pass them. Only assertion 5 (reason + source per row) separates the configs."
+      },
+      {
+        "assertion": "The response contains an edge-case table in which every row has an input, an expected result, a reason naming the bug that row would catch, and a source marking it as stated in README.md or assumed, and every row marked as from the README matches what README.md actually says",
+        "reason": "Several with_skill rows marked 'spec' rely on an inference the README does not spell out: (none) sorting before letters in a tie (run-1 row 10, run-3 row 9) and '.env.local'/'.config.json' extensions. They are consistent with the README's literal rules, so graded as matching; say whether derived-but-unstated expectations should be marked 'assumed'."
+      },
+      {
+        "reason": "No assertion covers the second real bug (trailing dot 'notes.' reported as '' instead of '(none)'). All 6 runs found it, so it would not discriminate now, but it is a key outcome."
+      }
+    ],
+    "overall": "with_skill 5/5 in every run, old_skill 4/5 in every run; the difference is entirely the table's reason column."
+  }
+}

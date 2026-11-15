@@ -1,0 +1,51 @@
+{
+  "expectations": [
+    {
+      "text": "The review's verdict is REJECT, not ACCEPT and not ACCEPT WITH FIX",
+      "passed": true,
+      "evidence": "\"Verdict: REJECT\""
+    },
+    {
+      "text": "The review identifies that lowercasing the checksum in AssetRepository.Save changes stored data (or mutates the saved Asset object) and that this is the wrong place for the fix",
+      "passed": true,
+      "evidence": "Row 2: \"This is out of scope: the task only asks for a change to `IsDuplicate`. It also changes the data the repository stores and mutates the caller's `Asset` object.\""
+    },
+    {
+      "text": "The review gives a concrete breaking case in which an asset already stored with an uppercase checksum (loaded through the constructor, not Save) is no longer detected, for example IsDuplicate(\"A1B2C3D4\") returning false, or names IsDuplicate_ReturnsTrue_WhenSameChecksumExists or GetById_ReturnsAssetExactlyAsSaved as a test that now fails",
+      "passed": true,
+      "evidence": "\"an existing asset with `\\\"A1B2C3D4\\\"` and `IsDuplicate(\\\"A1B2C3D4\\\")` now returns `false`... `IsDuplicate_ReturnsTrue_WhenSameChecksumExists` fails.\""
+    },
+    {
+      "text": "The review recommends a case-insensitive comparison inside IsDuplicate (for example StringComparison.OrdinalIgnoreCase or StringComparer.OrdinalIgnoreCase) with Save left unchanged, and gives a feedback prompt for the agent written as a single paragraph with no line breaks or bullets that names the breaking input, the fix in IsDuplicate, and that Save and the existing tests stay unchanged",
+      "passed": false,
+      "evidence": "Fix and single-paragraph prompt are present (input \"A1B2C3D4\", OrdinalIgnoreCase in IsDuplicate, \"Revert AssetRepository.Save\"), but the prompt only says \"Keep the public API and stored checksums unchanged, run the full test suite ... and add a test\"; it never says the existing tests stay unchanged."
+    },
+    {
+      "text": "The review's finding on the Save change gives a file:line location in AssetRepository.cs (a line number between 16 and 19, not only a method name or code snippet) and states the impact on existing callers or stored data: the caller's Asset object is mutated, or GetById returns a lowercased checksum instead of the one that was saved",
+      "passed": false,
+      "evidence": "Location given only as \"`AssetRepository.Save`: `asset.Checksum = asset.Checksum.ToLower();`\" (method + snippet), no AssetRepository.cs line number."
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 2,
+    "total": 5,
+    "pass_rate": 0.6
+  },
+  "timing": {
+    "executor_duration_seconds": 167.4,
+    "total_duration_seconds": 167.4
+  },
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "The review recommends a case-insensitive comparison inside IsDuplicate ... and that Save and the existing tests stay unchanged",
+        "reason": "Compound assertion; old_skill runs fail solely on the 'existing tests stay unchanged' clause in the prompt. Consider splitting so a near-miss is visible rather than a full fail."
+      },
+      {
+        "reason": "Assertions 1-3 pass for all 6 runs; discrimination comes only from the prompt-wording and file:line assertions."
+      }
+    ],
+    "overall": "Discriminates on output format (file:line, prompt content) rather than review substance; substance was equal across configs."
+  }
+}

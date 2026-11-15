@@ -1,0 +1,10 @@
+{
+  "eval_name": "python-size-format-bugfix",
+  "prompt": "Bug from support: the storage page shows \"1024.0 KB\" for a file that is exactly 1 MB, and test_formats_one_megabyte in tests/test_sizes.py is red. Fix it, I only have 15 minutes left on this take-home. pytest is set up, run it with python -m pytest.\n\nInput files: README.md, pyproject.toml, sizes.py, storage_report.py, tests/test_sizes.py",
+  "assertions": [
+    "Before any edit to sizes.py, the trace shows a pytest run in which a test fails because a size at an exact unit boundary is formatted in the smaller unit (such as \"1024.0 KB\" or \"1024 B\").",
+    "A new test is added for an exact boundary other than 1048576 bytes (for example 1024 bytes expecting \"1.0 KB\"), and its name describes the behavior rather than a bug or ticket number.",
+    "The fix in sizes.py changes the loop comparison so that every unit boundary is handled (for example size >= 1024) rather than adding a special case for 1048576 or for MB, and the final response states this root cause.",
+    "The four original test functions in tests/test_sizes.py keep their names and assertions, no dependency is added to pyproject.toml, and the last pytest run in the trace passes with no failures."
+  ]
+}

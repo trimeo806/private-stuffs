@@ -1,0 +1,45 @@
+{
+  "expectations": [
+    {
+      "text": "The trace shows dotnet build or dotnet test being run, and the response cites error CS0117 for string.IsNullOrBlank from that output.",
+      "passed": true,
+      "evidence": "dotnet test -> CS0117 at (9,20),(10,20)."
+    },
+    {
+      "text": "The response states that string.IsNullOrBlank does not exist in .NET and that the original string.IsNullOrWhiteSpace must be restored.",
+      "passed": true,
+      "evidence": "Row 1: invented API, restore IsNullOrWhiteSpace."
+    },
+    {
+      "text": "The response identifies the change of the sizeBytes parameter from long to int as a contract break that breaks the test passing 3_000_000_000L and the over-2-GB requirement, and says to restore long rather than edit the tests.",
+      "passed": true,
+      "evidence": "Row 2: int vs long at :7, CS1503 on scratch copy, restore long, do not edit tests."
+    },
+    {
+      "text": "The response says the string.Equals(..., StringComparison.OrdinalIgnoreCase) checksum comparison is the correct part of the edit and should be kept.",
+      "passed": true,
+      "evidence": "Rejection text and trap say keep OrdinalIgnoreCase line 13."
+    },
+    {
+      "text": "At the end of the run, UploadService.cs and UploadServiceTests.cs are unchanged from the originals.",
+      "passed": true,
+      "evidence": "diff -rq: no repo changes."
+    },
+    {
+      "text": "The response ends with a paste-ready rejection or fix prompt for the agent that names both problems (the nonexistent API and the signature change) and what to keep.",
+      "passed": true,
+      "evidence": "Reply ends with fix prompt 2; prompts 1-2 plus rejection name both problems and keep line 13."
+    },
+    {
+      "text": "The final reply to the user is under 600 words, so it can be read quickly during a timed assessment.",
+      "passed": true,
+      "evidence": "413 words."
+    }
+  ],
+  "summary": {
+    "passed": 7,
+    "failed": 0,
+    "total": 7,
+    "pass_rate": 1.0
+  }
+}

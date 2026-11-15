@@ -1,0 +1,10 @@
+{
+  "eval_name": "vague-coderbyte-task-without-tree",
+  "prompt": "ok the coderbyte test just started, timer is running (80 min total). the task says: \"The orders module has failing tests. Fix them, then add support for discount codes at checkout.\" pretty sure it's a Java project, maven. I can't paste you the whole tree right now. what do I type into their AI panel first?",
+  "assertions": [
+    "The response gives a paste-ready prompt for the Coderbyte in-IDE AI that tells the agent not to edit or create files yet and asks it for requirements, assumptions, edge cases and a step plan.",
+    "The response records at least three ambiguities of the discount code feature as assumptions with a chosen default, drawn from: percentage versus fixed amount, stacking several codes, expired or unknown codes, code case sensitivity, rounding, and a discount larger than the order total.",
+    "The step plan puts fixing the failing tests in the orders module before implementing discount codes, and leaves at least 20 of the 80 minutes for the written section.",
+    "The response asks for missing inputs such as the file tree or the failing test output in no more than one consolidated question, and contains no Java implementation code."
+  ]
+}

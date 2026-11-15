@@ -1,0 +1,54 @@
+{
+  "expectations": [
+    {
+      "text": "The response gives one paste-ready prompt in a code block that names slugifyFileName, src/slugify.ts and Vitest as the test framework",
+      "passed": true,
+      "evidence": "Single fenced prompt: 'Edit only src/slugify.test.ts. Do not modify src/slugify.ts ... Add edge case tests for slugifyFileName using the existing Vitest setup'."
+    },
+    {
+      "text": "The pasted prompt tells the in-IDE assistant not to modify src/slugify.ts, and to report an expectation that disagrees with the code as a suspected bug instead of changing the expectation",
+      "passed": true,
+      "evidence": "Prompt: 'Do not modify src/slugify.ts or any other file.' and 'Do not change the expected values to match the current output. If a test fails, leave it failing and tell me which one.' Borderline: keeps the expectation and reports the mismatch, but does not use 'suspected bug' framing."
+    },
+    {
+      "text": "The pasted prompt asks for an edge-case table with input, expected and why before writing tests, and names at least four concrete file-name cases such as an empty string, whitespace only, an uppercase extension, accented letters, multiple dots or a leading dot",
+      "passed": false,
+      "evidence": "The prompt supplies its own table ('Write exactly these tests ... | # | Test name | Input | Expected |') and does not ask the agent to show a table with a why column before writing tests. The response's own table (Case/Input/Expected/Source) is outside the prompt."
+    },
+    {
+      "text": "src/slugify.ts is not modified during the run",
+      "passed": true,
+      "evidence": "diff -rq against evals/ide-prompt-slugify-vitest/files shows src/slugify.ts identical, and its mtime equals the input copy time (18:52:41); response: 'I did not edit your production file.'"
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 1,
+    "total": 4,
+    "pass_rate": 0.75
+  },
+  "timing": {
+    "executor_duration_seconds": 69.2,
+    "total_duration_seconds": 69.2
+  },
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "The response gives one paste-ready prompt in a code block that names slugifyFileName, src/slugify.ts and Vitest as the test framework",
+        "reason": "Non-discriminating (all 6 pass). Also ambiguous on 'one': old_skill run-3 gives a second paste-ready prompt that edits src/slugify.ts; graded as pass because the test-writing prompt itself is a single block."
+      },
+      {
+        "assertion": "The pasted prompt tells the in-IDE assistant not to modify src/slugify.ts, and to report an expectation that disagrees with the code as a suspected bug instead of changing the expectation",
+        "reason": "Borderline wording: old_skill run-2 says 'Do not change the expected values ... leave it failing and tell me which one' without the words 'suspected bug'; graded pass on substance. State whether the suspected-bug framing is required."
+      },
+      {
+        "assertion": "src/slugify.ts is not modified during the run",
+        "reason": "Cannot be verified from final file content alone (all 6 are byte-identical to the input). old_skill run-3 failed only via mtime evidence plus its own statement that it put src/slugify.ts back. Save transcripts or a file-mtime check for this assertion."
+      },
+      {
+        "reason": "No assertion checks that the response warns the user the accent-folding rows will fail against the current code (the main real bug); every run did, so it would be non-discriminating now but guards a regression."
+      }
+    ],
+    "overall": "Assertions 2 and 3 carry the signal (with_skill 4/4 every run; old_skill 2/4, 3/4, 1/4)."
+  }
+}

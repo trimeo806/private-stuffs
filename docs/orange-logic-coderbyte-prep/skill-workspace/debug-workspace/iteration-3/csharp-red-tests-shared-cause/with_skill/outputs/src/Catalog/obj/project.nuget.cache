@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "BLfhIJCIaKk=",
+  "success": true,
+  "projectFilePath": "/Users/nguyenthanhtri/workspace/private-stuffs/docs/orange-logic-coderbyte-prep/skill-workspace/debug-workspace/iteration-3/csharp-red-tests-shared-cause/with_skill/outputs/src/Catalog/Catalog.csproj",
+  "expectedPackageFiles": [
+    "/Users/nguyenthanhtri/.nuget/packages/microsoft.netcore.app.ref/8.0.34/microsoft.netcore.app.ref.8.0.34.nupkg.sha512",
+    "/Users/nguyenthanhtri/.nuget/packages/microsoft.aspnetcore.app.ref/8.0.34/microsoft.aspnetcore.app.ref.8.0.34.nupkg.sha512"
+  ],
+  "logs": []
+}

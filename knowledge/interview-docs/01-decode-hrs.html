@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <title>HRS Culture Fit — Story Catalog</title>
+    <style>
+      :root {
+        --bg: #f7f1e5;
+        --bg-accent: #efe2c3;
+        --surface: rgba(255, 252, 245, 0.9);
+        --surface-strong: #fffdf8;
+        --border: rgba(68, 52, 38, 0.14);
+        --ink: #2f2419;
+        --ink-soft: #6a5a49;
+        --brand: #9b5d2f;
+        --brand-strong: #7b451b;
+        --ok: #2f6b45;
+        --warn: #a4471f;
+        --shadow: 0 18px 50px rgba(56, 36, 18, 0.12);
+        --radius-xl: 28px;
+        --radius-lg: 20px;
+        --radius-md: 14px;
+        --radius-sm: 10px;
+        --content-width: 1040px;
+      }
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        margin: 0;
+        font-family: "Avenir Next", "Segoe UI Variable", "IBM Plex Sans", "Noto Sans", sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at top left, rgba(255,255,255,0.8), transparent 34%),
+          radial-gradient(circle at top right, rgba(239,226,195,0.7), transparent 30%),
+          linear-gradient(180deg, #fbf6ed 0%, var(--bg) 100%);
+      }
+      a { color: var(--brand-strong); text-underline-offset: 0.18em; }
+      .page-shell { width: min(100%, calc(var(--content-width) + 2rem)); margin: 0 auto; padding: 1rem 1rem 4rem; }
+      .hero__inner {
+        background: linear-gradient(135deg, rgba(255,253,248,0.92), rgba(247,241,229,0.9));
+        border: 1px solid var(--border); border-radius: var(--radius-xl);
+        box-shadow: var(--shadow); padding: clamp(1.25rem, 2.5vw, 2rem);
+      }
+      .eyebrow {
+        display: inline-flex; align-items: center; gap: 0.45rem;
+        padding: 0.45rem 0.8rem; border-radius: 999px;
+        background: rgba(155,93,47,0.08); color: var(--brand-strong);
+        font-size: 0.76rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      h1 { margin: 1rem 0 0.6rem; font-size: clamp(1.8rem, 5vw, 2.9rem); line-height: 1.1; }
+      h2 { margin: 0 0 0.4rem; font-size: clamp(1.25rem, 3vw, 1.7rem); }
+      h3 { margin: 0 0 0.35rem; font-size: 1.02rem; }
+      p { line-height: 1.65; color: var(--ink-soft); margin: 0.5rem 0; }
+      .lede { color: var(--ink); font-size: 1.02rem; }
+      section.card {
+        background: var(--surface); border: 1px solid var(--border);
+        border-radius: var(--radius-lg); box-shadow: var(--shadow);
+        padding: clamp(1rem, 2.4vw, 1.6rem); margin-top: 1.25rem;
+      }
+      .toc { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 1rem; }
+      .toc a {
+        text-decoration: none; font-size: 0.82rem; font-weight: 600;
+        padding: 0.35rem 0.7rem; border-radius: 999px;
+        border: 1px solid var(--border); background: var(--surface-strong); color: var(--brand-strong);
+      }
+      .grid { display: grid; gap: 0.75rem; grid-template-columns: repeat(auto-fit, minmax(255px, 1fr)); }
+      .signal {
+        background: var(--surface-strong); border: 1px solid var(--border);
+        border-radius: var(--radius-md); padding: 0.85rem 0.95rem;
+      }
+      .signal h3 { display: flex; align-items: center; gap: 0.45rem; }
+      .signal ul { margin: 0.4rem 0 0; padding-left: 1.05rem; }
+      .signal li { font-size: 0.87rem; line-height: 1.5; color: var(--ink-soft); margin-bottom: 0.2rem; }
+      .trap { color: var(--warn); font-weight: 600; }
+      .strong { color: var(--ok); font-weight: 600; }
+      table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+      .tablewrap { overflow-x: auto; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--surface-strong); }
+      th, td { text-align: left; padding: 0.55rem 0.7rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+      th { background: var(--bg-accent); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; }
+      tbody tr:last-child td { border-bottom: none; }
+      .toolbar { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.9rem; }
+      button {
+        font: inherit; font-weight: 600; font-size: 0.85rem; cursor: pointer;
+        border-radius: 999px; padding: 0.45rem 0.9rem;
+        border: 1px solid var(--border); background: var(--surface-strong); color: var(--brand-strong);
+      }
+      button.primary { background: var(--brand-strong); color: #fffdf8; border-color: var(--brand-strong); }
+      button.ghost { color: var(--ink-soft); }
+      button:hover { filter: brightness(0.97); }
+      .story {
+        background: var(--surface-strong); border: 1px solid var(--border);
+        border-radius: var(--radius-md); padding: 0.9rem; margin-bottom: 0.9rem;
+      }
+      .story-head { display: flex; gap: 0.5rem; align-items: center; }
+      .story-head input { flex: 1; font-size: 1rem; font-weight: 700; }
+      input[type="text"], textarea {
+        font: inherit; width: 100%; color: var(--ink);
+        background: #fffefb; border: 1px solid var(--border);
+        border-radius: var(--radius-sm); padding: 0.45rem 0.6rem;
+      }
+      textarea { resize: vertical; min-height: 58px; font-size: 0.88rem; }
+      .fields { display: grid; gap: 0.5rem; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin: 0.6rem 0; }
+      .field label { display: block; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-soft); margin-bottom: 0.2rem; }
+      .chips { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.35rem; }
+      .chip {
+        font-size: 0.76rem; font-weight: 600; cursor: pointer; user-select: none;
+        padding: 0.28rem 0.6rem; border-radius: 999px;
+        border: 1px solid var(--border); background: #fffefb; color: var(--ink-soft);
+      }
+      .chip.on { background: var(--brand-strong); color: #fffdf8; border-color: var(--brand-strong); }
+      .chip.p.on { background: var(--ok); border-color: var(--ok); }
+      .chiprow-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-soft); margin-top: 0.55rem; }
+      .coverage { display: grid; gap: 0.4rem; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+      .cov {
+        display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;
+        background: var(--surface-strong); border: 1px solid var(--border);
+        border-radius: var(--radius-sm); padding: 0.4rem 0.6rem; font-size: 0.84rem;
+      }
+      .cov b { font-variant-numeric: tabular-nums; }
+      .cov.zero { border-color: rgba(164,71,31,0.45); background: rgba(164,71,31,0.06); }
+      .cov.zero b { color: var(--warn); }
+      .cov.good b { color: var(--ok); }
+      .muted { font-size: 0.82rem; color: var(--ink-soft); }
+      .note { border-left: 3px solid var(--brand); padding-left: 0.75rem; margin: 0.7rem 0; }
+      ol.drill { padding-left: 1.1rem; }
+      ol.drill li { margin-bottom: 0.45rem; line-height: 1.55; font-size: 0.9rem; }
+      .checklist { list-style: none; padding: 0; margin: 0; }
+      .checklist li { padding: 0.35rem 0; border-bottom: 1px dashed var(--border); font-size: 0.9rem; line-height: 1.5; }
+      .checklist li:last-child { border-bottom: none; }
+      footer { margin-top: 1.5rem; font-size: 0.82rem; color: var(--ink-soft); text-align: center; }
+      @media print { .toolbar, .toc, button { display: none; } body { background: #fff; } }
+    </style>
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <div class="hero__inner">
+          <span class="eyebrow">Behavioral prep · HRS Group</span>
+          <h1>HRS Culture Fit — Story Catalog</h1>
+          <p class="lede">
+            Công cụ chuẩn bị phỏng vấn culture fit: 8 signal areas chuẩn ngành, 9 Leading Principles của HRS,
+            và bảng catalog story tự điền để soi lỗ hổng. Dữ liệu lưu trong trình duyệt (localStorage) của máy này.
+          </p>
+          <div class="toc">
+            <a href="#lenses">3 lăng kính</a>
+            <a href="#signals">8 signal areas</a>
+            <a href="#hrs">9 Leading Principles</a>
+            <a href="#catalog">Story catalog</a>
+            <a href="#coverage">Gap analysis</a>
+            <a href="#translate">Dịch từ outsourcing</a>
+            <a href="#drill">Câu hỏi luyện</a>
+            <a href="#delivery">Checklist khi kể</a>
+          </div>
+        </div>
+      </header>
+
+      <section class="card" id="lenses">
+        <h2>3 lăng kính interviewer dùng để chấm</h2>
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Lăng kính</th><th>Là gì</th><th>Ý nghĩa với bạn</th></tr></thead>
+            <tbody>
+              <tr><td><b>Signal Areas</b></td><td>8 năng lực lõi, quan sát được, lặp lại được</td><td>Chuẩn chung — phủ đủ 8 cột là an toàn</td></tr>
+              <tr><td><b>Company Values</b></td><td>9 Leading Principles của HRS</td><td>Đóng gói lại signal areas bằng từ vựng riêng — dùng để <i>chọn story</i>, không phải để nhồi tên vào câu</td></tr>
+              <tr><td><b>Cultural Assessment</b></td><td>Pattern-matching vô thức với người đã thành công ở đó</td><td>Rủi ro lớn nhất khi chuyển outsourcing → product. Xem mục “Dịch từ outsourcing”.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="note muted">
+          Vòng lặp behavioral: <b>Decode → Select → Deliver</b>. Trang này phục vụ Decode + Select.
+        </div>
+      </section>
+
+      <section class="card" id="signals">
+        <h2>8 Signal Areas</h2>
+        <p class="muted">Mỗi thẻ: interviewer đo gì · hành vi mạnh · bẫy.</p>
+        <div class="grid" id="signal-grid"></div>
+      </section>
+
+      <section class="card" id="hrs">
+        <h2>HRS Leading Principles → Signal Areas</h2>
+        <p class="muted">Nguyên văn từ trang tuyển dụng HRS. Cột phải là signal area tương ứng.</p>
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th style="width:2rem">#</th><th>Principle</th><th>Cốt lõi</th><th>Signal</th></tr></thead>
+            <tbody id="hrs-body"></tbody>
+          </table>
+        </div>
+        <div class="note">
+          <p><b>Đọc ra chiến lược:</b> HRS nặng <b>Ownership</b> bất thường (4/9 principle chạm nó).
+          <b>#8 Seek truth and commit</b> là principle “lạ” so với chuẩn ngành → gần như chắc chắn được hỏi:
+          chuẩn bị story “tôi phản đối bằng dữ liệu → quyết định cuối không theo ý tôi → tôi vẫn thực thi hết mình”.
+          <b>#6 no task beneath us</b> → cần story bạn làm việc “thấp” vì nó cần thiết.
+          <b>#7 achieve more with less</b> → không bao giờ than thiếu người, không kể story cày đêm (HRS Vietnam ghi rõ no-OT).</p>
+        </div>
+      </section>
+
+      <section class="card" id="catalog">
+        <h2>Story Catalog</h2>
+        <p class="muted">
+          Mục tiêu: 6–8 story lớn nhất sự nghiệp. Story tốt phủ <b>3–5 signal cùng lúc</b>.
+          Bấm chip để tick signal / principle mà story đó chứng minh được.
+        </p>
+        <div class="toolbar">
+          <button class="primary" id="add-story">+ Thêm story</button>
+          <button id="seed">Nạp 6 khung gợi ý</button>
+          <button class="primary" id="download">⬇ Lưu .json</button>
+          <button id="export">Xuất JSON</button>
+          <button id="import">Nhập JSON</button>
+          <button class="ghost" id="clear">Xoá hết</button>
+          <span class="muted" id="saved-hint" style="align-self:center"></span>
+        </div>
+        <div id="stories"></div>
+      </section>
+
+      <section class="card" id="coverage">
+        <h2>Gap analysis</h2>
+        <p class="muted">Ô đỏ = chưa story nào phủ = câu hỏi bạn sẽ chết. Ưu tiên lấp theo thứ tự HRS: Ownership → Conflict (#8) → Customer view (#1) → Growth/feedback (#3, #5) → Dive deep (#6).</p>
+        <h3 style="margin-top:0.9rem">Signal areas</h3>
+        <div class="coverage" id="cov-signals"></div>
+        <h3 style="margin-top:1rem">HRS Leading Principles</h3>
+        <div class="coverage" id="cov-principles"></div>
+      </section>
+
+      <section class="card" id="translate">
+        <h2>Dịch từ outsourcing → product company</h2>
+        <p class="muted">Phản xạ ngôn ngữ kiểu ODC bị interviewer product đọc sai. Dịch trước khi vào phòng.</p>
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Bạn hay nói</th><th>Họ nghe ra</th><th>Nói thế này</th></tr></thead>
+            <tbody id="translate-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card" id="drill">
+        <h2>Câu hỏi luyện — xác suất cao ở HRS</h2>
+        <ol class="drill" id="drill-list"></ol>
+        <div class="note muted">
+          <b>3 loại câu hỏi:</b> “Tell me about a time…” (~80%, phải là <i>một lần cụ thể</i>) ·
+          Hypothetical “What would you do if…” (kể cách <i>suy nghĩ</i>) ·
+          Values “X nghĩa là gì với bạn” (quan điểm ngắn + <i>neo ngay bằng ví dụ</i>).
+        </div>
+      </section>
+
+      <section class="card" id="delivery">
+        <h2>Checklist trước khi kể mỗi story</h2>
+        <ul class="checklist" id="delivery-list"></ul>
+      </section>
+
+      <footer>
+        Nguồn giá trị công ty:
+        <a href="https://jobs.hrs.com/content/Our-leadership-principles/?locale=en_US">HRS Leadership Principles</a> ·
+        <a href="https://itviec.com/companies/hrs-group">HRS Group Vietnam — ITviec</a>
+      </footer>
+    </div>
+
+    <script>
+      const SIGNALS = [
+        { id: "scope", icon: "📐", name: "Scope", measure: "Impact quá khứ có khớp level đang tuyển không — quyết định level & lương.",
+          strong: ["Project nhiều tháng/quý", "Giá trị business đo được", "Phức tạp kỹ thuật + tổ chức", "Tiến triển trách nhiệm theo thời gian"],
+          trap: "Dùng story junior cho vị trí senior → downlevel ngay. Lộ qua: chọn story, bề rộng hành động, thang thời gian, chất lượng reflection." },
+        { id: "ownership", icon: "🔑", name: "Ownership", measure: "Bạn báo vấn đề rồi thôi, hay đẩy tới khi nó thật sự xong.",
+          strong: ["Tự phát hiện vấn đề, không ai giao", "Đẩy end-to-end", "Đo kết quả business, không đo task", "Follow-up sau khi ship"],
+          trap: "Nói “chúng tôi” và câu bị động → xoá sạch signal. Dùng “TÔI”. Họ tuyển bạn, không tuyển team cũ." },
+        { id: "ambiguity", icon: "🌫️", name: "Ambiguity", measure: "Mức mơ hồ chịu được — tỉ lệ thuận trực tiếp với seniority.",
+          strong: ["Chẻ vấn đề mơ hồ thành mảnh làm được", "Nêu + ghi lại giả định", "Gom thông tin nhiều nguồn", "Bắt đầu với thông tin một phần"],
+          trap: "Quên kể (1) tạo ra sự rõ ràng BẰNG CÁCH NÀO và (2) kiểm chứng giả định ra sao." },
+        { id: "perseverance", icon: "🏔️", name: "Perseverance", measure: "Làm gì khi mọi thứ vỡ.",
+          strong: ["Thử nhiều hướng khi hướng đầu chết", "Giữ morale team", "Đổi chiến lược, giữ mục tiêu lõi", "Biết khi nào nên dừng — kèm lý do"],
+          trap: "Story tử vì đạo (“cày đêm suốt tháng”) = kém planning + lệch văn hoá. HRS ghi rõ no-OT." },
+        { id: "conflict", icon: "🤝", name: "Conflict Resolution", measure: "Xung đột trực diện, lành mạnh — tech company coi đây là điều TỐT.",
+          strong: ["Chủ động mở cuộc nói chuyện khó", "Gom data cho quan điểm", "Hiểu phía kia TRƯỚC khi bảo vệ mình", "Quan hệ còn nguyên hoặc tốt hơn sau đó"],
+          trap: "“Em không phải kiểu người tạo xung đột” = câu mở đầu tệ nhất. Conflict với peer cùng team = story junior; nhắm manager / partner team / xuyên phòng ban." },
+        { id: "communication", icon: "💬", name: "Communication", measure: "Chấm suốt buổi (cách bạn khung story, độ gọn) + bên trong story.",
+          strong: ["Đổi cách nói theo audience", "Chọn đúng kênh và nói rõ VÌ SAO chọn kênh đó", "Chủ động chia sẻ thông tin", "Async / xuyên múi giờ (HRS: Đức, Ba Lan, Úc)"],
+          trap: "Chỉ kể “cái gì”, quên “khi nào + bằng cách nào”. Yếu: “Cả team đồng ý đề xuất của tôi.” Mạnh: “Tôi nhắn riêng tech lead trước vì lựa chọn DB nhạy cảm, rồi mới trình bày ở team meeting.”" },
+        { id: "growth", icon: "🌱", name: "Growth", measure: "Bạn có khá lên theo thời gian không, có dạy được không.",
+          strong: ["Nhận lỗi thật, hiểu root cause", "Thay đổi CỤ THỂ, quan sát được", "Chủ động xin feedback rồi làm theo", "Mentor / lan toả lại cho team"],
+          trap: "Humble-brag (“em quá cầu toàn”) và lỗi không hợp level (lỗi mà level bạn đáng lẽ phải biết)." },
+        { id: "leadership", icon: "👑", name: "Leadership", measure: "Ảnh hưởng KHÔNG cần chức vụ — IC cũng bị chấm.",
+          strong: ["Thuyết phục bằng chuyên môn / tầm nhìn", "Xây đồng thuận", "Mentor người khác", "Nhận việc cải thiện toàn team"],
+          trap: "Senior hay chỉ kể phần code. Khoảnh khắc leadership đã nằm sẵn trong story cũ (thuyết phục manager cấp budget, gỡ bí cho junior, chạy meeting phá bế tắc) — kéo nó lên mặt." }
+      ];
+
+      const PRINCIPLES = [
+        { id: "p1", n: 1, name: "Take the customer view first", core: "“Customer success… trumps our own commercial success.”", sig: "Ownership + Scope" },
+        { id: "p2", n: 2, name: "Think and act big", core: "“As Intrapreneurs… challenge the status quo, leave comfort zones, grow from making mistakes.”", sig: "Scope + Growth + Ownership" },
+        { id: "p3", n: 3, name: "Hire the most likely to win, develop to become the best", core: "“Raising the bar… coaching and candid feedback.”", sig: "Growth + Leadership" },
+        { id: "p4", n: 4, name: "Make merits rule, not entitlements", core: "“Meritocracy where recognition comes with effort and achievement.”", sig: "Ownership" },
+        { id: "p5", n: 5, name: "Pioneer for growth", core: "“Never a perfect state, but only perpetual improvement.”", sig: "Growth + Ambiguity" },
+        { id: "p6", n: 6, name: "Dive deep and act upon it", core: "“From strategy to whatever it takes to execute, we view no task beneath us.”", sig: "Ownership + Scope" },
+        { id: "p7", n: 7, name: "Achieve more with less", core: "“Don’t complain about a lack of resources, but set priorities and abandon less important activities.”", sig: "Perseverance + Ambiguity" },
+        { id: "p8", n: 8, name: "Seek truth and commit", core: "“It is ok to disagree but once a call has been made, we follow through with ownership and discipline.”", sig: "Conflict + Ownership" },
+        { id: "p9", n: 9, name: "Foster healthy relationships", core: "“We believe in the power of team work.”", sig: "Conflict + Communication + Leadership" }
+      ];
+
+      const TRANSLATE = [
+        ["“Khách hàng yêu cầu nên tụi em làm”", "Thụ động, không chính kiến", "“Tôi đề xuất phương án khác vì [data]; sau thảo luận chúng tôi chọn…”"],
+        ["“Scope do client quyết, em chỉ implement”", "Không ownership, scope nhỏ", "“Tôi đẩy ngược lại scope vì rủi ro X, và tôi đo kết quả sau khi ship”"],
+        ["“Success = deliver đúng hạn, client nghiệm thu”", "Đo task, không đo business", "“Success = [metric người dùng/business] thay đổi bao nhiêu”"],
+        ["“Em không rõ user cuối là ai”", "Trái #1 Customer view first", "Chuẩn bị ít nhất 1 story chạm tới người dùng thật / số liệu thật"],
+        ["“Em cày để kịp deadline”", "Trái #7, trái no-OT", "“Tôi cắt scope + ưu tiên lại + báo rủi ro sớm”"],
+        ["“Team em đã…”", "Không rõ bạn làm gì", "“TÔI đã…”"],
+        ["“Em tránh xung đột để giữ hoà khí”", "Né tránh — trái văn hoá directness của công ty Đức", "“Tôi nói thẳng bằng dữ liệu, và sau đó quan hệ vẫn tốt”"]
+      ];
+
+      const DRILL = [
+        "Kể về project bạn tự hào nhất. <span class='muted'>(Scope — chọn story to nhất, kể cả timescale + số người + metric)</span>",
+        "Kể về lần bạn giải quyết vấn đề không thuộc trách nhiệm của bạn. <span class='muted'>(Ownership + #6)</span>",
+        "Bạn đo thành công của việc mình làm bằng cách nào? <span class='muted'>(Values question — trả lời ngắn rồi neo ví dụ ngay; #4)</span>",
+        "Kể về lần bạn bất đồng với quyết định của quản lý hoặc team khác. <span class='muted'>(#8 — nhớ nhịp 2: thua nhưng vẫn commit hết mình)</span>",
+        "Kể về lần yêu cầu không rõ ràng hoặc thay đổi liên tục. <span class='muted'>(Ambiguity — kể CÁCH bạn tạo ra sự rõ ràng)</span>",
+        "Kể về một sai lầm của bạn. <span class='muted'>(Growth — root cause + thay đổi quan sát được, không humble-brag)</span>",
+        "Kể về lần bạn nhận feedback gay gắt. <span class='muted'>(#3 candid feedback)</span>",
+        "Giải thích một thứ kỹ thuật cho người không kỹ thuật. <span class='muted'>(Communication — kênh + audience + lý do)</span>",
+        "Kể về lần bạn ảnh hưởng người khác mà không có quyền hạn. <span class='muted'>(Leadership)</span>",
+        "Bạn làm gì khi thiếu người / thiếu thời gian? <span class='muted'>(#7 — ưu tiên và BỎ việc kém quan trọng, không phải OT)</span>",
+        "Kể về lần bạn phải làm việc “không xứng tầm” nhưng vẫn làm. <span class='muted'>(#6 no task beneath us)</span>",
+        "Vì sao HRS? <span class='muted'>(Neo vào 2–3 principle cụ thể + sản phẩm STAY/WORK/PAY, không nói chung chung)</span>"
+      ];
+
+      const DELIVERY = [
+        "Dùng <b>“tôi”</b>, không “chúng tôi”, không câu bị động.",
+        "Có <b>số</b>: thời lượng, số người/team, metric business trước–sau.",
+        "Kể <b>khi nào + bằng cách nào</b> đã giao tiếp, không chỉ kể kết quả.",
+        "Có ít nhất một <b>quyết định khó</b> và lý do chọn.",
+        "Có <b>reflection</b>: học được gì, làm lại sẽ khác gì.",
+        "Chạm tới <b>người dùng cuối</b>, không dừng ở “client nghiệm thu”.",
+        "Không kể OT / cày đêm như thành tích.",
+        "Không nhồi tên principle vào câu — để nó dẫn hướng chọn story và chọn từ.",
+        "Conflict story: kết thúc bằng <b>quan hệ còn nguyên</b> hoặc tốt hơn.",
+        "Độ dài mục tiêu: <b>2–3 phút</b>, sẵn sàng đào sâu khi bị hỏi follow-up."
+      ];
+
+      const SEEDS = [
+        "Project lớn nhất — [tên]",
+        "Lần tôi tự phát hiện & tự sửa vấn đề ngoài scope",
+        "Lần bất đồng với quyết định, thua, vẫn commit",
+        "Lần yêu cầu mơ hồ / đổi liên tục",
+        "Sai lầm lớn nhất & thay đổi sau đó",
+        "Lần tôi ảnh hưởng/mentor người khác"
+      ];
+
+      const KEY = "hrs-catalog-v1";
+      let state = load();
+
+      function load() {
+        try {
+          const raw = localStorage.getItem(KEY);
+          if (raw) return JSON.parse(raw);
+        } catch (e) {}
+        return { stories: [] };
+      }
+      function save() {
+        try {
+          localStorage.setItem(KEY, JSON.stringify(state));
+          hint("Đã lưu " + new Date().toLocaleTimeString());
+        } catch (e) { hint("Không lưu được (trình duyệt chặn storage)"); }
+      }
+      function hint(t) { document.getElementById("saved-hint").textContent = t; }
+      function uid() { return "s" + Math.random().toString(36).slice(2, 9); }
+      function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+
+      function newStory(title) {
+        return { id: uid(), title: title || "", context: "", metric: "", duration: "", people: "", learning: "", signals: [], principles: [] };
+      }
+
+      function renderStatic() {
+        document.getElementById("signal-grid").innerHTML = SIGNALS.map(s => `
+          <div class="signal">
+            <h3>${s.icon} ${s.name}</h3>
+            <p class="muted" style="margin:0.2rem 0 0.35rem">${s.measure}</p>
+            <ul>${s.strong.map(x => `<li><span class="strong">✓</span> ${x}</li>`).join("")}</ul>
+            <p style="margin:0.45rem 0 0;font-size:0.85rem"><span class="trap">Bẫy:</span> <span class="muted">${s.trap}</span></p>
+          </div>`).join("");
+
+        document.getElementById("hrs-body").innerHTML = PRINCIPLES.map(p => `
+          <tr><td><b>${p.n}</b></td><td><b>${p.name}</b></td><td class="muted">${p.core}</td><td>${p.sig}</td></tr>`).join("");
+
+        document.getElementById("translate-body").innerHTML = TRANSLATE.map(r => `
+          <tr><td>${r[0]}</td><td class="trap">${r[1]}</td><td class="strong">${r[2]}</td></tr>`).join("");
+
+        document.getElementById("drill-list").innerHTML = DRILL.map(d => `<li>${d}</li>`).join("");
+        document.getElementById("delivery-list").innerHTML = DELIVERY.map(d => `<li>☐ ${d}</li>`).join("");
+      }
+
+      function renderStories() {
+        const host = document.getElementById("stories");
+        if (!state.stories.length) {
+          host.innerHTML = `<p class="muted">Chưa có story nào. Bấm <b>+ Thêm story</b> hoặc <b>Nạp 6 khung gợi ý</b>.</p>`;
+          renderCoverage();
+          return;
+        }
+        host.innerHTML = state.stories.map((s, i) => `
+          <div class="story" data-id="${s.id}">
+            <div class="story-head">
+              <span class="eyebrow">#${i + 1}</span>
+              <input type="text" data-f="title" placeholder="Tên story (VD: Migrate legacy booking UI sang React)" value="${esc(s.title)}" />
+              <button class="ghost" data-act="del">✕</button>
+            </div>
+            <div class="fields">
+              <div class="field"><label>Thang thời gian</label><input type="text" data-f="duration" placeholder="VD: 7 tháng" value="${esc(s.duration)}" /></div>
+              <div class="field"><label>Quy mô người / team</label><input type="text" data-f="people" placeholder="VD: 3 team, 12 người, 2 stakeholder EU" value="${esc(s.people)}" /></div>
+              <div class="field"><label>Metric business</label><input type="text" data-f="metric" placeholder="VD: p95 load 4.2s → 1.1s, drop-off −18%" value="${esc(s.metric)}" /></div>
+            </div>
+            <div class="field"><label>Bối cảnh + hành động của TÔI</label><textarea data-f="context" placeholder="Tôi phát hiện… Tôi đề xuất… Tôi nói chuyện với… Tôi đo…">${esc(s.context)}</textarea></div>
+            <div class="field" style="margin-top:0.5rem"><label>Reflection — học gì / làm lại sẽ khác gì</label><textarea data-f="learning">${esc(s.learning)}</textarea></div>
+            <div class="chiprow-label">Signal areas phủ được</div>
+            <div class="chips">${SIGNALS.map(x => `<span class="chip ${s.signals.includes(x.id) ? "on" : ""}" data-type="signals" data-val="${x.id}">${x.icon} ${x.name}</span>`).join("")}</div>
+            <div class="chiprow-label">HRS Leading Principles</div>
+            <div class="chips">${PRINCIPLES.map(p => `<span class="chip p ${s.principles.includes(p.id) ? "on" : ""}" data-type="principles" data-val="${p.id}" title="${esc(p.core)}">#${p.n} ${p.name}</span>`).join("")}</div>
+            <p class="muted" style="margin-top:0.5rem">Phủ ${s.signals.length} signal · ${s.principles.length} principle${s.signals.length && s.signals.length < 3 ? " — <span class='trap'>story tốt nên phủ 3–5 signal</span>" : ""}</p>
+          </div>`).join("");
+        renderCoverage();
+      }
+
+      function renderCoverage() {
+        const count = (type, id) => state.stories.filter(s => s[type].includes(id)).length;
+        document.getElementById("cov-signals").innerHTML = SIGNALS.map(s => {
+          const n = count("signals", s.id);
+          return `<div class="cov ${n === 0 ? "zero" : n >= 2 ? "good" : ""}"><span>${s.icon} ${s.name}</span><b>${n}</b></div>`;
+        }).join("");
+        document.getElementById("cov-principles").innerHTML = PRINCIPLES.map(p => {
+          const n = count("principles", p.id);
+          return `<div class="cov ${n === 0 ? "zero" : n >= 2 ? "good" : ""}"><span>#${p.n} ${p.name}</span><b>${n}</b></div>`;
+        }).join("");
+      }
+
+      document.getElementById("stories").addEventListener("input", e => {
+        const card = e.target.closest(".story");
+        const f = e.target.dataset.f;
+        if (!card || !f) return;
+        const s = state.stories.find(x => x.id === card.dataset.id);
+        if (!s) return;
+        s[f] = e.target.value;
+        save();
+      });
+
+      document.getElementById("stories").addEventListener("click", e => {
+        const card = e.target.closest(".story");
+        if (!card) return;
+        const s = state.stories.find(x => x.id === card.dataset.id);
+        if (!s) return;
+        if (e.target.dataset.act === "del") {
+          state.stories = state.stories.filter(x => x.id !== s.id);
+          save(); renderStories(); return;
+        }
+        const chip = e.target.closest(".chip");
+        if (chip) {
+          const type = chip.dataset.type, val = chip.dataset.val;
+          s[type] = s[type].includes(val) ? s[type].filter(v => v !== val) : s[type].concat(val);
+          save(); renderStories();
+        }
+      });
+
+      document.getElementById("add-story").onclick = () => { state.stories.push(newStory()); save(); renderStories(); };
+      document.getElementById("seed").onclick = () => {
+        SEEDS.forEach(t => state.stories.push(newStory(t)));
+        save(); renderStories();
+      };
+      document.getElementById("clear").onclick = () => {
+        if (confirm("Xoá toàn bộ story đã nhập?")) { state = { stories: [] }; save(); renderStories(); }
+      };
+      document.getElementById("export").onclick = () => {
+        const out = JSON.stringify(state, null, 2);
+        navigator.clipboard?.writeText(out).then(() => hint("Đã copy JSON vào clipboard"), () => prompt("Copy JSON:", out));
+      };
+      document.getElementById("download").onclick = () => {
+        const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "hrs-catalog.json";
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+        hint("Đã tải hrs-catalog.json về Downloads");
+      };
+
+      document.getElementById("import").onclick = () => {
+        const raw = prompt("Dán JSON đã xuất:");
+        if (!raw) return;
+        try {
+          const parsed = JSON.parse(raw);
+          if (!Array.isArray(parsed.stories)) throw new Error("bad shape");
+          state = parsed; save(); renderStories();
+        } catch (e) { alert("JSON không hợp lệ"); }
+      };
+
+      renderStatic();
+      renderStories();
+    </script>
+  </body>
+</html>

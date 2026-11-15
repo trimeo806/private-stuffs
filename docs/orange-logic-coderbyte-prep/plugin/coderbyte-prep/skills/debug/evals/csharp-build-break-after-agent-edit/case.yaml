@@ -1,0 +1,16 @@
+schema_version: "1.1"
+name: csharp-build-break-after-agent-edit
+expected_outcome: |
+  The run builds the solution itself and reads the real errors, starting with CS0117 for
+  string.IsNullOrBlank in UploadService.cs, which is a method that does not exist in .NET (the
+  agent's 'tidied up the validation' replaced string.IsNullOrWhiteSpace). From the diff it
+  also identifies the second, hidden problem that the first error masks: the agent changed the
+  public signature from long sizeBytes to int sizeBytes, which breaks the existing test that
+  passes 3_000_000_000L (CS1503 once the first error is gone), violates the spec that files
+  can exceed 2 GB, and would break hidden tests compiled against the original signature; the
+  direction is to restore long, not to edit the tests. It recognises the string.Equals(...,
+  StringComparison.OrdinalIgnoreCase) checksum change as the correct part to keep. It leaves
+  UploadService.cs and the tests unmodified and ends with a rejection/fix prompt for the agent
+  that names both problems and what to keep.
+context:
+  scaffold_script: place-files.sh

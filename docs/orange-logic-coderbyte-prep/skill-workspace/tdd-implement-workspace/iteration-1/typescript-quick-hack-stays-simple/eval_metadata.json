@@ -1,0 +1,10 @@
+{
+  "eval_name": "typescript-quick-hack-stays-simple",
+  "prompt": "Quick hack needed before the demo: public assets must load from our CDN at https://cdn.example.com instead of the app base url. Private assets stay exactly as they are. Just hack it into buildAssetUrl in src/assetUrl.ts and make it work, I have 10 minutes. Tests are Vitest (npm install, then npx vitest run).\n\nInput files: package.json, src/assetUrl.ts, src/assetUrl.test.ts",
+  "assertions": [
+    "The trace shows a new test for a public asset being served from https://cdn.example.com added to src/assetUrl.test.ts and run with a failing result before src/assetUrl.ts is edited.",
+    "The change introduces no new interface, class, strategy or factory, no new source or config file, and no environment variable; the CDN behavior is a conditional plus at most a constant or a small function inside src/assetUrl.ts.",
+    "The exported buildAssetUrl(asset: Asset, baseUrl: string): string signature is unchanged, the two existing tests are unchanged, and package.json has the same dependencies as before.",
+    "The trace shows a vitest run after the change in which all tests pass, and the final response reports that result rather than claiming success without a run."
+  ]
+}

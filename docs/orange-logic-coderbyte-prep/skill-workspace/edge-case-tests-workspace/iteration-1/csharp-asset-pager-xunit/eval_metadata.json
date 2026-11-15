@@ -1,0 +1,10 @@
+{
+  "eval_name": "csharp-asset-pager-xunit",
+  "prompt": "I finished the GetPage task in AssetLibrary/AssetPager.cs for my Coderbyte assessment, the requirement is in TASK.md. Only one test exists right now. What could the hidden tests check? Add edge-case tests so I don't lose points, I have about 10 minutes left.\n\nInput files: TASK.md, AssetLibrary/AssetLibrary.csproj, AssetLibrary/Asset.cs, AssetLibrary/PagedResult.cs, AssetLibrary/AssetPager.cs, AssetLibrary.Tests/AssetLibrary.Tests.csproj, AssetLibrary.Tests/AssetPagerTests.cs",
+  "assertions": [
+    "New tests are added inside the AssetLibrary.Tests project using xUnit, with at least one [Theory] that takes its cases from [InlineData] or [MemberData], and no other test framework or package is added",
+    "The tests include a page past the last page that expects empty Items, and an invalid page or pageSize (0, negative, or above 100) that expects ArgumentOutOfRangeException",
+    "The final response reports that TotalPages is computed with integer division and is too low when the asset count is not a multiple of pageSize, as a bug in production code, and AssetPager.cs is not modified during the run",
+    "The response contains an edge-case table with an input, an expected result and a reason for each row, and every new test method name describes a behavior rather than a ticket, task or case number"
+  ]
+}

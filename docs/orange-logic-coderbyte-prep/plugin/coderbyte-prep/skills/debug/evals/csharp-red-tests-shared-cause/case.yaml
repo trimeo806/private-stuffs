@@ -1,0 +1,16 @@
+schema_version: "1.1"
+name: csharp-red-tests-shared-cause
+expected_outcome: |
+  The run executes dotnet test itself and reports the four real failures. It groups them by
+  cause instead of treating them as four bugs: GetPage_FirstPage_ReturnsNewestFirst and
+  GetPage_SecondPage_ReturnsNextNewest share one cause, the second OrderBy(a => a.Id) in
+  AssetCatalog.GetPage discarding the OrderByDescending(UploadedAt) sort (should be ThenBy);
+  GetPage_TotalPages_RoundsUp fails because TotalPages uses integer division _assets.Count /
+  pageSize (5/2 = 2, expected 3); GetSummary_EmptyCatalog_IsAllZero throws
+  InvalidOperationException 'Sequence contains no elements' from _assets.Max on an empty list.
+  Each cause has a file:line and concrete input -> actual vs expected evidence. It notes the
+  same-upload-time test passes only by accident of the wrong sort. It does not edit
+  AssetCatalog.cs or the existing tests, and it ends with a fix direction per cause and a
+  paste-ready prompt for the in-IDE agent.
+context:
+  scaffold_script: place-files.sh

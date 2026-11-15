@@ -1,0 +1,3 @@
+I finished the GetPage task in AssetLibrary/AssetPager.cs for my Coderbyte assessment, the requirement is in TASK.md. Only one test exists right now. What could the hidden tests check? Add edge-case tests so I don't lose points, I have about 10 minutes left.
+
+Input files: TASK.md, AssetLibrary/AssetLibrary.csproj, AssetLibrary/Asset.cs, AssetLibrary/PagedResult.cs, AssetLibrary/AssetPager.cs, AssetLibrary.Tests/AssetLibrary.Tests.csproj, AssetLibrary.Tests/AssetPagerTests.cs

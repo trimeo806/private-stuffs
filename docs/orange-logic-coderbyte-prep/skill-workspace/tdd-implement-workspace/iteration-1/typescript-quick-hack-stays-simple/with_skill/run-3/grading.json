@@ -1,0 +1,54 @@
+{
+  "expectations": [
+    {
+      "text": "The trace shows a new test for a public asset being served from https://cdn.example.com added to src/assetUrl.test.ts and run with a failing result before src/assetUrl.ts is edited.",
+      "passed": true,
+      "evidence": "response.md table: 'serves public assets from the cdn instead of the app base url' red because 'expected https://cdn.example.com/assets/a3/team%20photo.jpg, received https://app.example.com/assets/a3/team%20photo.jpg'. Red-before-green evidence is self-reported in response.md (no transcript was saved)."
+    },
+    {
+      "text": "The change introduces no new interface, class, strategy or factory, no new source or config file, and no environment variable; the CDN behavior is a conditional plus at most a constant or a small function inside src/assetUrl.ts.",
+      "passed": true,
+      "evidence": "Diff of src/assetUrl.ts: adds 'const CDN_BASE_URL = \"https://cdn.example.com\"' and a ternary on asset.visibility === \"public\". No new type, file, config or env var."
+    },
+    {
+      "text": "The exported buildAssetUrl(asset: Asset, baseUrl: string): string signature is unchanged, the two existing tests are unchanged, and package.json has the same dependencies as before.",
+      "passed": true,
+      "evidence": "Signature 'export function buildAssetUrl(asset: Asset, baseUrl: string): string' unchanged; diff of test file only appends after the two existing tests; package.json identical to input."
+    },
+    {
+      "text": "The trace shows a vitest run after the change in which all tests pass, and the final response reports that result rather than claiming success without a run.",
+      "passed": true,
+      "evidence": "Response reports the post-change run: 'npx vitest run: 3 passed, 0 failed'. Grader re-run of vitest with these sources: 3 passed."
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1.0
+  },
+  "timing": {
+    "executor_duration_seconds": 396.7,
+    "total_duration_seconds": 396.7
+  },
+  "claims": [
+    {
+      "claim": "3 passed, 0 failed",
+      "type": "factual",
+      "verified": true,
+      "evidence": "Grader re-run: 3 passed."
+    }
+  ],
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "The change introduces no new interface, class, strategy or factory, no new source or config file, and no environment variable; the CDN behavior is a conditional plus at most a constant or a small function inside src/assetUrl.ts.",
+        "reason": "Non-discriminating: all 6 runs produced the same constant + ternary. Only the red-first assertion separates the configs."
+      },
+      {
+        "reason": "No assertion checks that the private-asset path is pinned by a test; the existing tests already use private assets, so this is fine, but a test asserting that baseUrl is ignored for public assets (or that private assets with a non-default base url stay put) would be more discriminating."
+      }
+    ],
+    "overall": "Only assertion 1 (red test before edit) discriminates; it can only be graded from self-report without transcripts."
+  }
+}

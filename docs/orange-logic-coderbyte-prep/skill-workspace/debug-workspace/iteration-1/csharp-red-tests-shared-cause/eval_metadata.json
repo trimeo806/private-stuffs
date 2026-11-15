@@ -1,0 +1,12 @@
+{
+  "eval_name": "csharp-red-tests-shared-cause",
+  "prompt": "Coderbyte AI fluency assessment, section 1, task 1 in TASK.md: some visible tests fail, fix the code not the tests. dotnet test shows 4 red out of 8. Before I prompt the AI panel to change anything I want to understand why each one fails, so the fix prompt is precise. .NET 8 + xUnit, dotnet test works here.",
+  "assertions": [
+    "The trace shows dotnet test being run before the diagnosis is given, and the response names the four failing tests from that real output.",
+    "The response attributes GetPage_FirstPage_ReturnsNewestFirst and GetPage_SecondPage_ReturnsNextNewest to one shared cause: the second OrderBy(a => a.Id) in AssetCatalog.GetPage discarding the UploadedAt sort, with ThenBy as the fix direction.",
+    "The response identifies integer division (_assets.Count / pageSize) as the cause of GetPage_TotalPages_RoundsUp, showing 5 items with page size 2 gives 2 instead of 3.",
+    "The response identifies _assets.Max on an empty list throwing InvalidOperationException (Sequence contains no elements) as the cause of GetSummary_EmptyCatalog_IsAllZero.",
+    "At the end of the run, AssetCatalog.cs and AssetCatalogTests.cs are unchanged from the originals: no fix was applied.",
+    "The response ends with a paste-ready prompt for the in-IDE agent that names the cause with file and line and says what must stay unchanged (signatures, existing tests)."
+  ]
+}

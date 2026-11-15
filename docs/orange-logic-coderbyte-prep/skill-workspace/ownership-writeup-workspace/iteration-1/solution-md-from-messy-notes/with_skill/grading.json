@@ -1,0 +1,50 @@
+{
+  "expectations": [
+    {
+      "text": "SOLUTION.md is written to disk and its content is at most 250 words.",
+      "passed": false,
+      "evidence": "File exists at outputs/SOLUTION.md, but `wc -w` on it = 266 words (> 250). Excluding standalone markdown tokens it is 231; the response claims \"243 words (not counting table pipes and markdown symbols)\", which matches neither count. Under the raw `wc -w` rule the file exceeds the limit."
+    },
+    {
+      "text": "SOLUTION.md names the rejected suggestion to upscale images smaller than the target size and gives the reason from the notes (blurry result and/or wasted storage).",
+      "passed": true,
+      "evidence": "Table row: \"Rejected upscaling images smaller than the target | A 200px image blown up to 1200 looks blurry and wastes storage; I added `withoutEnlargement: true`\"."
+    },
+    {
+      "text": "SOLUTION.md claims no event absent from the notes: no tests beyond the four listed (2000px png, 100px gif, pdf, corrupted jpg), no benchmark or measurement, and WebP output or HEIC support is not described as done.",
+      "passed": true,
+      "evidence": "Tests listed are exactly the four: \"2000px PNG gives 3 thumbnails; 100px GIF is not upscaled; PDF is skipped; corrupted JPG throws `UnsupportedImageError`\". No benchmark. Unknowns marked \"[gap: exact prompt]\" and \"Manual checks: [gap: ...]\". WebP/HEIC listed under Known limits as not done; \"plus a HEIC test\" is a proposed next step, disclosed in response as a suggestion."
+    },
+    {
+      "text": "SOLUTION.md has a known-limits section that names WebP output and HEIC support as not done.",
+      "passed": true,
+      "evidence": "\"## Known limits\\n- No WebP output -> add it as an output format.\\n- No HEIC input, because sharp needs libheif -> ...\""
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 1,
+    "total": 4,
+    "pass_rate": 0.75
+  },
+  "timing": {
+    "executor_duration_seconds": 63.6,
+    "total_duration_seconds": 63.6
+  },
+  "execution_metrics": {
+    "total_tokens": 100985,
+    "output_chars": 2953
+  },
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "SOLUTION.md is written to disk and its content is at most 250 words.",
+        "reason": "Counting method is unspecified. with_skill SOLUTION.md is 266 by `wc -w` but 231 when standalone markdown tokens (|, ##, -, ->) are excluded; the executor itself claimed 243. Specify the counting rule (e.g. `wc -w` on the raw file) so the verdict is not grader-dependent. Graded here by `wc -w` raw."
+      },
+      {
+        "reason": "No assertion checks that the response reports its word count honestly; with_skill reported 243, which matches neither raw `wc -w` (266) nor alphanumeric tokens (231)."
+      }
+    ],
+    "overall": "Only the word-limit assertion discriminates, and it hinges on counting method; the other three pass for both."
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "eval_name": "ide-prompt-slugify-vitest",
+  "prompt": "I'm back in the Coderbyte IDE. Its AI agent can only create and edit files and I have to approve every edit, and it can't use your skills. Give me a prompt I can paste into it so it writes the edge case tests for slugifyFileName before I submit. The requirement is in TASK.md.\n\nInput files: TASK.md, package.json, src/slugify.ts, src/slugify.test.ts",
+  "assertions": [
+    "The response gives one paste-ready prompt in a code block that names slugifyFileName, src/slugify.ts and Vitest as the test framework",
+    "The pasted prompt tells the in-IDE assistant not to modify src/slugify.ts, and to report an expectation that disagrees with the code as a suspected bug instead of changing the expectation",
+    "The pasted prompt asks for an edge-case table with input, expected and why before writing tests, and names at least four concrete file-name cases such as an empty string, whitespace only, an uppercase extension, accented letters, multiple dots or a leading dot",
+    "src/slugify.ts is not modified during the run"
+  ]
+}

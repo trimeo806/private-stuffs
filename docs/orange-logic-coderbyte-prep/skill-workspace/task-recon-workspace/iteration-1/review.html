@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eval Review</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&family=Lora:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" integrity="sha384-EnyY0/GSHQGSxSgMwaIPzSESbqoOLSexfnSMN2AP+39Ckmn92stwABZynq1JyzdT" crossorigin="anonymous"></script>
+  <style>
+    :root {
+      --bg: #faf9f5;
+      --surface: #ffffff;
+      --border: #e8e6dc;
+      --text: #141413;
+      --text-muted: #b0aea5;
+      --accent: #d97757;
+      --accent-hover: #c4613f;
+      --green: #788c5d;
+      --green-bg: #eef2e8;
+      --red: #c44;
+      --red-bg: #fceaea;
+      --header-bg: #141413;
+      --header-text: #faf9f5;
+      --radius: 6px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Lora', Georgia, serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ---- Header ---- */
+    .header {
+      background: var(--header-bg);
+      color: var(--header-text);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .header h1 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    .header .instructions {
+      font-size: 0.8rem;
+      opacity: 0.7;
+      margin-top: 0.25rem;
+    }
+    .header .progress {
+      font-size: 0.875rem;
+      opacity: 0.8;
+      text-align: right;
+    }
+
+    /* ---- Main content ---- */
+    .main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.5rem 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    /* ---- Sections ---- */
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      flex-shrink: 0;
+    }
+    .section-header {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.75rem 1rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+    }
+    .section-body {
+      padding: 1rem;
+    }
+
+    /* ---- Config badge ---- */
+    .config-badge {
+      display: inline-block;
+      padding: 0.2rem 0.625rem;
+      border-radius: 9999px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-left: 0.75rem;
+      vertical-align: middle;
+    }
+    .config-badge.config-primary {
+      background: rgba(33, 150, 243, 0.12);
+      color: #1976d2;
+    }
+    .config-badge.config-baseline {
+      background: rgba(255, 193, 7, 0.15);
+      color: #f57f17;
+    }
+
+    /* ---- Prompt ---- */
+    .prompt-text {
+      white-space: pre-wrap;
+      font-size: 0.9375rem;
+      line-height: 1.6;
+    }
+
+    /* ---- Outputs ---- */
+    .output-file {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .output-file + .output-file {
+      margin-top: 1rem;
+    }
+    .output-file-header {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .output-file-header .dl-btn {
+      font-size: 0.7rem;
+      color: var(--accent);
+      text-decoration: none;
+      cursor: pointer;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-weight: 500;
+      opacity: 0.8;
+    }
+    .output-file-header .dl-btn:hover {
+      opacity: 1;
+      text-decoration: underline;
+    }
+    .output-file-content {
+      padding: 0.75rem;
+      overflow-x: auto;
+    }
+    .output-file-content pre {
+      font-size: 0.8125rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+    }
+    .output-file-content img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+    }
+    .output-file-content iframe {
+      width: 100%;
+      height: 600px;
+      border: none;
+    }
+    .output-file-content table {
+      border-collapse: collapse;
+      font-size: 0.8125rem;
+      width: 100%;
+    }
+    .output-file-content table td,
+    .output-file-content table th {
+      border: 1px solid var(--border);
+      padding: 0.375rem 0.5rem;
+      text-align: left;
+    }
+    .output-file-content table th {
+      background: var(--bg);
+      font-weight: 600;
+    }
+    .output-file-content .download-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.875rem;
+      cursor: pointer;
+    }
+    .output-file-content .download-link:hover {
+      background: var(--border);
+    }
+    .empty-state {
+      color: var(--text-muted);
+      font-style: italic;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    /* ---- Feedback ---- */
+    .prev-feedback {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.625rem 0.75rem;
+      margin-top: 0.75rem;
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .prev-feedback-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.25rem;
+      color: var(--text-muted);
+    }
+    .feedback-textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 0.9375rem;
+      line-height: 1.5;
+      resize: vertical;
+      color: var(--text);
+    }
+    .feedback-textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    .feedback-status {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+      min-height: 1.1em;
+    }
+
+    /* ---- Grades (collapsible) ---- */
+    .grades-toggle {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .grades-toggle:hover {
+      color: var(--accent);
+    }
+    .grades-toggle .arrow {
+      margin-right: 0.5rem;
+      transition: transform 0.15s;
+      font-size: 0.75rem;
+    }
+    .grades-toggle .arrow.open {
+      transform: rotate(90deg);
+    }
+    .grades-content {
+      display: none;
+      margin-top: 0.75rem;
+    }
+    .grades-content.open {
+      display: block;
+    }
+    .grades-summary {
+      font-size: 0.875rem;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .grade-badge {
+      display: inline-block;
+      padding: 0.125rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .grade-pass { background: var(--green-bg); color: var(--green); }
+    .grade-fail { background: var(--red-bg); color: var(--red); }
+    .assertion-list {
+      list-style: none;
+    }
+    .assertion-item {
+      padding: 0.625rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.8125rem;
+    }
+    .assertion-item:last-child { border-bottom: none; }
+    .assertion-status {
+      font-weight: 600;
+      margin-right: 0.5rem;
+    }
+    .assertion-status.pass { color: var(--green); }
+    .assertion-status.fail { color: var(--red); }
+    .assertion-evidence {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      margin-top: 0.25rem;
+      padding-left: 1.5rem;
+    }
+
+    /* ---- View tabs ---- */
+    .view-tabs {
+      display: flex;
+      gap: 0;
+      padding: 0 2rem;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .view-tab {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.625rem 1.25rem;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: var(--text-muted);
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+    }
+    .view-tab:hover { color: var(--text); }
+    .view-tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+    .view-panel { display: none; }
+    .view-panel.active { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+
+    /* ---- Benchmark view ---- */
+    .benchmark-view {
+      padding: 1.5rem 2rem;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .benchmark-table {
+      border-collapse: collapse;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.8125rem;
+      width: 100%;
+      margin-bottom: 1.5rem;
+    }
+    .benchmark-table th, .benchmark-table td {
+      padding: 0.625rem 0.75rem;
+      text-align: left;
+      border: 1px solid var(--border);
+    }
+    .benchmark-table th {
+      font-family: 'Poppins', sans-serif;
+      background: var(--header-bg);
+      color: var(--header-text);
+      font-weight: 500;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .benchmark-table tr:hover { background: var(--bg); }
+    .benchmark-table tr.benchmark-row-with { background: rgba(33, 150, 243, 0.06); }
+    .benchmark-table tr.benchmark-row-without { background: rgba(255, 193, 7, 0.06); }
+    .benchmark-table tr.benchmark-row-with:hover { background: rgba(33, 150, 243, 0.12); }
+    .benchmark-table tr.benchmark-row-without:hover { background: rgba(255, 193, 7, 0.12); }
+    .benchmark-table tr.benchmark-row-avg { font-weight: 600; border-top: 2px solid var(--border); }
+    .benchmark-table tr.benchmark-row-avg.benchmark-row-with { background: rgba(33, 150, 243, 0.12); }
+    .benchmark-table tr.benchmark-row-avg.benchmark-row-without { background: rgba(255, 193, 7, 0.12); }
+    .benchmark-delta-positive { color: var(--green); font-weight: 600; }
+    .benchmark-delta-negative { color: var(--red); font-weight: 600; }
+    .benchmark-notes {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+    }
+    .benchmark-notes h3 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.875rem;
+      margin-bottom: 0.75rem;
+    }
+    .benchmark-notes ul {
+      list-style: disc;
+      padding-left: 1.25rem;
+    }
+    .benchmark-notes li {
+      font-size: 0.8125rem;
+      line-height: 1.6;
+      margin-bottom: 0.375rem;
+    }
+    .benchmark-empty {
+      color: var(--text-muted);
+      font-style: italic;
+      text-align: center;
+      padding: 3rem;
+    }
+
+    /* ---- Navigation ---- */
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      flex-shrink: 0;
+    }
+    .nav-btn {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.5rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text);
+      transition: all 0.15s;
+    }
+    .nav-btn:hover:not(:disabled) {
+      background: var(--bg);
+      border-color: var(--text-muted);
+    }
+    .nav-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .done-btn {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.5rem 1.5rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    .done-btn:hover {
+      background: var(--bg);
+      border-color: var(--text-muted);
+    }
+    .done-btn.ready {
+      border: none;
+      background: var(--accent);
+      color: white;
+      font-weight: 600;
+    }
+    .done-btn.ready:hover {
+      background: var(--accent-hover);
+    }
+    /* ---- Done overlay ---- */
+    .done-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+    }
+    .done-overlay.visible {
+      display: flex;
+    }
+    .done-card {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 2rem 3rem;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 500px;
+    }
+    .done-card h2 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .done-card p {
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+      line-height: 1.5;
+    }
+    .done-card .btn-row {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+    .done-card button {
+      padding: 0.5rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 0.875rem;
+    }
+    .done-card button:hover {
+      background: var(--bg);
+    }
+    /* ---- Toast ---- */
+    .toast {
+      position: fixed;
+      bottom: 5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--header-bg);
+      color: var(--header-text);
+      padding: 0.625rem 1.25rem;
+      border-radius: var(--radius);
+      font-size: 0.875rem;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      z-index: 200;
+    }
+    .toast.visible {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <div id="app" style="height:100vh; display:flex; flex-direction:column;">
+    <div class="header">
+      <div>
+        <h1>Eval Review: <span id="skill-name"></span></h1>
+        <div class="instructions">Review each output and leave feedback below. Navigate with arrow keys or buttons. When done, copy feedback and paste into Claude Code.</div>
+      </div>
+      <div class="progress" id="progress"></div>
+    </div>
+
+    <!-- View tabs (only shown when benchmark data exists) -->
+    <div class="view-tabs" id="view-tabs" style="display:none;">
+      <button class="view-tab active" onclick="switchView('outputs')">Outputs</button>
+      <button class="view-tab" onclick="switchView('benchmark')">Benchmark</button>
+    </div>
+
+    <!-- Outputs panel (qualitative review) -->
+    <div class="view-panel active" id="panel-outputs">
+    <div class="main">
+      <!-- Prompt -->
+      <div class="section">
+        <div class="section-header">Prompt <span class="config-badge" id="config-badge" style="display:none;"></span></div>
+        <div class="section-body">
+          <div class="prompt-text" id="prompt-text"></div>
+        </div>
+      </div>
+
+      <!-- Outputs -->
+      <div class="section">
+        <div class="section-header">Output</div>
+        <div class="section-body" id="outputs-body">
+          <div class="empty-state">No output files found</div>
+        </div>
+      </div>
+
+      <!-- Previous Output (collapsible) -->
+      <div class="section" id="prev-outputs-section" style="display:none;">
+        <div class="section-header">
+          <div class="grades-toggle" onclick="togglePrevOutputs()">
+            <span class="arrow" id="prev-outputs-arrow">&#9654;</span>
+            Previous Output
+          </div>
+        </div>
+        <div class="grades-content" id="prev-outputs-content"></div>
+      </div>
+
+      <!-- Grades (collapsible) -->
+      <div class="section" id="grades-section" style="display:none;">
+        <div class="section-header">
+          <div class="grades-toggle" onclick="toggleGrades()">
+            <span class="arrow" id="grades-arrow">&#9654;</span>
+            Formal Grades
+          </div>
+        </div>
+        <div class="grades-content" id="grades-content"></div>
+      </div>
+
+      <!-- Feedback -->
+      <div class="section">
+        <div class="section-header">Your Feedback</div>
+        <div class="section-body">
+          <textarea
+            class="feedback-textarea"
+            id="feedback"
+            placeholder="What do you think of this output? Any issues, suggestions, or things that look great?"
+          ></textarea>
+          <div class="feedback-status" id="feedback-status"></div>
+          <div class="prev-feedback" id="prev-feedback" style="display:none;">
+            <div class="prev-feedback-label">Previous feedback</div>
+            <div id="prev-feedback-text"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav" id="outputs-nav">
+      <button class="nav-btn" id="prev-btn" onclick="navigate(-1)">&#8592; Previous</button>
+      <button class="done-btn" id="done-btn" onclick="showDoneDialog()">Submit All Reviews</button>
+      <button class="nav-btn" id="next-btn" onclick="navigate(1)">Next &#8594;</button>
+    </div>
+    </div><!-- end panel-outputs -->
+
+    <!-- Benchmark panel (quantitative stats) -->
+    <div class="view-panel" id="panel-benchmark">
+      <div class="benchmark-view" id="benchmark-content">
+        <div class="benchmark-empty">No benchmark data available. Run a benchmark to see quantitative results here.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Done overlay -->
+  <div class="done-overlay" id="done-overlay">
+    <div class="done-card">
+      <h2>Review Complete</h2>
+      <p>Your feedback has been saved. Go back to your Claude Code session and tell Claude you're done reviewing.</p>
+      <div class="btn-row">
+        <button onclick="closeDoneDialog()">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ---- Embedded data (injected by generate_review.py) ----
+    const EMBEDDED_DATA = {"skill_name": "task-recon", "runs": [{"id": "csharp-coderbyte-bugfix-and-feature-old_skill", "prompt": "Coderbyte assessment just started (Software Engineer AI Fluency, 80 min total, written questions come after and I can't go back). Section 1 is a C# repo, .NET 8 with xUnit. There are two tasks:\n\nTask 1 (bug): RenditionService.GetBestRendition(Guid assetId, int maxWidth) should return the largest rendition whose width is less than or equal to maxWidth. Users report it sometimes returns a rendition wider than maxWidth.\n\nTask 2 (feature): Add TagService.MergeTags(string sourceTag, string targetTag). Every asset tagged with sourceTag must end up tagged with targetTag, and sourceTag must be deleted afterwards. Tag names are case-insensitive.\n\nFile tree:\n\n```\nAssetLibrary.sln\nREADME.md\nsrc/AssetLibrary/AssetLibrary.csproj\nsrc/AssetLibrary/Models/Asset.cs\nsrc/AssetLibrary/Models/Rendition.cs\nsrc/AssetLibrary/Models/Tag.cs\nsrc/AssetLibrary/Repositories/IAssetRepository.cs\nsrc/AssetLibrary/Repositories/InMemoryAssetRepository.cs\nsrc/AssetLibrary/Services/RenditionService.cs\nsrc/AssetLibrary/Services/TagService.cs\ntests/AssetLibrary.Tests/AssetLibrary.Tests.csproj\ntests/AssetLibrary.Tests/RenditionServiceTests.cs\ntests/AssetLibrary.Tests/TagServiceTests.cs\n```\n\nVisible tests: RenditionServiceTests has ReturnsExactWidthMatch and ReturnsNullWhenAssetHasNoRenditions. TagServiceTests has AddTagCreatesTagWhenMissing and AddTagIgnoresDuplicateTag. The task page says there are hidden tests as well and partial credit counts.\n\nI haven't opened any code yet, only the tree. Help me set this up before I start prompting their AI.", "eval_id": null, "outputs": [{"name": "response.md", "type": "text", "content": "Here's the recon. It's built only from the task text and the file tree, so treat anything about the code as a guess until step 1 confirms it.\n\n**Budget:** 80 min total, with 20 kept for the written section you can't come back to. That leaves **60 min for Section 1**. Stop coding at minute 55, whatever state you're in.\n\n**Missing info, with the defaults I used:** test command \u2192 `dotnet test AssetLibrary.sln` from the repo root. README \u2192 not read yet, so check it in step 1 for any conventions, such as whether a missing asset or tag should return null or throw.\n\n## Goal\nMake `GetBestRendition` never return a rendition wider than `maxWidth`, and add `TagService.MergeTags`. It moves every asset from `sourceTag` to `targetTag`, case-insensitively, then deletes `sourceTag`. The visible and hidden xUnit tests must pass.\n\n## Requirements\n| # | Requirement | Type |\n|---|---|---|\n| R1 | `GetBestRendition` returns only renditions with `Width \u003c= maxWidth` | explicit |\n| R2 | Among those, it returns the one with the largest width | explicit |\n| R3 | An exact width match is returned (`ReturnsExactWidthMatch`) | explicit (visible test) |\n| R4 | Asset with no renditions \u2192 `null` (`ReturnsNullWhenAssetHasNoRenditions`) | explicit (visible test) |\n| R5 | Every rendition wider than `maxWidth` \u2192 `null` (the same \"nothing fits\" result as R4) | implied |\n| R6 | `MergeTags(source, target)`: every asset that had `source` now has `target` | explicit |\n| R7 | `source` is deleted afterwards, from the tag store and from every asset | explicit |\n| R8 | Tag names are compared case-insensitively | explicit |\n| R9 | An asset that already had both tags ends up with `target` exactly once | implied (matches `AddTagIgnoresDuplicateTag`) |\n| R10 | `IAssetRepository` and the public signatures stay unchanged | implied (hidden tests may compile against them) |\n| R11 | `AddTag` and existing tests keep working | implied |\n\n## Assumptions\n- A1: `target` doesn't exist yet \u2192 create it, the same way `AddTag` does.\n- A2: `source` doesn't exist \u2192 no-op, no throw. If `AddTag` or the README shows a throwing convention, follow that instead.\n- A3: `source` equals `target` ignoring case \u2192 no-op. Do **not** delete the tag.\n- A4: null, empty or whitespace argument \u2192 `ArgumentException`. If the service never validates input, follow its style instead.\n- A5: Stored casing of `target` \u2192 keep the existing tag's casing. If `target` is new, use the casing passed in.\n- A6: Case-insensitive means `StringComparer.OrdinalIgnoreCase`, not culture-sensitive comparison (avoids the Turkish-i problem).\n- A7: Unknown `assetId` in `GetBestRendition` \u2192 `null`, matching R4. Follow the code if it already throws.\n- A8: Several renditions with the same best width \u2192 return the first one in the stored order (stable).\n- A9: `maxWidth \u003c= 0` \u2192 `null`, since nothing can fit.\n- A10: If the repository has no delete-tag method, delete through what already exists, for example by updating the tag list or the assets. Add a method to `InMemoryAssetRepository` only, never to the interface. A hidden test may implement `IAssetRepository`, and a new interface member would break its compile.\n\n## Files\n| File | Action | Why |\n|---|---|---|\n| `README.md` | Read | Conventions, null vs throw, how to run tests |\n| `Services/RenditionService.cs` | Change | Task 1 bug |\n| `Services/TagService.cs` | Change | Add `MergeTags`, reuse `AddTag`'s normalization |\n| `Models/Asset.cs`, `Rendition.cs`, `Tag.cs` | Read | Shape of `Tags` (strings or `Tag` objects?), `Width` type, nullability |\n| `Repositories/IAssetRepository.cs` | Read only | Don't change the contract (A10) |\n| `Repositories/InMemoryAssetRepository.cs` | Read; change only if unavoidable | How tags and assets are stored; does it return copies or live references? |\n| `tests/.../RenditionServiceTests.cs` | Read + add tests | Learn the arrange style, add edge-case tests |\n| `tests/.../TagServiceTests.cs` | Read + add tests | Same |\n| `*.csproj`, `.sln` | Leave alone | No new packages |\n\n## Edge cases\n**GetBestRendition**\n- Mixed widths `[400, 800, 1200]`, max 1000 \u2192 800. This is the reported bug, so likely causes are a missing filter, `OrderBy` instead of `OrderByDescending`, filtering on `Height`, or `\u003c` vs `\u003c=`.\n- Unsorted input `[1200, 400, 800]`, max 1000 \u2192 800.\n- Every rendition wider than max \u2192 `null`.\n- Exactly equal to max \u2192 that rendition.\n- One rendition that fits \u2192 that rendition. One rendition that doesn't fit \u2192 `null`.\n- Duplicate widths \u2192 the first one (A8).\n- `maxWidth` 0 or negative \u2192 `null`.\n- `maxWidth = int.MaxValue` \u2192 the widest rendition.\n- `Renditions` is null rather than empty \u2192 `null`, no NRE.\n- Unknown asset \u2192 `null` (A7).\n\n**MergeTags**\n- Asset with `source` only \u2192 ends with `target` only.\n- Asset with both tags \u2192 `target` once, `source` gone.\n- Asset with neither tag \u2192 unchanged.\n- Mixed case: `MergeTags(\"Sunset\", \"BEACH\")` while the assets hold `\"sunset\"` and `\"beach\"` \u2192 merges correctly, no duplicate `beach`.\n- `source == target` ignoring case \u2192 no-op, tag still exists (A3).\n- `source` missing \u2192 no-op (A2). `target` missing \u2192 created (A1).\n- No assets tagged \u2192 `source` still deleted.\n- Null or empty argument \u2192 `ArgumentException` (A4).\n- Changing a collection while looping over it \u2192 take a snapshot (`.ToList()`) before mutating, to avoid `InvalidOperationException`.\n- Running merge a second time \u2192 no-op, no throw.\n\n## Plan\n| Step | Change | Min | Done when |\n|---|---|---|---|\n| 1 | Read README, models, repo, both services, both test files. Run `dotnet test` | 6 | Baseline is green, and you know the shape of `Tags` and the null-vs-throw convention |\n| 2 | Write a failing test: mixed and unsorted widths with max in the middle \u2192 correct rendition | 4 | The test is red and reproduces the bug |\n| 3 | Fix `GetBestRendition`: filter `Width \u003c= maxWidth`, take the max width, `FirstOrDefault`, null-safe | 5 | Step 2 test plus both visible tests are green |\n| 4 | Rendition edge tests: all too wide, equal, \u22640, single, duplicate widths | 6 | Green |\n| 5 | Write failing tests for the `MergeTags` core path: source-only asset, both-tags asset, source deleted | 5 | Red |\n| 6 | Implement `MergeTags` with `OrdinalIgnoreCase`, reusing `AddTag`'s lookup or normalization. No interface change | 12 | Step 5 tests are green |\n| 7 | Merge edge tests: mixed case, same tag, source missing, target missing, null args | 8 | Green |\n| 8 | Full `dotnet test`, read the diff, remove debug output and comments | 4 | All green, small diff |\n| \u2014 | Buffer | 5 | \u2014 |\n| | **Total** | **55** | |\n\nCut line, in drop order: argument-validation tests (part of 7), then the `int.MaxValue` and duplicate-width tests (part of 4), then the rest of 7. **Never drop 3 or 6**. Partial credit comes from the hidden tests on the core paths.\n\n## First prompt\nPaste this into the Coderbyte AI panel and attach the file tree:\n\n```\nBefore writing any code: read README.md, Models/*.cs, Repositories/*.cs,\nServices/RenditionService.cs, Services/TagService.cs and both test files.\nThen tell me:\n1. Restate both tasks in one sentence each.\n2. For RenditionService.GetBestRendition: quote the current implementation and\n   name the exact line(s) that let a rendition wider than maxWidth be returned.\n3. For TagService: how are tags stored on Asset (strings or Tag objects), how\n   does AddTag find/normalize tags (case handling), and does IAssetRepository\n   expose a way to delete a tag? Does the codebase return null or throw for\n   missing items?\n4. List edge cases for both tasks with expected behavior.\n5. Propose a step plan, one function per step.\nConstraints: do not change IAssetRepository or any public signature, no new\npackages, use StringComparer.OrdinalIgnoreCase for tag names, follow the\nexisting code and test style, no code comments. Don't write code yet.\n```\n\nThen send one prompt per plan step, for example: \"Step 2: write only the failing test for mixed unsorted widths, then run dotnet test and show the result.\"\n"}], "grading": {"expectations": [{"text": "The response contains no C# implementation of GetBestRendition or MergeTags (no method bodies or code blocks containing a fix), and the trace shows no files created or edited.", "passed": true, "evidence": "No method bodies or code fixes; step 3 is prose ('filter Width \u003c= maxWidth, take the max width, FirstOrDefault'). Only code block is the prompt (lines 94-110). outputs/ contains only response.md. No transcript saved; judged from outputs/ and response.md."}, {"text": "Requirements are a numbered list in which every item is labelled explicit or implied, and at least one implied requirement says the existing public method signatures or the currently passing behaviour must stay unchanged.", "passed": true, "evidence": "Requirements table R1-R11 with every row labelled explicit/implied. R10: '`IAssetRepository` and the public signatures stay unchanged | implied'."}, {"text": "The edge cases include all four of: merging a tag into itself, a source tag that does not exist, an asset that already carries both the source and the target tag, and every rendition being wider than maxWidth; each is given an expected behaviour.", "passed": true, "evidence": "'`source == target` ignoring case -> no-op, tag still exists (A3)'; '`source` missing -> no-op (A2)'; 'Asset with both tags -> `target` once, `source` gone'; 'Every rendition wider than max -> `null`'."}, {"text": "The plan gives minutes per step that total no more than 60, names a cut line, and the response includes a ready-to-paste first prompt for the in-IDE agent that covers only one of the two tasks and tells the agent to keep existing signatures.", "passed": false, "evidence": "Minutes total 55 (table states **55**; script sum 6+4+5+6+5+12+8+4+5 = 55) and cut line in drop order given. But the first prompt asks the agent to 'Restate both tasks' and covers both RenditionService and TagService, so it does not cover only one task (it does say 'do not change IAssetRepository or any public signature')."}], "summary": {"passed": 3, "failed": 1, "total": 4, "pass_rate": 0.75}, "timing": {"executor_duration_seconds": 56.3, "total_duration_seconds": 56.3}, "eval_feedback": {"suggestions": [{"assertion": "The plan gives minutes per step that total no more than 60, names a cut line, and the response includes a ready-to-paste first prompt for the in-IDE agent that covers only one of the two tasks and tells the agent to keep existing signatures.", "reason": "Conflicts with the skill's recon-first design (the vague-case assertion 1 requires the first prompt to be a no-edit recon prompt, which necessarily covers both tasks). Both configs fail only on the 'covers only one task' clause even though with_skill ships a scoped, signature-preserving step-1 prompt. Reword to 'the first implementation prompt' or 'a step prompt'."}, {"assertion": "The edge cases include all four of: merging a tag into itself, a source tag that does not exist, an asset that already carries both the source and the target tag, and every rendition being wider than maxWidth; each is given an expected behaviour.", "reason": "Good discriminator: it caught with_skill deferring the missing-source-tag behaviour ('per A4', decide later) while old_skill committed to a default."}, {"assertion": "The response contains no C# implementation of GetBestRendition or MergeTags (no method bodies or code blocks containing a fix), and the trace shows no files created or edited.", "reason": "The 'trace' half cannot be verified without a transcript and the C# case has no input repo to diff; only the response half is checkable."}], "overall": "A4 is flawed as worded; A3 discriminates; A1/A2 pass for both and are weakly discriminating."}}}, {"id": "csharp-coderbyte-bugfix-and-feature-with_skill", "prompt": "Coderbyte assessment just started (Software Engineer AI Fluency, 80 min total, written questions come after and I can't go back). Section 1 is a C# repo, .NET 8 with xUnit. There are two tasks:\n\nTask 1 (bug): RenditionService.GetBestRendition(Guid assetId, int maxWidth) should return the largest rendition whose width is less than or equal to maxWidth. Users report it sometimes returns a rendition wider than maxWidth.\n\nTask 2 (feature): Add TagService.MergeTags(string sourceTag, string targetTag). Every asset tagged with sourceTag must end up tagged with targetTag, and sourceTag must be deleted afterwards. Tag names are case-insensitive.\n\nFile tree:\n\n```\nAssetLibrary.sln\nREADME.md\nsrc/AssetLibrary/AssetLibrary.csproj\nsrc/AssetLibrary/Models/Asset.cs\nsrc/AssetLibrary/Models/Rendition.cs\nsrc/AssetLibrary/Models/Tag.cs\nsrc/AssetLibrary/Repositories/IAssetRepository.cs\nsrc/AssetLibrary/Repositories/InMemoryAssetRepository.cs\nsrc/AssetLibrary/Services/RenditionService.cs\nsrc/AssetLibrary/Services/TagService.cs\ntests/AssetLibrary.Tests/AssetLibrary.Tests.csproj\ntests/AssetLibrary.Tests/RenditionServiceTests.cs\ntests/AssetLibrary.Tests/TagServiceTests.cs\n```\n\nVisible tests: RenditionServiceTests has ReturnsExactWidthMatch and ReturnsNullWhenAssetHasNoRenditions. TagServiceTests has AddTagCreatesTagWhenMissing and AddTagIgnoresDuplicateTag. The task page says there are hidden tests as well and partial credit counts.\n\nI haven't opened any code yet, only the tree. Help me set this up before I start prompting their AI.", "eval_id": null, "outputs": [{"name": "response.md", "type": "text", "content": "Recon below is built from the task text and the file tree only. You haven't opened the code yet, so every point that depends on it is written down as an assumption with something to check. Fix each one when the in-IDE agent reads the real files.\n\n## Goal\nMake `GetBestRendition` never return a rendition wider than `maxWidth`, and add `TagService.MergeTags` so that every asset with `sourceTag` ends up with `targetTag` and `sourceTag` is deleted, with tag names compared case-insensitively. These are two separate deliverables, so ship them in that order.\n\n## Requirements\n| # | Requirement | Type | Done when |\n|---|---|---|---|\n| R1 | `GetBestRendition` returns the widest rendition with `Width \u003c= maxWidth` | explicit | test: widths 100/300/500, max 400 -> 300 |\n| R2 | Width equal to `maxWidth` is allowed (inclusive) | explicit | `ReturnsExactWidthMatch` still green, plus 300/max 300 -> 300 |\n| R3 | No rendition fits -> return the same \"nothing\" value as the no-renditions case (null) | implied | test: widths 500/800, max 400 -> null |\n| R4 | Result does not depend on the order renditions are stored in | implied | test with unsorted input passes |\n| R5 | `MergeTags(string sourceTag, string targetTag)` exists on `TagService` with exactly that signature | explicit | hidden tests compile |\n| R6 | Every asset tagged `sourceTag` ends up tagged `targetTag` | explicit | test: 2 assets with \"red\", merge into \"crimson\" -> both have \"crimson\" |\n| R7 | `sourceTag` is deleted afterwards, from every asset and from the tag store | explicit | no asset has the tag and the tag lookup finds nothing |\n| R8 | Names match case-insensitively (`\"Red\"` == `\"red\"`) | explicit | merge(\"RED\", \"Crimson\") with stored \"red\"/\"crimson\" works |\n| R9 | No duplicate target tag on an asset that already had both | implied (mirrors `AddTagIgnoresDuplicateTag`) | asset with red and crimson ends with one crimson |\n| R10 | Existing public API and visible tests unchanged | implied | the 4 visible tests still pass, no signature changed |\n\n## Assumptions\n- A1: Return type of `MergeTags` -> `void`, unless `AddTag` returns something (`Tag`/`bool`), in which case match it (hidden tests are written against the house style).\n- A2: Source and target are the same tag ignoring case (`\"red\"`, `\"Red\"`) -> no-op. **Never delete the tag** (this is the classic trap: a naive merge deletes the tag it just merged into).\n- A3: `targetTag` does not exist yet -> create it, the same way `AddTag` creates a missing tag (the task says assets \"must end up tagged with targetTag\").\n- A4: `sourceTag` does not exist -> follow how existing code handles a missing entity (`KeyNotFoundException` if the repo/service throws on missing ids, otherwise a silent no-op). Decide after reading `TagService`/`InMemoryAssetRepository`, and write it in the README.\n- A5: null/empty/whitespace tag name -> `ArgumentException` (`ArgumentNullException` for null if the code already uses it).\n- A6: Existing casing of the target tag is kept (merge into \"crimson\" when \"Crimson\" is stored -> stays \"Crimson\").\n- A7: Unknown `assetId` in `GetBestRendition` -> keep the current behaviour, whatever it is (probably null). Don't change it, because a hidden regression test may rely on it.\n- A8: Ties on width -> any of the tied renditions, keep the current first-match order.\n\n## Files\n| File | Action | Why |\n|---|---|---|\n| README.md | read, then change at the end | conventions, then assumptions and decisions |\n| src/AssetLibrary/Services/RenditionService.cs | change | bug |\n| src/AssetLibrary/Services/TagService.cs | change | add `MergeTags` |\n| src/AssetLibrary/Models/Asset.cs, Rendition.cs, Tag.cs | read | how tags are stored (strings vs `Tag` objects, list vs set, comparer?) |\n| src/AssetLibrary/Repositories/IAssetRepository.cs | read; change only if unavoidable | adding interface members can break hidden test fakes that implement it |\n| src/AssetLibrary/Repositories/InMemoryAssetRepository.cs | read; change only alongside the interface | storage, any case-sensitive dictionary |\n| tests/AssetLibrary.Tests/*.cs | read, then add tests | naming style, setup pattern; don't edit the existing 4 tests |\n| *.csproj, AssetLibrary.sln | leave alone | no new packages |\n\nTest command: `dotnet test` (from the repo root, where `AssetLibrary.sln` is)\n\n## Edge cases\n| Case | Expected | Req | Likely hidden test |\n|---|---|---|---|\n| Widths 100/300/500, max 400 | 300 | R1 | yes |\n| Width exactly == max | that rendition | R2 | yes (visible already) |\n| All renditions wider than max | null | R3 | yes |\n| Renditions stored unsorted / descending | still the widest fitting one | R4 | yes (this is probably the bug) |\n| Single rendition wider than max | null, not that rendition | R1, R3 | yes |\n| maxWidth 0 or negative | null | R3 | maybe |\n| Asset has source only | gets target, loses source | R6, R7 | yes |\n| Asset has both source and target | one target, no source | R9 | yes |\n| Different case (\"RED\" vs stored \"red\") | treated as same tag | R8 | yes |\n| source == target ignoring case | no-op, tag survives | A2 | likely |\n| Target tag does not exist | created, then applied | A3 | likely |\n| Source tag does not exist | per A4 | A4 | maybe |\n| Assets without source untouched | unchanged | R6 | maybe |\n| null / \"\" / \"  \" tag | ArgumentException | A5 | maybe |\n\nC# traps to tell the agent about: use `StringComparison.OrdinalIgnoreCase` / `StringComparer.OrdinalIgnoreCase`, not `ToLower()`. Don't remove items from a tag list while iterating over it (`InvalidOperationException`); call `.ToList()` first. A `Dictionary\u003cstring, Tag>` built without a comparer is case-sensitive. `First()` throws on empty, so use `FirstOrDefault()`.\n\nLikely bug shapes to check in `GetBestRendition`: max picked before filtering, a filter on `Height` instead of `Width`, a `>=` the wrong way round, or `FirstOrDefault` with no sort that only works when renditions happen to be sorted.\n\n## Plan\nTime: 80 min total, about 55 for Section 1, at least 20 kept for Section 2.\n\n| Step | Change | Min | Done when |\n|---|---|---|---|\n| 0 | Paste the in-IDE recon prompt, correct its reading (A2, A4, interface risk) | 8 | agent's plan matches this one |\n| 1 | Fix `GetBestRendition`, plus 1 regression test (unsorted, max between widths) | 10 | R1-R4 tests green, visible tests green |\n| 2 | `MergeTags` core: copy target to every source asset, delete source, case-insensitive | 12 | R5-R8 tests green |\n| 3 | `MergeTags` rules: same-tag no-op, already has target, missing target/source, blank input, plus 3-4 tests | 8 | A2-A5 rows green |\n| 4 | README: bug cause, approach, A1-A8, what was cut | 5 | decisions written down |\n| 5 | Full `dotnet test`, read the final diff once | 3 | all green, no stray edits |\n| --- | **cut line** | | |\n| 6 | Extra tests for the remaining table rows (maxWidth \u003c= 0, untouched assets, ties) | 7 | rows covered |\n| | submit buffer | 2 | |\n\nBudget: 55 of 55 min (Section 1 share), review time included. Cut line: below step 5 (extra edge-case tests get dropped first, and the README is never dropped). If step 2 runs long, still submit with step 1 done and the visible tests green.\n\n## First prompt\nPaste this into the Coderbyte IDE first, with both task statements and the file tree. The graders read the prompt log, so planning first is part of your score:\n\n```\nDo not edit or create any files yet. First:\n1. Restate the task in one sentence.\n2. List requirements as a numbered checklist, each marked explicit or implied,\n   each with how a test would check it.\n3. List assumptions for anything ambiguous, with the default you pick and why.\n4. List the files to read, change and leave alone.\n5. List edge cases with expected behaviour, marking the ones hidden tests most\n   likely check.\n6. Propose a step plan where each step changes one function or fixes one bug,\n   with minutes per step for a 47-minute limit and a cut line.\nRespect existing signatures and style; no new dependencies.\n```\n\nWhen it answers, correct anything it gets wrong in your next message before you ask for step 1, for example: \"Merging a tag into itself (any case) must be a no-op, not a delete.\" Graders count a visible correction as judgement.\n\nThen step 1:\n\n```\nRead src/AssetLibrary/Services/RenditionService.cs, src/AssetLibrary/Models/Rendition.cs\nand tests/AssetLibrary.Tests/RenditionServiceTests.cs. Fix only GetBestRendition(Guid assetId,\nint maxWidth): it must return the rendition with the largest Width that is \u003c= maxWidth\n(inclusive), regardless of the order renditions are stored in, and null when none fits\n(same as the no-renditions case). Examples: widths 100/300/500 with max 400 -> 300;\nmax 300 -> 300; widths 500/800 with max 400 -> null; a single rendition wider than max -> null.\nKeep the signature, the behaviour for an unknown asset, and the existing style; no new packages;\ndon't touch TagService or the existing tests. Add one xUnit test in RenditionServiceTests,\nfollowing its naming and setup, for the unsorted-input case. Explain the root cause in one\nsentence before the diff.\n```\n\nBefore any code gets written, confirm or correct three things:\n1. Is 55/20 the right Section 1/Section 2 split, or do you want more time for the written answers?\n2. Defaults A2 (same-tag merge is a no-op) and A3 (create a missing target tag): keep them?\n3. A4 (missing source tag): throw or no-op? I've left this one to decide after the agent reads `TagService`. Match whatever the existing code does for a missing entity.\n"}], "grading": {"expectations": [{"text": "The response contains no C# implementation of GetBestRendition or MergeTags (no method bodies or code blocks containing a fix), and the trace shows no files created or edited.", "passed": true, "evidence": "No method bodies or code fixes. The only code blocks are prompts (lines 86-98, 104-115); plan steps describe changes in prose. outputs/ contains only response.md. No transcript saved; judged from outputs/ and response.md."}, {"text": "Requirements are a numbered list in which every item is labelled explicit or implied, and at least one implied requirement says the existing public method signatures or the currently passing behaviour must stay unchanged.", "passed": true, "evidence": "Requirements table R1-R10 has a Type column with every row 'explicit' or 'implied'. R10: 'Existing public API and visible tests unchanged | implied | the 4 visible tests still pass, no signature changed'."}, {"text": "The edge cases include all four of: merging a tag into itself, a source tag that does not exist, an asset that already carries both the source and the target tag, and every rendition being wider than maxWidth; each is given an expected behaviour.", "passed": false, "evidence": "Self-merge: 'source == target ignoring case | no-op, tag survives'; both tags: 'one target, no source'; all wider: 'null'. But source tag does not exist: 'Source tag does not exist | per A4', and A4 defers: 'Decide after reading TagService/InMemoryAssetRepository'; closing question 3: 'I've left this one to decide'. No committed expected behaviour."}, {"text": "The plan gives minutes per step that total no more than 60, names a cut line, and the response includes a ready-to-paste first prompt for the in-IDE agent that covers only one of the two tasks and tells the agent to keep existing signatures.", "passed": false, "evidence": "Minutes 8+10+12+8+5+3+7+2 = 55 (\u003c= 60) and 'cut line' row present. But the block under '## First prompt' (lines 86-98) is a recon prompt pasted 'with both task statements', so it covers both tasks. The scoped one-task prompt with 'Keep the signature' is the second ('Then step 1'), not the first."}], "summary": {"passed": 2, "failed": 2, "total": 4, "pass_rate": 0.5}, "timing": {"executor_duration_seconds": 69.9, "total_duration_seconds": 69.9}, "eval_feedback": {"suggestions": [{"assertion": "The plan gives minutes per step that total no more than 60, names a cut line, and the response includes a ready-to-paste first prompt for the in-IDE agent that covers only one of the two tasks and tells the agent to keep existing signatures.", "reason": "Conflicts with the skill's recon-first design (the vague-case assertion 1 requires the first prompt to be a no-edit recon prompt, which necessarily covers both tasks). Both configs fail only on the 'covers only one task' clause even though with_skill ships a scoped, signature-preserving step-1 prompt. Reword to 'the first implementation prompt' or 'a step prompt'."}, {"assertion": "The edge cases include all four of: merging a tag into itself, a source tag that does not exist, an asset that already carries both the source and the target tag, and every rendition being wider than maxWidth; each is given an expected behaviour.", "reason": "Good discriminator: it caught with_skill deferring the missing-source-tag behaviour ('per A4', decide later) while old_skill committed to a default."}, {"assertion": "The response contains no C# implementation of GetBestRendition or MergeTags (no method bodies or code blocks containing a fix), and the trace shows no files created or edited.", "reason": "The 'trace' half cannot be verified without a transcript and the C# case has no input repo to diff; only the response half is checkable."}], "overall": "A4 is flawed as worded; A3 discriminates; A1/A2 pass for both and are weakly discriminating."}}}, {"id": "python-takehome-repo-in-folder-old_skill", "prompt": "Got a take-home for a backend role, 2 hour limit, started the clock a few minutes ago. The repo is in the current folder and the brief is in TASK.md. Before I let the AI loose on it: where should I start and how should I split my time?\n\nInput files: TASK.md, pyproject.toml, src/inventory/__init__.py, src/inventory/models.py, src/inventory/importer.py, tests/test_importer.py, data/movements.csv", "eval_id": null, "outputs": [{"name": "TASK.md", "type": "text", "content": "# Inventory importer\n\nThe warehouse system exports stock movements as CSV (`sku,quantity,reason`). This package imports them.\n\n1. Bug: `import_movements` crashes when the CSV ends with a blank line. Exports from the warehouse system always do. Fix it.\n2. Feature: add `summarize(movements)` to `inventory/importer.py`. It returns a `Summary` with `net`, a mapping of SKU to net quantity ordered by SKU, and `skipped`, the number of rows that were not imported. SKUs are compared case-insensitively and reported in upper case.\n3. Rows whose quantity is not a whole number must not crash the import. Skip them and count them in `skipped`.\n\nConstraints:\n\n- Do not change the signature of `import_movements`; other services already call it.\n- No new runtime dependencies.\n- Run the tests with `pytest`.\n- Add a short `NOTES.md` describing your decisions and anything you would do with more time.\n"}, {"name": "data/movements.csv", "type": "text", "content": "sku,quantity,reason\nAB-1,5,restock\nab-1,-2,sale\nCD-7,2.5,adjustment\nCD-7,3,restock\n\n"}, {"name": "pyproject.toml", "type": "text", "content": "[project]\nname = \"inventory\"\nversion = \"0.1.0\"\nrequires-python = \">=3.11\"\n\n[tool.pytest.ini_options]\npythonpath = [\"src\"]\ntestpaths = [\"tests\"]\n"}, {"name": "response.md", "type": "text", "content": "Start with the bug, because the other two tasks build on it. I read the whole repo (it's small) and here's the recon. No code yet: say go and the first prompt is at the bottom.\n\nTwo things I found in the repo:\n- `data/movements.csv` does end with a blank line (`...restock\\n\\n`). But running `import_movements` on it fails sooner, on row 3 (`CD-7,2.5`): `ValueError: invalid literal for int()`. So fixing the blank line alone won't make the sample file import. Tasks 1 and 3 go together.\n- `pytest` isn't installed in my Python here (`No module named pytest`). Check yours in the first minute (`pip install pytest` as a dev tool is fine; it isn't a runtime dependency).\n\n## Goal\nMake `import_movements` survive real warehouse exports (trailing blank line, non-integer quantities) without changing its signature, and add `summarize(movements)` that returns per-SKU net quantities plus a skipped-row count.\n\n## Requirements\n| # | Requirement | Type |\n|---|---|---|\n| R1 | A CSV ending with a blank line imports without crashing; the blank line is not a movement | explicit |\n| R2 | `import_movements(path: Path) -> list[Movement]` keeps its signature (still returns a list, callers unchanged) | explicit |\n| R3 | `summarize(movements)` lives in `inventory/importer.py` and returns a `Summary` | explicit |\n| R4 | `Summary.net` maps SKU to net quantity (sum of signed quantities), ordered by SKU | explicit |\n| R5 | SKUs are grouped case-insensitively and reported upper case (`AB-1` + `ab-1` \u2192 `AB-1`) | explicit |\n| R6 | `Summary.skipped` = number of rows not imported | explicit |\n| R7 | A row whose quantity isn't a whole number is skipped, not a crash, and counts in `skipped` | explicit |\n| R8 | No new runtime dependencies; tests pass with `pytest` | explicit |\n| R9 | `NOTES.md` with decisions and \"with more time\" items | explicit |\n| R10 | `skipped` has to get from the import into `summarize`, so the import must record it somewhere without breaking R2 | implied |\n| R11 | Existing two tests still pass; new tests cover R1, R4\u2013R7 | implied |\n| R12 | Sample file gives `net == {\"AB-1\": 3, \"CD-7\": 3}`, `skipped == 1` | implied |\n\n## Assumptions\n- A1: How does `summarize(movements)` know `skipped` when it only gets movements? \u2192 `import_movements` returns a `list` subclass (e.g. `MovementList(list)`) with a `skipped` attribute. The return type is still a list, so the signature and callers stay the same. `summarize` reads `getattr(movements, \"skipped\", 0)`, so a plain list also works. Put this in NOTES.md as the main decision. (Other option: a new `read_movements(path)` that returns `(movements, skipped)`, with `import_movements` calling it.)\n- A2: Blank lines (trailing or in the middle) aren't rows, so they're ignored and not counted in `skipped`.\n- A3: \"Whole number\" means a string that `int()` accepts after stripping whitespace (`\"3\"`, `\"-2\"`, `\"+4\"`). `\"2.5\"`, `\"3.0\"`, `\"1e3\"` and `\"\"` are skipped. This is the stricter reading because `Movement.quantity` is an `int`. Say so in NOTES.md.\n- A4: Other bad rows (wrong column count, empty SKU) are also skipped and counted, not crashed on. The brief only names quantity, but \"rows that were not imported\" covers them too.\n- A5: Ordered by SKU means sorted by the upper-cased SKU string, returned as a plain `dict` built in sorted order.\n- A6: SKUs that net to 0 stay in `net` with value 0.\n- A7: The header row is always there and is never counted as skipped. `import_movements` still returns stripped original-case SKUs, and only `summarize` upper-cases them, so existing callers see no change.\n- A8: `Summary` is a frozen dataclass in `models.py`, next to `Movement`, using the same style.\n\n## Files\n| File | Action | Why |\n|---|---|---|\n| `TASK.md` | read | brief; source of truth |\n| `src/inventory/importer.py` | change | blank-line fix, skip/count bad rows, add `summarize` |\n| `src/inventory/models.py` | change | add `Summary` (and `MovementList` if A1) |\n| `tests/test_importer.py` | change (add only) | new tests; keep the 2 existing ones as they are |\n| `data/movements.csv` | read only | real-world fixture; use it in one end-to-end test |\n| `NOTES.md` | create | required deliverable |\n| `pyproject.toml` | leave alone | no runtime deps to add |\n| `src/inventory/__init__.py` | leave alone | empty; exporting from it isn't asked for |\n\n## Edge cases\n- Trailing blank line \u2192 ignored, `skipped` unchanged\n- Blank line mid-file / whitespace-only line \u2192 ignored (A2)\n- Header-only file \u2192 `[]`, `Summary(net={}, skipped=0)`\n- Empty movements list into `summarize` \u2192 `net == {}`, `skipped == 0`\n- `2.5`, `3.0`, `abc`, empty quantity \u2192 skipped, `skipped += 1`\n- `-2`, `0`, `\" 5 \"` \u2192 imported as int\n- Very large quantity (`99999999999999999999`) \u2192 imported; Python ints don't overflow\n- Duplicate SKU in different case (`AB-1`, `ab-1`, ` ab-1 `) \u2192 one key `AB-1`, summed\n- Net sums to 0 \u2192 key kept with 0 (A6)\n- Wrong column count (2 or 4 fields) \u2192 skipped and counted (A4)\n- Unicode SKU (`\u00df-1`) \u2192 `.upper()` gives `SS-1`; accept it and mention it in NOTES\n- Order: input `CD-7, AB-1` \u2192 `list(net) == [\"AB-1\", \"CD-7\"]`\n- Sample `data/movements.csv` \u2192 `{\"AB-1\": 3, \"CD-7\": 3}`, `skipped == 1`\n\n## Plan\nBudget: about 115 min left of 120.\n\n| Step | Change | Min | Done when |\n|---|---|---|---|\n| 0 | Install/confirm `pytest`, run the 2 existing tests, reproduce both crashes | 5 | 2 green; trailing-blank and `2.5` failures reproduced |\n| 1 | Failing test for the trailing blank line \u2192 fix in `import_movements` (skip empty rows) | 10 | test green, old tests green |\n| 2 | Failing tests for non-int quantity and wrong column count \u2192 skip and count them; return the list with a `skipped` count (A1) | 20 | `import_movements(path)` is still a list; `.skipped == 1` on the sample file |\n| 3 | Add `Summary` in `models.py` + `summarize` in `importer.py` (case-insensitive, upper case, sorted) | 20 | tests for grouping, order, zero-net and empty input are green |\n| 4 | End-to-end test on `data/movements.csv` | 5 | `net == {\"AB-1\": 3, \"CD-7\": 3}`, `skipped == 1` |\n| 5 | Remaining edge-case tests (whitespace, `3.0`, large int, mid-file blank) | 15 | all green |\n| 6 | `NOTES.md`: A1, A2, A3, A4 + \"with more time\" (logging skipped rows with line numbers, BOM/`utf-8-sig`, a streaming iterator for big files, a type for the return value) | 10 | file exists, under 30 lines |\n| 7 | Self-review: diff check that the signature is unchanged, no new deps, no stray prints; full `pytest` | 10 | clean diff, all green |\n| Buffer | | 20 | |\n\nCut line: drop step 5 first (keep only the `3.0` case, because A3 is a judgment call a reviewer will check), then shorten step 6 to the four decisions. Never cut steps 1\u20134 or the NOTES.md file itself.\n\n## First prompt\n```\nRepo: Python 3.11 package `inventory` (src/inventory/importer.py, models.py), tests in tests/test_importer.py, run with `pytest`. Brief is in TASK.md.\n\nBefore writing any code: restate the task in one sentence, list explicit and implied requirements, list assumptions for anything ambiguous, list edge cases with expected behavior, and propose a step plan where each step changes one function. Respect existing signatures and style; no new dependencies.\n\nThen do ONLY step 1: add a failing test in tests/test_importer.py for a CSV that ends with a blank line (\"sku,quantity,reason\\nAB-1,5,restock\\n\\n\"), run it to show it fails, then make the smallest fix in import_movements so blank rows are ignored. Do not change the signature `import_movements(path: Path) -> list[Movement]`. Keep the two existing tests unchanged and passing. Stop after step 1 and show me the diff.\n```\n\nQuestion for you (I went with the defaults above): is A1 acceptable, a `list` subclass that carries `skipped`? If you'd rather have a separate `read_movements()` that returns `(movements, skipped)`, change step 2 before you start.\n"}, {"name": "src/inventory/__init__.py", "type": "text", "content": ""}, {"name": "src/inventory/importer.py", "type": "text", "content": "import csv\nfrom pathlib import Path\n\nfrom inventory.models import Movement\n\n\ndef import_movements(path: Path) -> list[Movement]:\n    movements = []\n    with open(path, newline=\"\") as handle:\n        reader = csv.reader(handle)\n        next(reader)\n        for row in reader:\n            sku, quantity, reason = row\n            movements.append(Movement(sku=sku.strip(), quantity=int(quantity), reason=reason.strip()))\n    return movements\n"}, {"name": "src/inventory/models.py", "type": "text", "content": "from dataclasses import dataclass\n\n\n@dataclass(frozen=True)\nclass Movement:\n    sku: str\n    quantity: int\n    reason: str\n"}, {"name": "tests/test_importer.py", "type": "text", "content": "from pathlib import Path\n\nfrom inventory.importer import import_movements\n\n\ndef write_csv(tmp_path: Path, text: str) -> Path:\n    path = tmp_path / \"movements.csv\"\n    path.write_text(text)\n    return path\n\n\ndef test_imports_each_row_as_a_movement(tmp_path):\n    path = write_csv(tmp_path, \"sku,quantity,reason\\nAB-1,5,restock\\nAB-2,-2,sale\\n\")\n    movements = import_movements(path)\n    assert [m.sku for m in movements] == [\"AB-1\", \"AB-2\"]\n    assert movements[1].quantity == -2\n\n\ndef test_header_only_file_returns_no_movements(tmp_path):\n    path = write_csv(tmp_path, \"sku,quantity,reason\\n\")\n    assert import_movements(path) == []\n"}], "grading": {"expectations": [{"text": "Before presenting the plan, the trace shows the agent reading TASK.md, src/inventory/importer.py and tests/test_importer.py.", "passed": true, "evidence": "'I read the whole repo (it's small)' and cites: blank line '...restock\\n\\n', 'fails sooner, on row 3 (CD-7,2.5): ValueError: invalid literal for int()' (importer.py behaviour), 'Existing two tests' (test_importer.py), TASK.md as brief. No transcript saved; judged from outputs/ and response.md."}, {"text": "The assumptions point out that import_movements must keep returning a list of Movement while skipped rows must still be counted, and they pick one specific way to make the skipped count available to summarize.", "passed": true, "evidence": "A1: 'How does summarize(movements) know skipped when it only gets movements? -> import_movements returns a list subclass (e.g. MovementList(list)) with a skipped attribute ... summarize reads getattr(movements, \"skipped\", 0)'; R10 flags the conflict with R2."}, {"text": "The edge cases include a trailing blank line, a non-integer quantity such as 2.5, and SKUs that differ only by case, each with an expected behaviour.", "passed": true, "evidence": "'Trailing blank line -> ignored, skipped unchanged'; '2.5, 3.0, abc, empty quantity -> skipped, skipped += 1'; 'Duplicate SKU in different case (AB-1, ab-1, ` ab-1 `) -> one key AB-1, summed'."}, {"text": "The plan's minutes total no more than 120 and a cut line is stated, and the trace shows no file under src/ or tests/ created or edited.", "passed": true, "evidence": "Minutes 5+10+20+20+5+15+10+10+20 = 115 (\u003c= 120); 'Cut line: drop step 5 first...'. diff -r of outputs/ vs input files shows no differences (response says it ran import_movements, but no source/test file changed)."}], "summary": {"passed": 4, "failed": 0, "total": 4, "pass_rate": 1.0}, "timing": {"executor_duration_seconds": 62.8, "total_duration_seconds": 62.8}, "eval_feedback": {"suggestions": [{"reason": "All four assertions pass for both configs, so this case does not discriminate between skill versions."}, {"assertion": "Before presenting the plan, the trace shows the agent reading TASK.md, src/inventory/importer.py and tests/test_importer.py.", "reason": "Without saved transcripts this can only be inferred from the response quoting file details; save transcripts or assert on content only a reader of those files could produce (e.g. the sample file's expected net {AB-1: 3, CD-7: 3}, skipped 1)."}, {"reason": "No assertion checks that NOTES.md (a graded deliverable in TASK.md) is kept above the cut line, or that the response computes the sample-file expected result; both responses did, which would be a cheap discriminating check."}], "overall": "Assertions are reasonable but non-discriminating for this pair; the trace-based one is unverifiable as run."}}}, {"id": "python-takehome-repo-in-folder-with_skill", "prompt": "Got a take-home for a backend role, 2 hour limit, started the clock a few minutes ago. The repo is in the current folder and the brief is in TASK.md. Before I let the AI loose on it: where should I start and how should I split my time?\n\nInput files: TASK.md, pyproject.toml, src/inventory/__init__.py, src/inventory/models.py, src/inventory/importer.py, tests/test_importer.py, data/movements.csv", "eval_id": null, "outputs": [{"name": "TASK.md", "type": "text", "content": "# Inventory importer\n\nThe warehouse system exports stock movements as CSV (`sku,quantity,reason`). This package imports them.\n\n1. Bug: `import_movements` crashes when the CSV ends with a blank line. Exports from the warehouse system always do. Fix it.\n2. Feature: add `summarize(movements)` to `inventory/importer.py`. It returns a `Summary` with `net`, a mapping of SKU to net quantity ordered by SKU, and `skipped`, the number of rows that were not imported. SKUs are compared case-insensitively and reported in upper case.\n3. Rows whose quantity is not a whole number must not crash the import. Skip them and count them in `skipped`.\n\nConstraints:\n\n- Do not change the signature of `import_movements`; other services already call it.\n- No new runtime dependencies.\n- Run the tests with `pytest`.\n- Add a short `NOTES.md` describing your decisions and anything you would do with more time.\n"}, {"name": "data/movements.csv", "type": "text", "content": "sku,quantity,reason\nAB-1,5,restock\nab-1,-2,sale\nCD-7,2.5,adjustment\nCD-7,3,restock\n\n"}, {"name": "pyproject.toml", "type": "text", "content": "[project]\nname = \"inventory\"\nversion = \"0.1.0\"\nrequires-python = \">=3.11\"\n\n[tool.pytest.ini_options]\npythonpath = [\"src\"]\ntestpaths = [\"tests\"]\n"}, {"name": "response.md", "type": "text", "content": "I read TASK.md and the whole repo. `data/movements.csv` already triggers both problems: it ends with `\\n\\n`, so `csv.reader` gives `[]` as its last row and `sku, quantity, reason = row` fails. It also has `CD-7,2.5,...`, which makes `int()` raise. Start with recon, not code. I've assumed you have about 110 of the 120 minutes left.\n\n## Goal\nMake `import_movements` survive trailing blank lines and non-whole quantities without changing its signature, and add `summarize(movements)`. It returns a `Summary` with per-SKU net quantities (SKUs case-insensitive, upper case, sorted) and a count of the rows that were skipped.\n\n## Requirements\n| # | Requirement | Type | Done when |\n|---|---|---|---|\n| R1 | Trailing blank line(s) don't crash `import_movements` | explicit | file ending `\\n\\n` imports all data rows |\n| R2 | Rows with a non-whole quantity are skipped, not imported | explicit | `CD-7,2.5,...` is not in the result and nothing raises |\n| R3 | Skipped rows are counted and reach `Summary.skipped` | explicit | `summarize(import_movements(data/movements.csv)).skipped == 1` |\n| R4 | `summarize(movements)` returns `Summary(net, skipped)`, defined in `inventory/importer.py` | explicit | `from inventory.importer import summarize, Summary` works |\n| R5 | `net` maps SKU to net quantity; SKUs compared case-insensitively, reported in upper case | explicit | `AB-1,5` + `ab-1,-2` gives `{\"AB-1\": 3}` |\n| R6 | `net` ordered by SKU | explicit | `list(net) == sorted(net)` |\n| R7 | `import_movements(path: Path) -> list[Movement]` unchanged | explicit | existing 2 tests pass, return value still compares equal to a list |\n| R8 | No new runtime dependencies | explicit | `pyproject.toml` has no `dependencies` added |\n| R9 | `NOTES.md` with decisions and what you'd do with more time | explicit | file exists, lists A1 to A6 |\n| R10 | Existing import behaviour kept: header skipped, sku/reason stripped, sku case kept, negatives allowed | implied | existing tests and a sample with `-2` still pass |\n| R11 | `Summary` is a frozen dataclass like `Movement` | implied | matches `models.py` style |\n\n## Assumptions\n- A1: How does `skipped` get from the import into `summarize(movements)` when the import signature can't change? -> `import_movements` returns a `list` subclass (e.g. `ImportedMovements(list)`) carrying `skipped: int`. `summarize` reads `getattr(movements, \"skipped\", 0)`. (The signature and the `== []` comparisons still hold, and the natural call `summarize(import_movements(path))` works. A plain list of `Movement` gives `skipped=0`.) **This is the one decision to confirm.**\n- A2: Do blank or whitespace-only lines count as skipped? -> No. They are not rows. (The task calls them a normal property of every export, not bad data.)\n- A3: Is `3.0` a whole number? -> Yes, import it as 3. `2.5`, `abc` and an empty value are skipped. Parse with `Decimal`, not `float`. (The task's wording is \"not a whole number\", so `3.0` qualifies.)\n- A4: What about a row with the wrong number of columns? -> Skip it and count it in `skipped`. (It is a row \"not imported\", and a crash is the worst outcome for the caller.)\n- A5: Does `import_movements` upper-case SKUs? -> No. Only `summarize` normalises (`strip().upper()`). (Changing import output could break callers and hidden regression tests.)\n- A6: Does a SKU whose net is 0 stay in `net`? -> Yes, with 0. (It had movements, and dropping it would hide data.)\n- A7: Where does `Summary` live? -> Define it in `models.py` next to `Movement` and import it in `importer.py`, so both import paths work.\n\n## Files\n| File | Action | Why |\n|---|---|---|\n| TASK.md | read | the spec. Its examples and boundary words are the hidden tests |\n| src/inventory/importer.py | change | blank-line fix, skip and count, `summarize` |\n| src/inventory/models.py | change | add frozen `Summary` dataclass |\n| tests/test_importer.py | read, leave alone | given tests, style (`tmp_path` + `write_csv`) |\n| tests/test_import_robustness.py, tests/test_summary.py | create | new tests, so the given file stays untouched |\n| data/movements.csv | read, leave alone | real sample with both bugs, use as a fixture |\n| NOTES.md | create | required write-up |\n| pyproject.toml, src/inventory/__init__.py | leave alone | no deps, `pythonpath = [\"src\"]` already set |\n\nTest command: `pytest`\n\n## Edge cases\n| Case | Expected | Req | Likely hidden test |\n|---|---|---|---|\n| `data/movements.csv` as given | net `{\"AB-1\": 3, \"CD-7\": 3}`, skipped 1 | R1-R6 | **yes** |\n| file ends with one blank line | all data rows imported | R1 | **yes** |\n| several trailing blank lines / whitespace-only line | ignored, not counted | R1, A2 | maybe |\n| CRLF line endings | same as LF | R1 | maybe |\n| quantity `2.5` | skipped, counted | R2, R3 | **yes** |\n| quantity `abc` or empty | skipped, counted | R2, R3 | maybe |\n| quantity `3.0` | imported as 3 | A3 | unlikely |\n| `ab-1` and `AB-1` | one key `AB-1` | R5 | **yes** |\n| SKUs given out of order (`CD-7` before `AB-1`) | keys sorted | R6 | **yes** |\n| negative quantities cancel to 0 | key kept with 0 | R5, A6 | maybe |\n| `summarize([])` | `Summary(net={}, skipped=0)` | R4 | **yes** |\n| header-only file | `[]` (existing) | R7 | yes (exists) |\n| row with 2 or 4 columns | skipped, counted | A4 | maybe |\n| completely empty file (no header) | `[]` instead of `StopIteration` | R10 | unlikely |\n\n## Plan\n| Step | Change | Min | Done when |\n|---|---|---|---|\n| 0 | recon (this), confirm A1 | 8 | plan confirmed |\n| 1 | skip empty/whitespace rows in `import_movements` + tests | 10 | R1 rows green, given tests green |\n| 2 | parse quantity with `Decimal`, skip non-whole or malformed rows, return list subclass with `skipped` | 20 | R2, R3 (import side), R7 green |\n| 3 | `Summary` in models.py, `summarize` in importer.py | 20 | R4-R6, sample-file test green |\n| 4 | tests for the remaining \"yes\"/\"maybe\" rows | 15 | table covered, `pytest` green |\n| 5 | NOTES.md: approach, A1-A7, what's cut, with more time | 10 | R9 |\n| 6 | final `pytest`, read the full diff once | 5 | green, no stray edits to given files |\n| 7 | below the cut: empty-file guard, `3.0` and BOM tests, type hints polish | 10 | optional |\n\nBudget: 88 of about 110 min above the cut, review time included, with about 20 min of buffer. Cut line: below step 6 (the empty-file guard and extra edge tests get dropped first). NOTES.md stays above the line because it's graded.\n\n## First prompt\n```\nRead TASK.md, src/inventory/importer.py, src/inventory/models.py and tests/test_importer.py.\nFix only the crash in import_movements when the CSV ends with a blank line: csv.reader yields\nan empty row there and `sku, quantity, reason = row` fails to unpack. Skip rows that are empty\nor contain only whitespace, wherever they appear; they are not data rows and must not be counted\nas skipped later.\nConstraints: keep the signature `import_movements(path: Path) -> list[Movement]` and the current\nbehaviour (header skipped, sku and reason stripped, sku case preserved, negative quantities\nallowed). No new dependencies. Do not edit tests/test_importer.py. Do not touch quantity parsing\nor add summarize yet; those are the next steps.\nAdd tests in a new file tests/test_import_robustness.py, same style as the existing tests\n(tmp_path + a write_csv helper): one trailing blank line, several trailing blank lines, a\nwhitespace-only line in the middle, CRLF line endings.\nExplain the cause in one sentence before the diff.\n```\n\nFor the next prompts, reuse the step and edge-case rows: \"Step 2 of the plan: ... Same constraints. Edge cases: 2.5, abc, empty quantity, wrong column count.\" Reject any diff that edits the given test or changes the return type to a tuple. Give the reason in the prompt; that shows your judgement in the log.\n\n**Before step 1, confirm A1.** Is returning a `list` subclass with a `skipped` attribute OK? The other option is a separate `import_movements_with_report(path)` that returns movements plus a skipped count, with `summarize` taking that result. Also confirm about 110 minutes left. If you don't answer, I'll go with the list subclass and 110 minutes.\n"}, {"name": "src/inventory/__init__.py", "type": "text", "content": ""}, {"name": "src/inventory/importer.py", "type": "text", "content": "import csv\nfrom pathlib import Path\n\nfrom inventory.models import Movement\n\n\ndef import_movements(path: Path) -> list[Movement]:\n    movements = []\n    with open(path, newline=\"\") as handle:\n        reader = csv.reader(handle)\n        next(reader)\n        for row in reader:\n            sku, quantity, reason = row\n            movements.append(Movement(sku=sku.strip(), quantity=int(quantity), reason=reason.strip()))\n    return movements\n"}, {"name": "src/inventory/models.py", "type": "text", "content": "from dataclasses import dataclass\n\n\n@dataclass(frozen=True)\nclass Movement:\n    sku: str\n    quantity: int\n    reason: str\n"}, {"name": "tests/test_importer.py", "type": "text", "content": "from pathlib import Path\n\nfrom inventory.importer import import_movements\n\n\ndef write_csv(tmp_path: Path, text: str) -> Path:\n    path = tmp_path / \"movements.csv\"\n    path.write_text(text)\n    return path\n\n\ndef test_imports_each_row_as_a_movement(tmp_path):\n    path = write_csv(tmp_path, \"sku,quantity,reason\\nAB-1,5,restock\\nAB-2,-2,sale\\n\")\n    movements = import_movements(path)\n    assert [m.sku for m in movements] == [\"AB-1\", \"AB-2\"]\n    assert movements[1].quantity == -2\n\n\ndef test_header_only_file_returns_no_movements(tmp_path):\n    path = write_csv(tmp_path, \"sku,quantity,reason\\n\")\n    assert import_movements(path) == []\n"}], "grading": {"expectations": [{"text": "Before presenting the plan, the trace shows the agent reading TASK.md, src/inventory/importer.py and tests/test_importer.py.", "passed": true, "evidence": "Response opens 'I read TASK.md and the whole repo' and cites file-specific facts: '`sku, quantity, reason = row` fails' (importer.py), test style 'tmp_path + write_csv' and 'existing 2 tests' (test_importer.py), TASK constraints. No transcript saved; judged from outputs/ and response.md."}, {"text": "The assumptions point out that import_movements must keep returning a list of Movement while skipped rows must still be counted, and they pick one specific way to make the skipped count available to summarize.", "passed": true, "evidence": "A1: 'How does skipped get from the import into summarize(movements) when the import signature can't change? -> import_movements returns a list subclass ... carrying skipped: int. summarize reads getattr(movements, \"skipped\", 0)'."}, {"text": "The edge cases include a trailing blank line, a non-integer quantity such as 2.5, and SKUs that differ only by case, each with an expected behaviour.", "passed": true, "evidence": "'file ends with one blank line | all data rows imported'; 'quantity 2.5 | skipped, counted'; '`ab-1` and `AB-1` | one key `AB-1`'."}, {"text": "The plan's minutes total no more than 120 and a cut line is stated, and the trace shows no file under src/ or tests/ created or edited.", "passed": true, "evidence": "Minutes 8+10+20+20+15+10+5+10 = 98 (\u003c= 120); 'Cut line: below step 6'. diff -r of outputs/ vs evals/.../files (excluding response.md and caches) shows no differences, so nothing under src/ or tests/ was changed."}], "summary": {"passed": 4, "failed": 0, "total": 4, "pass_rate": 1.0}, "timing": {"executor_duration_seconds": 78.6, "total_duration_seconds": 78.6}, "eval_feedback": {"suggestions": [{"reason": "All four assertions pass for both configs, so this case does not discriminate between skill versions."}, {"assertion": "Before presenting the plan, the trace shows the agent reading TASK.md, src/inventory/importer.py and tests/test_importer.py.", "reason": "Without saved transcripts this can only be inferred from the response quoting file details; save transcripts or assert on content only a reader of those files could produce (e.g. the sample file's expected net {AB-1: 3, CD-7: 3}, skipped 1)."}, {"reason": "No assertion checks that NOTES.md (a graded deliverable in TASK.md) is kept above the cut line, or that the response computes the sample-file expected result; both responses did, which would be a cheap discriminating check."}], "overall": "Assertions are reasonable but non-discriminating for this pair; the trace-based one is unverifiable as run."}}}, {"id": "vague-coderbyte-task-without-tree-old_skill", "prompt": "ok the coderbyte test just started, timer is running (80 min total). the task says: \"The orders module has failing tests. Fix them, then add support for discount codes at checkout.\" pretty sure it's a Java project, maven. I can't paste you the whole tree right now. what do I type into their AI panel first?", "eval_id": null, "outputs": [{"name": "response.md", "type": "text", "content": "Paste the **First prompt** at the bottom into the AI panel now, and attach the file tree there (the panel can see it even if I can't). The rest is your map for the next ~60 min, which leaves 20 min for Section 2.\n\nOne question, answer only if you have 10 seconds: what does the tree show under `src/main/java/.../orders` and `src/test/java/.../orders`? Until then I've assumed a standard Maven layout (`mvn test`, JUnit).\n\n## Goal\nGet every test in the orders module passing without weakening the tests, then let checkout take an optional discount code that lowers the order total.\n\n## Requirements\n| # | Requirement | Type |\n|---|---|---|\n| R1 | All currently failing orders tests pass (`mvn test`) | explicit |\n| R2 | Fix production code, not the tests (unless a test is clearly wrong; ask before editing one) | implied |\n| R3 | Tests that pass today still pass | implied |\n| R4 | Checkout accepts a discount code | explicit |\n| R5 | A valid code reduces the total; no code means the same total as today | implied |\n| R6 | An invalid / unknown / expired code is rejected in a defined way (exception or ignored, matching existing error style) | implied |\n| R7 | New tests cover the discount path | implied |\n| R8 | Keep existing method signatures working (add an overload or an optional param) and add no new dependencies | implied |\n\n## Assumptions\n- A1: Discount type is not specified \u2192 support percentage and fixed-amount codes; percentage first if time is short.\n- A2: Where the codes come from \u2192 an in-memory map or enum (e.g. `SAVE10` = 10%), no DB or config file.\n- A3: Invalid code \u2192 throw the same exception type the module already uses for bad input (e.g. `IllegalArgumentException`); if none exists, throw that one.\n- A4: Discount applies to the subtotal, before tax/shipping, if those exist.\n- A5: Total never goes below 0.\n- A6: Codes are case-insensitive and trimmed.\n- A7: One code per order (no stacking).\n- A8: Money is `BigDecimal` if the module already uses it; rounding HALF_UP to 2 decimals.\n\n## Files\n| File | Action | Why |\n|---|---|---|\n| `pom.xml` | Read | Java version, JUnit 4 vs 5, test command |\n| `README` / task statement | Read | Hidden rules (rounding, code formats) |\n| `src/test/java/**/orders/*Test.java` | Read, don't edit | They define the expected behavior; the failure messages are the spec |\n| `src/main/java/**/orders/Order*.java`, `*Checkout*`, `*Service*` | Change | Bug fixes + discount entry point |\n| New `DiscountCode` (enum or class) in the orders package | Create | Holds the code \u2192 rule mapping |\n| New `DiscountCodeTest` / extra cases in the checkout test | Create | Covers R4-R7 |\n| `target/`, generated sources, other modules | Leave alone | Build output / out of scope |\n\n## Edge cases\n- Empty order (no items) \u2192 total 0, a discount keeps it 0\n- Single item \u2192 discount math correct on one line\n- Duplicate items / same product twice \u2192 quantities summed correctly before the discount\n- Quantity 0 or negative, negative price \u2192 rejected (or match what the existing tests expect)\n- Null / empty / whitespace code \u2192 no discount, same total as without a code\n- Unknown code \u2192 rejected per A3\n- Lowercase or padded code (`\" save10 \"`) \u2192 accepted per A6\n- Discount larger than the subtotal \u2192 total 0, not negative\n- 100% code \u2192 total 0\n- Rounding: 10% off 9.99 \u2192 8.99 (8.991 rounded HALF_UP); match any rounding the existing tests already assert\n- Very large totals \u2192 no overflow (`BigDecimal` / `long`, not `int` / `double`)\n\n## Plan\n| Step | Change | Min | Done when |\n|---|---|---|---|\n| 1 | Run `mvn test`; list each failing test and its message | 5 | You have a list of N failures, grouped by cause |\n| 2 | Fix failure group 1 (one function per prompt) | 10 | That group goes green, nothing else goes red |\n| 3 | Fix remaining failure groups | 10 | `mvn test` is fully green |\n| 4 | Add `DiscountCode` with percentage codes + checkout overload taking a code | 10 | A new test with `SAVE10` gives a 10% lower total |\n| 5 | Invalid / null / case / floor-at-zero handling | 8 | Edge-case tests pass |\n| 6 | Fixed-amount codes | 5 | Fixed-amount test passes |\n| 7 | Full `mvn test`, read the diff, remove debug prints | 5 | All green, clean diff |\n| \u2014 | Buffer | 7 | |\nCut line: drop step 6 first, then trim step 5 to null + unknown-code only. Never skip steps 1-3: green existing tests are the explicit requirement.\n\n## First prompt\n```\nContext: Java/Maven project, file tree attached. Task: \"The orders module has\nfailing tests. Fix them, then add support for discount codes at checkout.\"\n\nDo NOT write code yet. First:\n1. Run (or tell me to run) `mvn test` and list every failing test in the orders\n   module with its failure message, grouped by likely root cause.\n2. Restate the task in one sentence.\n3. List explicit and implied requirements, and assumptions for anything ambiguous\n   (discount type, invalid-code behavior, rounding, where codes are stored).\n4. List edge cases with expected behavior.\n5. Propose a step plan where each step changes one function: fix the failing\n   tests first (production code only, do not edit tests), then add discount codes.\nRespect existing signatures and style; keep current checkout calls working;\nno new dependencies.\n```\n\nAfter it answers, send one step at a time: \"Do step 1 only: fix \u003cmethod> so \u003ctest> passes. Show the diff, then run the tests.\"\n"}], "grading": {"expectations": [{"text": "The response gives a paste-ready prompt for the Coderbyte in-IDE AI that tells the agent not to edit or create files yet and asks it for requirements, assumptions, edge cases and a step plan.", "passed": true, "evidence": "First prompt: 'Do NOT write code yet. First:' then requirements and assumptions (item 3), edge cases (item 4), step plan (item 5). It says 'do not write code' rather than explicitly 'do not edit or create files'; judged equivalent in effect."}, {"text": "The response records at least three ambiguities of the discount code feature as assumptions with a chosen default, drawn from: percentage versus fixed amount, stacking several codes, expired or unknown codes, code case sensitivity, rounding, and a discount larger than the order total.", "passed": true, "evidence": "A1 percentage and fixed-amount; A3 invalid code -> throw IllegalArgumentException; A5 total never below 0; A6 case-insensitive and trimmed; A7 one code (no stacking); A8 rounding HALF_UP 2 decimals."}, {"text": "The step plan puts fixing the failing tests in the orders module before implementing discount codes, and leaves at least 20 of the 80 minutes for the written section.", "passed": true, "evidence": "Steps 1-3 run and fix failing tests before step 4 'Add DiscountCode'. Minutes 5+10+10+10+8+5+5+7 = 60; opening line: 'next ~60 min, which leaves 20 min for Section 2'."}, {"text": "The response asks for missing inputs such as the file tree or the failing test output in no more than one consolidated question, and contains no Java implementation code.", "passed": true, "evidence": "Single question: 'One question, answer only if you have 10 seconds: what does the tree show under src/main/java/.../orders and src/test/java/.../orders?'. No Java implementation code."}], "summary": {"passed": 4, "failed": 0, "total": 4, "pass_rate": 1.0}, "timing": {"executor_duration_seconds": 39.3, "total_duration_seconds": 39.3}, "eval_feedback": {"suggestions": [{"reason": "All four assertions pass for both configs, so this case does not discriminate between skill versions."}, {"assertion": "The response gives a paste-ready prompt for the Coderbyte in-IDE AI that tells the agent not to edit or create files yet and asks it for requirements, assumptions, edge cases and a step plan.", "reason": "old_skill passes on 'Do NOT write code yet', which is weaker than an explicit no-edit/no-create instruction; if the explicit file wording matters, require it verbatim-ish."}, {"reason": "Consider asserting the first prompt forbids editing test files and that the plan's minutes actually sum to \u003c= 60 (old_skill sums to exactly 60, with_skill to 55)."}], "overall": "Solid but non-discriminating for this pair."}}}, {"id": "vague-coderbyte-task-without-tree-with_skill", "prompt": "ok the coderbyte test just started, timer is running (80 min total). the task says: \"The orders module has failing tests. Fix them, then add support for discount codes at checkout.\" pretty sure it's a Java project, maven. I can't paste you the whole tree right now. what do I type into their AI panel first?", "eval_id": null, "outputs": [{"name": "response.md", "type": "text", "content": "You don't need to paste me the tree. Their agent can see the repo, so get it to do the recon first. Paste this into the AI panel as your first prompt:\n\n```\nTask: \"The orders module has failing tests. Fix them, then add support for discount codes at checkout.\"\nJava, Maven. You may run `mvn -q test` to see which tests fail, but do not edit or create any files yet. First:\n1. Restate the task in one sentence.\n2. List the currently failing tests and, for each, the likely cause (file and method).\n3. List requirements as a numbered checklist, each marked explicit or implied,\n   each with how a test would check it.\n4. List assumptions for anything ambiguous (discount types, unknown/blank code,\n   case sensitivity, rounding, discount larger than the total), with the default you pick and why.\n5. List the files to read, change and leave alone. Existing test files and pom.xml stay unchanged.\n6. List edge cases with expected behaviour, marking the ones hidden tests most likely check.\n7. Propose a step plan where each step changes one function or fixes one bug,\n   with minutes per step for a 50-minute limit and a cut line.\nRespect existing public signatures and the existing error-handling style; no new dependencies.\n```\n\nWhen it answers, correct anything it got wrong in your next prompt before you ask for step 1. Graders read that log, and a visible correction counts as judgement.\n\nHere is my recon so you can check its answer against it. Without the tree, file names are guesses, so its answer wins on paths.\n\n## Goal\nMake the orders module's existing tests pass, then let checkout take an optional discount code that lowers the total. These are two deliverables, done in that order.\n\n## Requirements\n| # | Requirement | Type | Done when |\n|---|---|---|---|\n| R1 | Currently failing orders tests pass | explicit | `mvn test` green, with no edits to test files |\n| R2 | Checkout accepts a discount code and applies it to the total | explicit | new test: valid code gives the expected lower total |\n| R3 | Existing checkout calls keep working (add an overload or optional param, don't change the old signature) | implied | old tests plus hidden regression tests still compile and pass |\n| R4 | Invalid or unknown code is handled the way the module already handles bad input | implied | test asserts the exact exception type (or no-op, if that's the existing style) |\n| R5 | Money stays exact: `BigDecimal`, total never below zero | implied | test where the discount is bigger than the subtotal gives 0.00 |\n| R6 | Tests for the discount paths | implied | new test class or methods next to the existing ones, in the same style |\n\n## Assumptions\n- A1: Which discount types? -> whatever the repo already models; if it models none, percentage and fixed amount (the two that hidden tests usually cover).\n- A2: Unknown code? -> throw `IllegalArgumentException`, unless the module already uses its own exception or `Optional` (follow the existing style).\n- A3: Null or blank code? -> no discount, same total as today (keeps old behaviour for existing callers).\n- A4: Case and whitespace? -> trim the code and compare it case-insensitively (least surprising for a user typing a code).\n- A5: Rounding? -> 2 decimals, `RoundingMode.HALF_UP`, unless the code already rounds differently.\n- A6: Discount bigger than subtotal? -> total clamps at 0, never negative.\n- A7: How many codes per order? -> one per checkout.\n- A8: Applied to subtotal or after tax/shipping? -> subtotal, if tax or shipping exist.\n\n## Files (expected, confirm from the agent's answer)\n| File | Action | Why |\n|---|---|---|\n| `pom.xml` | read | Java version, JUnit 4 vs 5, no new deps |\n| `src/main/java/**/order*/` (Order, OrderItem, OrderService / CheckoutService) | change | bug fixes, plus a checkout overload |\n| new `DiscountCode` / `Discount` class in the same package | create | holds the code, type and value |\n| `src/test/java/**/order*/*Test.java` | read, leave alone | these show the expected behaviour and are what the hidden tests mirror |\n| new `*DiscountTest.java` | create | R6 |\n\nTest command: `mvn test` (single class: `mvn -q test -Dtest=OrderServiceTest`)\n\n## Edge cases\n| Case | Expected | Req | Likely hidden test |\n|---|---|---|---|\n| valid percentage code (e.g. 10% of 100.00) | 90.00 | R2 | yes |\n| valid fixed-amount code | subtotal minus amount | R2 | yes |\n| unknown code | exception per A2 | R4 | yes |\n| null / empty / whitespace code | no discount | R3, R4 | yes |\n| `\" save10 \"` vs `\"SAVE10\"` | same result | R2 | maybe |\n| discount > subtotal | 0.00 | R5 | yes |\n| empty order with a code | 0.00, no exception | R5 | maybe |\n| comparing amounts | use `compareTo`, not `equals` (`10.0` vs `10.00` differ in scale) | R5 | trap |\n| comparing code strings | `.equals` / `equalsIgnoreCase`, never `==` | R2 | trap |\n\n## Plan (Section 1 ~55 min, leave 20+ for Section 2, which you can't come back from)\n| Step | Change | Min | Done when |\n|---|---|---|---|\n| 1 | Recon prompt above, then correct its reading | 8 | plan agreed in the log |\n| 2 | Fix the failing tests, one bug per prompt | 15 | `mvn test` green, test files untouched |\n| 3 | Discount model, plus a checkout overload that applies it | 15 | R2\u2013R5 pass on a quick test |\n| 4 | Discount tests from the edge-case table | 7 | rows marked \"yes\" covered |\n| 5 | README: approach, A1\u2013A8, what was cut | 5 | file written |\n| 6 | Extra edge cases (case/whitespace, empty order) | 5 | optional |\n\nBudget: 55 of ~55 min, review time included. Cut line: below step 5 (extra edge cases are dropped first). If step 2 overruns, shrink step 4 to the three \"yes\" rows, but don't skip the README.\n\n## Next prompt (step 2, after the recon is agreed)\n```\nStep 2: fix only the first failing test, \u003cTestClass#method>. Read that test and the\nmain-code method it calls. Explain the root cause in one sentence before the diff.\nChange main code only; do not edit any test file. Keep public signatures and style,\nno new dependencies. Then re-run `mvn -q test` and show the result.\n```\nRepeat that prompt for each failing test. Don't send \"make the tests pass\": that invites the agent to edit the tests.\n\nIs this plan right for your repo? If the agent's answer shows something different (discounts already partly modelled, more failing tests than expected, Gradle instead of Maven), paste its answer or the `mvn test` failure summary here and I'll adjust the plan. Otherwise go ahead with the defaults above.\n"}], "grading": {"expectations": [{"text": "The response gives a paste-ready prompt for the Coderbyte in-IDE AI that tells the agent not to edit or create files yet and asks it for requirements, assumptions, edge cases and a step plan.", "passed": true, "evidence": "First prompt: 'do not edit or create any files yet', then asks for requirements (item 3), assumptions (item 4), edge cases (item 6) and a step plan (item 7)."}, {"text": "The response records at least three ambiguities of the discount code feature as assumptions with a chosen default, drawn from: percentage versus fixed amount, stacking several codes, expired or unknown codes, code case sensitivity, rounding, and a discount larger than the order total.", "passed": true, "evidence": "A1 types -> percentage and fixed amount if none modelled; A2 unknown code -> IllegalArgumentException; A4 case -> case-insensitive; A5 rounding -> HALF_UP 2 decimals; A6 bigger than subtotal -> clamp 0; A7 stacking -> one per checkout. Six of the listed ambiguities with defaults."}, {"text": "The step plan puts fixing the failing tests in the orders module before implementing discount codes, and leaves at least 20 of the 80 minutes for the written section.", "passed": true, "evidence": "Step 2 'Fix the failing tests' precedes step 3 'Discount model'. Minutes 8+15+15+7+5+5 = 55, heading 'Section 1 ~55 min, leave 20+ for Section 2' (80-55 = 25)."}, {"text": "The response asks for missing inputs such as the file tree or the failing test output in no more than one consolidated question, and contains no Java implementation code.", "passed": true, "evidence": "Only user-directed question is the closing 'Is this plan right for your repo? ... paste its answer or the mvn test failure summary here' (the '?' in A1-A8 are assumption labels with answers). No Java code; code blocks are prompts only."}], "summary": {"passed": 4, "failed": 0, "total": 4, "pass_rate": 1.0}, "timing": {"executor_duration_seconds": 59.0, "total_duration_seconds": 59.0}, "eval_feedback": {"suggestions": [{"reason": "All four assertions pass for both configs, so this case does not discriminate between skill versions."}, {"assertion": "The response gives a paste-ready prompt for the Coderbyte in-IDE AI that tells the agent not to edit or create files yet and asks it for requirements, assumptions, edge cases and a step plan.", "reason": "old_skill passes on 'Do NOT write code yet', which is weaker than an explicit no-edit/no-create instruction; if the explicit file wording matters, require it verbatim-ish."}, {"reason": "Consider asserting the first prompt forbids editing test files and that the plan's minutes actually sum to \u003c= 60 (old_skill sums to exactly 60, with_skill to 55)."}], "overall": "Solid but non-discriminating for this pair."}}}], "previous_feedback": {}, "previous_outputs": {}, "benchmark": {"metadata": {"skill_name": "task-recon", "skill_path": "\u003cpath/to/skill>", "executor_model": "\u003cmodel-name>", "analyzer_model": "\u003cmodel-name>", "timestamp": "2026-11-14T11:40:51Z", "evals_run": ["csharp-coderbyte-bugfix-and-feature", "python-takehome-repo-in-folder", "vague-coderbyte-task-without-tree"], "runs_per_configuration": 1}, "runs": [{"eval_id": "csharp-coderbyte-bugfix-and-feature", "eval_name": "csharp-coderbyte-bugfix-and-feature", "configuration": "with_skill", "run_number": 1, "result": {"pass_rate": 0.5, "passed": 2, "failed": 2, "total": 4, "time_seconds": 69.9, "tokens": 104645, "tool_calls": 0, "errors": 0}, "expectations": [{"text": "The response contains no C# implementation of GetBestRendition or MergeTags (no method bodies or code blocks containing a fix), and the trace shows no files created or edited.", "passed": true, "evidence": "No method bodies or code fixes. The only code blocks are prompts (lines 86-98, 104-115); plan steps describe changes in prose. outputs/ contains only response.md. No transcript saved; judged from outputs/ and response.md."}, {"text": "Requirements are a numbered list in which every item is labelled explicit or implied, and at least one implied requirement says the existing public method signatures or the currently passing behaviour must stay unchanged.", "passed": true, "evidence": "Requirements table R1-R10 has a Type column with every row 'explicit' or 'implied'. R10: 'Existing public API and visible tests unchanged | implied | the 4 visible tests still pass, no signature changed'."}, {"text": "The edge cases include all four of: merging a tag into itself, a source tag that does not exist, an asset that already carries both the source and the target tag, and every rendition being wider than maxWidth; each is given an expected behaviour.", "passed": false, "evidence": "Self-merge: 'source == target ignoring case | no-op, tag survives'; both tags: 'one target, no source'; all wider: 'null'. But source tag does not exist: 'Source tag does not exist | per A4', and A4 defers: 'Decide after reading TagService/InMemoryAssetRepository'; closing question 3: 'I've left this one to decide'. No committed expected behaviour."}, {"text": "The plan gives minutes per step that total no more than 60, names a cut line, and the response includes a ready-to-paste first prompt for the in-IDE agent that covers only one of the two tasks and tells the agent to keep existing signatures.", "passed": false, "evidence": "Minutes 8+10+12+8+5+3+7+2 = 55 (\u003c= 60) and 'cut line' row present. But the block under '## First prompt' (lines 86-98) is a recon prompt pasted 'with both task statements', so it covers both tasks. The scoped one-task prompt with 'Keep the signature' is the second ('Then step 1'), not the first."}], "notes": []}, {"eval_id": "python-takehome-repo-in-folder", "eval_name": "python-takehome-repo-in-folder", "configuration": "with_skill", "run_number": 1, "result": {"pass_rate": 1.0, "passed": 4, "failed": 0, "total": 4, "time_seconds": 78.6, "tokens": 107167, "tool_calls": 0, "errors": 0}, "expectations": [{"text": "Before presenting the plan, the trace shows the agent reading TASK.md, src/inventory/importer.py and tests/test_importer.py.", "passed": true, "evidence": "Response opens 'I read TASK.md and the whole repo' and cites file-specific facts: '`sku, quantity, reason = row` fails' (importer.py), test style 'tmp_path + write_csv' and 'existing 2 tests' (test_importer.py), TASK constraints. No transcript saved; judged from outputs/ and response.md."}, {"text": "The assumptions point out that import_movements must keep returning a list of Movement while skipped rows must still be counted, and they pick one specific way to make the skipped count available to summarize.", "passed": true, "evidence": "A1: 'How does skipped get from the import into summarize(movements) when the import signature can't change? -> import_movements returns a list subclass ... carrying skipped: int. summarize reads getattr(movements, \"skipped\", 0)'."}, {"text": "The edge cases include a trailing blank line, a non-integer quantity such as 2.5, and SKUs that differ only by case, each with an expected behaviour.", "passed": true, "evidence": "'file ends with one blank line | all data rows imported'; 'quantity 2.5 | skipped, counted'; '`ab-1` and `AB-1` | one key `AB-1`'."}, {"text": "The plan's minutes total no more than 120 and a cut line is stated, and the trace shows no file under src/ or tests/ created or edited.", "passed": true, "evidence": "Minutes 8+10+20+20+15+10+5+10 = 98 (\u003c= 120); 'Cut line: below step 6'. diff -r of outputs/ vs evals/.../files (excluding response.md and caches) shows no differences, so nothing under src/ or tests/ was changed."}], "notes": []}, {"eval_id": "vague-coderbyte-task-without-tree", "eval_name": "vague-coderbyte-task-without-tree", "configuration": "with_skill", "run_number": 1, "result": {"pass_rate": 1.0, "passed": 4, "failed": 0, "total": 4, "time_seconds": 59.0, "tokens": 102491, "tool_calls": 0, "errors": 0}, "expectations": [{"text": "The response gives a paste-ready prompt for the Coderbyte in-IDE AI that tells the agent not to edit or create files yet and asks it for requirements, assumptions, edge cases and a step plan.", "passed": true, "evidence": "First prompt: 'do not edit or create any files yet', then asks for requirements (item 3), assumptions (item 4), edge cases (item 6) and a step plan (item 7)."}, {"text": "The response records at least three ambiguities of the discount code feature as assumptions with a chosen default, drawn from: percentage versus fixed amount, stacking several codes, expired or unknown codes, code case sensitivity, rounding, and a discount larger than the order total.", "passed": true, "evidence": "A1 types -> percentage and fixed amount if none modelled; A2 unknown code -> IllegalArgumentException; A4 case -> case-insensitive; A5 rounding -> HALF_UP 2 decimals; A6 bigger than subtotal -> clamp 0; A7 stacking -> one per checkout. Six of the listed ambiguities with defaults."}, {"text": "The step plan puts fixing the failing tests in the orders module before implementing discount codes, and leaves at least 20 of the 80 minutes for the written section.", "passed": true, "evidence": "Step 2 'Fix the failing tests' precedes step 3 'Discount model'. Minutes 8+15+15+7+5+5 = 55, heading 'Section 1 ~55 min, leave 20+ for Section 2' (80-55 = 25)."}, {"text": "The response asks for missing inputs such as the file tree or the failing test output in no more than one consolidated question, and contains no Java implementation code.", "passed": true, "evidence": "Only user-directed question is the closing 'Is this plan right for your repo? ... paste its answer or the mvn test failure summary here' (the '?' in A1-A8 are assumption labels with answers). No Java code; code blocks are prompts only."}], "notes": []}, {"eval_id": "csharp-coderbyte-bugfix-and-feature", "eval_name": "csharp-coderbyte-bugfix-and-feature", "configuration": "old_skill", "run_number": 1, "result": {"pass_rate": 0.75, "passed": 3, "failed": 1, "total": 4, "time_seconds": 56.3, "tokens": 96779, "tool_calls": 0, "errors": 0}, "expectations": [{"text": "The response contains no C# implementation of GetBestRendition or MergeTags (no method bodies or code blocks containing a fix), and the trace shows no files created or edited.", "passed": true, "evidence": "No method bodies or code fixes; step 3 is prose ('filter Width \u003c= maxWidth, take the max width, FirstOrDefault'). Only code block is the prompt (lines 94-110). outputs/ contains only response.md. No transcript saved; judged from outputs/ and response.md."}, {"text": "Requirements are a numbered list in which every item is labelled explicit or implied, and at least one implied requirement says the existing public method signatures or the currently passing behaviour must stay unchanged.", "passed": true, "evidence": "Requirements table R1-R11 with every row labelled explicit/implied. R10: '`IAssetRepository` and the public signatures stay unchanged | implied'."}, {"text": "The edge cases include all four of: merging a tag into itself, a source tag that does not exist, an asset that already carries both the source and the target tag, and every rendition being wider than maxWidth; each is given an expected behaviour.", "passed": true, "evidence": "'`source == target` ignoring case -> no-op, tag still exists (A3)'; '`source` missing -> no-op (A2)'; 'Asset with both tags -> `target` once, `source` gone'; 'Every rendition wider than max -> `null`'."}, {"text": "The plan gives minutes per step that total no more than 60, names a cut line, and the response includes a ready-to-paste first prompt for the in-IDE agent that covers only one of the two tasks and tells the agent to keep existing signatures.", "passed": false, "evidence": "Minutes total 55 (table states **55**; script sum 6+4+5+6+5+12+8+4+5 = 55) and cut line in drop order given. But the first prompt asks the agent to 'Restate both tasks' and covers both RenditionService and TagService, so it does not cover only one task (it does say 'do not change IAssetRepository or any public signature')."}], "notes": []}, {"eval_id": "python-takehome-repo-in-folder", "eval_name": "python-takehome-repo-in-folder", "configuration": "old_skill", "run_number": 1, "result": {"pass_rate": 1.0, "passed": 4, "failed": 0, "total": 4, "time_seconds": 62.8, "tokens": 98248, "tool_calls": 0, "errors": 0}, "expectations": [{"text": "Before presenting the plan, the trace shows the agent reading TASK.md, src/inventory/importer.py and tests/test_importer.py.", "passed": true, "evidence": "'I read the whole repo (it's small)' and cites: blank line '...restock\\n\\n', 'fails sooner, on row 3 (CD-7,2.5): ValueError: invalid literal for int()' (importer.py behaviour), 'Existing two tests' (test_importer.py), TASK.md as brief. No transcript saved; judged from outputs/ and response.md."}, {"text": "The assumptions point out that import_movements must keep returning a list of Movement while skipped rows must still be counted, and they pick one specific way to make the skipped count available to summarize.", "passed": true, "evidence": "A1: 'How does summarize(movements) know skipped when it only gets movements? -> import_movements returns a list subclass (e.g. MovementList(list)) with a skipped attribute ... summarize reads getattr(movements, \"skipped\", 0)'; R10 flags the conflict with R2."}, {"text": "The edge cases include a trailing blank line, a non-integer quantity such as 2.5, and SKUs that differ only by case, each with an expected behaviour.", "passed": true, "evidence": "'Trailing blank line -> ignored, skipped unchanged'; '2.5, 3.0, abc, empty quantity -> skipped, skipped += 1'; 'Duplicate SKU in different case (AB-1, ab-1, ` ab-1 `) -> one key AB-1, summed'."}, {"text": "The plan's minutes total no more than 120 and a cut line is stated, and the trace shows no file under src/ or tests/ created or edited.", "passed": true, "evidence": "Minutes 5+10+20+20+5+15+10+10+20 = 115 (\u003c= 120); 'Cut line: drop step 5 first...'. diff -r of outputs/ vs input files shows no differences (response says it ran import_movements, but no source/test file changed)."}], "notes": []}, {"eval_id": "vague-coderbyte-task-without-tree", "eval_name": "vague-coderbyte-task-without-tree", "configuration": "old_skill", "run_number": 1, "result": {"pass_rate": 1.0, "passed": 4, "failed": 0, "total": 4, "time_seconds": 39.3, "tokens": 94306, "tool_calls": 0, "errors": 0}, "expectations": [{"text": "The response gives a paste-ready prompt for the Coderbyte in-IDE AI that tells the agent not to edit or create files yet and asks it for requirements, assumptions, edge cases and a step plan.", "passed": true, "evidence": "First prompt: 'Do NOT write code yet. First:' then requirements and assumptions (item 3), edge cases (item 4), step plan (item 5). It says 'do not write code' rather than explicitly 'do not edit or create files'; judged equivalent in effect."}, {"text": "The response records at least three ambiguities of the discount code feature as assumptions with a chosen default, drawn from: percentage versus fixed amount, stacking several codes, expired or unknown codes, code case sensitivity, rounding, and a discount larger than the order total.", "passed": true, "evidence": "A1 percentage and fixed-amount; A3 invalid code -> throw IllegalArgumentException; A5 total never below 0; A6 case-insensitive and trimmed; A7 one code (no stacking); A8 rounding HALF_UP 2 decimals."}, {"text": "The step plan puts fixing the failing tests in the orders module before implementing discount codes, and leaves at least 20 of the 80 minutes for the written section.", "passed": true, "evidence": "Steps 1-3 run and fix failing tests before step 4 'Add DiscountCode'. Minutes 5+10+10+10+8+5+5+7 = 60; opening line: 'next ~60 min, which leaves 20 min for Section 2'."}, {"text": "The response asks for missing inputs such as the file tree or the failing test output in no more than one consolidated question, and contains no Java implementation code.", "passed": true, "evidence": "Single question: 'One question, answer only if you have 10 seconds: what does the tree show under src/main/java/.../orders and src/test/java/.../orders?'. No Java implementation code."}], "notes": []}], "run_summary": {"with_skill": {"pass_rate": {"mean": 0.8333, "stddev": 0.2887, "min": 0.5, "max": 1.0}, "time_seconds": {"mean": 69.1667, "stddev": 9.8206, "min": 59.0, "max": 78.6}, "tokens": {"mean": 104767.6667, "stddev": 2340.4122, "min": 102491, "max": 107167}}, "old_skill": {"pass_rate": {"mean": 0.9167, "stddev": 0.1443, "min": 0.75, "max": 1.0}, "time_seconds": {"mean": 52.8, "stddev": 12.1347, "min": 39.3, "max": 62.8}, "tokens": {"mean": 96444.3333, "stddev": 1992.1954, "min": 94306, "max": 98248}}, "delta": {"pass_rate": "-0.08", "time_seconds": "+16.4", "tokens": "+8323"}}, "notes": ["Only csharp-coderbyte-bugfix-and-feature discriminates; python-takehome and vague-task pass 4/4 in both configs (non-discriminating).", "New skill lost A3: no default chosen for a missing source tag. Fix: every edge-case row must state a chosen default.", "A4 ('first prompt covers one task') conflicts with the recon-first design; reword to 'first implementation prompt'.", "New skill costs +16s and +8k tokens per run for no pass-rate gain on this set."]}};
+
+    // ---- State ----
+    let feedbackMap = {};  // run_id -> feedback text
+    let currentIndex = 0;
+    let visitedRuns = new Set();
+
+    // ---- Init ----
+    async function init() {
+      // Load saved feedback from server — but only if this isn't a fresh
+      // iteration (indicated by previous_feedback being present). When
+      // previous feedback exists, the feedback.json on disk is stale from
+      // the prior iteration and should not pre-fill the textareas.
+      const hasPrevious = Object.keys(EMBEDDED_DATA.previous_feedback || {}).length > 0
+        || Object.keys(EMBEDDED_DATA.previous_outputs || {}).length > 0;
+      if (!hasPrevious) {
+        try {
+          const resp = await fetch("/api/feedback");
+          const data = await resp.json();
+          if (data.reviews) {
+            for (const r of data.reviews) feedbackMap[r.run_id] = r.feedback;
+          }
+        } catch { /* first run, no feedback yet */ }
+      }
+
+      document.getElementById("skill-name").textContent = EMBEDDED_DATA.skill_name;
+      showRun(0);
+
+      // Wire up feedback auto-save
+      const textarea = document.getElementById("feedback");
+      let saveTimeout = null;
+      textarea.addEventListener("input", () => {
+        clearTimeout(saveTimeout);
+        document.getElementById("feedback-status").textContent = "";
+        saveTimeout = setTimeout(() => saveCurrentFeedback(), 800);
+      });
+    }
+
+    // ---- Navigation ----
+    function navigate(delta) {
+      const newIndex = currentIndex + delta;
+      if (newIndex >= 0 && newIndex < EMBEDDED_DATA.runs.length) {
+        saveCurrentFeedback();
+        showRun(newIndex);
+      }
+    }
+
+    function updateNavButtons() {
+      document.getElementById("prev-btn").disabled = currentIndex === 0;
+      document.getElementById("next-btn").disabled =
+        currentIndex === EMBEDDED_DATA.runs.length - 1;
+    }
+
+    // ---- Show a run ----
+    function showRun(index) {
+      currentIndex = index;
+      const run = EMBEDDED_DATA.runs[index];
+
+      // Progress
+      document.getElementById("progress").textContent =
+        `${index + 1} of ${EMBEDDED_DATA.runs.length}`;
+
+      // Prompt
+      document.getElementById("prompt-text").textContent = run.prompt;
+
+      // Config badge
+      const badge = document.getElementById("config-badge");
+      const configMatch = run.id.match(/(with_skill|without_skill|new_skill|old_skill)/);
+      if (configMatch) {
+        const config = configMatch[1];
+        const isBaseline = config === "without_skill" || config === "old_skill";
+        badge.textContent = config.replace(/_/g, " ");
+        badge.className = "config-badge " + (isBaseline ? "config-baseline" : "config-primary");
+        badge.style.display = "inline-block";
+      } else {
+        badge.style.display = "none";
+      }
+
+      // Outputs
+      renderOutputs(run);
+
+      // Previous outputs
+      renderPrevOutputs(run);
+
+      // Grades
+      renderGrades(run);
+
+      // Previous feedback
+      const prevFb = (EMBEDDED_DATA.previous_feedback || {})[run.id];
+      const prevEl = document.getElementById("prev-feedback");
+      if (prevFb) {
+        document.getElementById("prev-feedback-text").textContent = prevFb;
+        prevEl.style.display = "block";
+      } else {
+        prevEl.style.display = "none";
+      }
+
+      // Feedback
+      document.getElementById("feedback").value = feedbackMap[run.id] || "";
+      document.getElementById("feedback-status").textContent = "";
+
+      updateNavButtons();
+
+      // Track visited runs and promote done button when all visited
+      visitedRuns.add(index);
+      const doneBtn = document.getElementById("done-btn");
+      if (visitedRuns.size >= EMBEDDED_DATA.runs.length) {
+        doneBtn.classList.add("ready");
+      }
+
+      // Scroll main content to top
+      document.querySelector(".main").scrollTop = 0;
+    }
+
+    // ---- Render outputs ----
+    function renderOutputs(run) {
+      const container = document.getElementById("outputs-body");
+      container.innerHTML = "";
+
+      const outputs = run.outputs || [];
+      if (outputs.length === 0) {
+        container.innerHTML = '<div class="empty-state">No output files</div>';
+        return;
+      }
+
+      for (const file of outputs) {
+        const fileDiv = document.createElement("div");
+        fileDiv.className = "output-file";
+
+        // Always show file header with download link
+        const header = document.createElement("div");
+        header.className = "output-file-header";
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = file.name;
+        header.appendChild(nameSpan);
+        const dlBtn = document.createElement("a");
+        dlBtn.className = "dl-btn";
+        dlBtn.textContent = "Download";
+        dlBtn.download = file.name;
+        dlBtn.href = getDownloadUri(file);
+        header.appendChild(dlBtn);
+        fileDiv.appendChild(header);
+
+        const content = document.createElement("div");
+        content.className = "output-file-content";
+
+        if (file.type === "text") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          content.appendChild(pre);
+        } else if (file.type === "image") {
+          const img = document.createElement("img");
+          img.src = file.data_uri;
+          img.alt = file.name;
+          content.appendChild(img);
+        } else if (file.type === "pdf") {
+          const iframe = document.createElement("iframe");
+          iframe.src = file.data_uri;
+          content.appendChild(iframe);
+        } else if (file.type === "xlsx") {
+          renderXlsx(content, file.data_b64);
+        } else if (file.type === "binary") {
+          const a = document.createElement("a");
+          a.className = "download-link";
+          a.href = file.data_uri;
+          a.download = file.name;
+          a.textContent = "Download " + file.name;
+          content.appendChild(a);
+        } else if (file.type === "error") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          pre.style.color = "var(--red)";
+          content.appendChild(pre);
+        }
+
+        fileDiv.appendChild(content);
+        container.appendChild(fileDiv);
+      }
+    }
+
+    // ---- XLSX rendering via SheetJS ----
+    function renderXlsx(container, b64Data) {
+      try {
+        const raw = Uint8Array.from(atob(b64Data), c => c.charCodeAt(0));
+        const wb = XLSX.read(raw, { type: "array" });
+
+        for (let i = 0; i < wb.SheetNames.length; i++) {
+          const sheetName = wb.SheetNames[i];
+          const ws = wb.Sheets[sheetName];
+
+          if (wb.SheetNames.length > 1) {
+            const sheetLabel = document.createElement("div");
+            sheetLabel.style.cssText =
+              "font-weight:600; font-size:0.8rem; color:#b0aea5; margin-top:0.5rem; margin-bottom:0.25rem;";
+            sheetLabel.textContent = "Sheet: " + sheetName;
+            container.appendChild(sheetLabel);
+          }
+
+          const htmlStr = XLSX.utils.sheet_to_html(ws, { editable: false });
+          const wrapper = document.createElement("div");
+          wrapper.innerHTML = htmlStr;
+          container.appendChild(wrapper);
+        }
+      } catch (err) {
+        container.textContent = "Error rendering spreadsheet: " + err.message;
+      }
+    }
+
+    // ---- Grades ----
+    function renderGrades(run) {
+      const section = document.getElementById("grades-section");
+      const content = document.getElementById("grades-content");
+
+      if (!run.grading) {
+        section.style.display = "none";
+        return;
+      }
+
+      const grading = run.grading;
+      section.style.display = "block";
+      // Reset to collapsed
+      content.classList.remove("open");
+      document.getElementById("grades-arrow").classList.remove("open");
+
+      const summary = grading.summary || {};
+      const expectations = grading.expectations || [];
+
+      let html = '<div style="padding: 1rem;">';
+
+      // Summary line
+      const passRate = summary.pass_rate != null
+        ? Math.round(summary.pass_rate * 100) + "%"
+        : "?";
+      const badgeClass = summary.pass_rate >= 0.8 ? "grade-pass" : summary.pass_rate >= 0.5 ? "" : "grade-fail";
+      html += '<div class="grades-summary">';
+      html += '<span class="grade-badge ' + badgeClass + '">' + passRate + '</span>';
+      html += '<span>' + escapeHtml(summary.passed || 0) + ' passed, ' + escapeHtml(summary.failed || 0) + ' failed of ' + escapeHtml(summary.total || 0) + '</span>';
+      html += '</div>';
+
+      // Assertions list
+      html += '<ul class="assertion-list">';
+      for (const exp of expectations) {
+        const statusClass = exp.passed ? "pass" : "fail";
+        const statusIcon = exp.passed ? "\u2713" : "\u2717";
+        html += '<li class="assertion-item">';
+        html += '<span class="assertion-status ' + statusClass + '">' + statusIcon + '</span>';
+        html += '<span>' + escapeHtml(exp.text) + '</span>';
+        if (exp.evidence) {
+          html += '<div class="assertion-evidence">' + escapeHtml(exp.evidence) + '</div>';
+        }
+        html += '</li>';
+      }
+      html += '</ul>';
+
+      html += '</div>';
+      content.innerHTML = html;
+    }
+
+    function toggleGrades() {
+      const content = document.getElementById("grades-content");
+      const arrow = document.getElementById("grades-arrow");
+      content.classList.toggle("open");
+      arrow.classList.toggle("open");
+    }
+
+    // ---- Previous outputs (collapsible) ----
+    function renderPrevOutputs(run) {
+      const section = document.getElementById("prev-outputs-section");
+      const content = document.getElementById("prev-outputs-content");
+      const prevOutputs = (EMBEDDED_DATA.previous_outputs || {})[run.id];
+
+      if (!prevOutputs || prevOutputs.length === 0) {
+        section.style.display = "none";
+        return;
+      }
+
+      section.style.display = "block";
+      // Reset to collapsed
+      content.classList.remove("open");
+      document.getElementById("prev-outputs-arrow").classList.remove("open");
+
+      // Render the files into the content area
+      content.innerHTML = "";
+      const wrapper = document.createElement("div");
+      wrapper.style.padding = "1rem";
+
+      for (const file of prevOutputs) {
+        const fileDiv = document.createElement("div");
+        fileDiv.className = "output-file";
+
+        const header = document.createElement("div");
+        header.className = "output-file-header";
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = file.name;
+        header.appendChild(nameSpan);
+        const dlBtn = document.createElement("a");
+        dlBtn.className = "dl-btn";
+        dlBtn.textContent = "Download";
+        dlBtn.download = file.name;
+        dlBtn.href = getDownloadUri(file);
+        header.appendChild(dlBtn);
+        fileDiv.appendChild(header);
+
+        const fc = document.createElement("div");
+        fc.className = "output-file-content";
+
+        if (file.type === "text") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          fc.appendChild(pre);
+        } else if (file.type === "image") {
+          const img = document.createElement("img");
+          img.src = file.data_uri;
+          img.alt = file.name;
+          fc.appendChild(img);
+        } else if (file.type === "pdf") {
+          const iframe = document.createElement("iframe");
+          iframe.src = file.data_uri;
+          fc.appendChild(iframe);
+        } else if (file.type === "xlsx") {
+          renderXlsx(fc, file.data_b64);
+        } else if (file.type === "binary") {
+          const a = document.createElement("a");
+          a.className = "download-link";
+          a.href = file.data_uri;
+          a.download = file.name;
+          a.textContent = "Download " + file.name;
+          fc.appendChild(a);
+        }
+
+        fileDiv.appendChild(fc);
+        wrapper.appendChild(fileDiv);
+      }
+
+      content.appendChild(wrapper);
+    }
+
+    function togglePrevOutputs() {
+      const content = document.getElementById("prev-outputs-content");
+      const arrow = document.getElementById("prev-outputs-arrow");
+      content.classList.toggle("open");
+      arrow.classList.toggle("open");
+    }
+
+    // ---- Feedback (saved to server -> feedback.json) ----
+    function saveCurrentFeedback() {
+      const run = EMBEDDED_DATA.runs[currentIndex];
+      const text = document.getElementById("feedback").value;
+
+      if (text.trim() === "") {
+        delete feedbackMap[run.id];
+      } else {
+        feedbackMap[run.id] = text;
+      }
+
+      // Build reviews array from map
+      const reviews = [];
+      for (const [run_id, feedback] of Object.entries(feedbackMap)) {
+        if (feedback.trim()) {
+          reviews.push({ run_id, feedback, timestamp: new Date().toISOString() });
+        }
+      }
+
+      fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reviews, status: "in_progress" }),
+      }).then(() => {
+        document.getElementById("feedback-status").textContent = "Saved";
+      }).catch(() => {
+        // Static mode or server unavailable — no-op on auto-save,
+        // feedback will be downloaded on final submit
+        document.getElementById("feedback-status").textContent = "Will download on submit";
+      });
+    }
+
+    // ---- Done ----
+    function showDoneDialog() {
+      // Save current textarea to feedbackMap (but don't POST yet)
+      const run = EMBEDDED_DATA.runs[currentIndex];
+      const text = document.getElementById("feedback").value;
+      if (text.trim() === "") {
+        delete feedbackMap[run.id];
+      } else {
+        feedbackMap[run.id] = text;
+      }
+
+      // POST once with status: complete — include ALL runs so the model
+      // can distinguish "no feedback" (looks good) from "not reviewed"
+      const reviews = [];
+      const ts = new Date().toISOString();
+      for (const r of EMBEDDED_DATA.runs) {
+        reviews.push({ run_id: r.id, feedback: feedbackMap[r.id] || "", timestamp: ts });
+      }
+      const payload = JSON.stringify({ reviews, status: "complete" }, null, 2);
+      fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: payload,
+      }).then(() => {
+        document.getElementById("done-overlay").classList.add("visible");
+      }).catch(() => {
+        // Server not available (static mode) — download as file
+        const blob = new Blob([payload], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "feedback.json";
+        a.click();
+        URL.revokeObjectURL(url);
+        document.getElementById("done-overlay").classList.add("visible");
+      });
+    }
+
+    function closeDoneDialog() {
+      // Reset status back to in_progress
+      saveCurrentFeedback();
+      document.getElementById("done-overlay").classList.remove("visible");
+    }
+
+    // ---- Toast ----
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.add("visible");
+      setTimeout(() => toast.classList.remove("visible"), 2000);
+    }
+
+    // ---- Keyboard nav ----
+    document.addEventListener("keydown", (e) => {
+      // Don't capture when typing in textarea
+      if (e.target.tagName === "TEXTAREA") return;
+
+      if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+        e.preventDefault();
+        navigate(-1);
+      } else if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+        e.preventDefault();
+        navigate(1);
+      }
+    });
+
+    // ---- Util ----
+    function getDownloadUri(file) {
+      if (file.data_uri) return file.data_uri;
+      if (file.data_b64) return "data:application/octet-stream;base64," + file.data_b64;
+      if (file.type === "text") return "data:text/plain;charset=utf-8," + encodeURIComponent(file.content);
+      return "#";
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML.replace(/"/g, "&quot;");
+    }
+
+    // ---- View switching ----
+    function switchView(view) {
+      document.querySelectorAll(".view-tab").forEach(t => t.classList.remove("active"));
+      document.querySelectorAll(".view-panel").forEach(p => p.classList.remove("active"));
+      document.querySelector(`[onclick="switchView('${view}')"]`).classList.add("active");
+      document.getElementById("panel-" + view).classList.add("active");
+    }
+
+    // ---- Benchmark rendering ----
+    function renderBenchmark() {
+      const data = EMBEDDED_DATA.benchmark;
+      if (!data) return;
+
+      // Show the tabs
+      document.getElementById("view-tabs").style.display = "flex";
+
+      const container = document.getElementById("benchmark-content");
+      const summary = data.run_summary || {};
+      const metadata = data.metadata || {};
+      const notes = data.notes || [];
+
+      let html = "";
+
+      // Header
+      html += "<h2 style='font-family: Poppins, sans-serif; margin-bottom: 0.5rem;'>Benchmark Results</h2>";
+      html += "<p style='color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1.25rem;'>";
+      if (metadata.skill_name) html += "<strong>" + escapeHtml(metadata.skill_name) + "</strong> &mdash; ";
+      if (metadata.timestamp) html += escapeHtml(metadata.timestamp) + " &mdash; ";
+      if (metadata.evals_run) html += "Evals: " + escapeHtml(metadata.evals_run.join(", ")) + " &mdash; ";
+      html += escapeHtml(metadata.runs_per_configuration || "?") + (metadata.runs_per_configuration === 1 ? " run" : " runs") + " per configuration";
+      html += "</p>";
+
+      // Summary table
+      html += '<table class="benchmark-table">';
+
+      function fmtStat(stat, pct) {
+        if (!stat) return "—";
+        const suffix = pct ? "%" : "";
+        const m = pct ? (stat.mean * 100).toFixed(0) : stat.mean.toFixed(1);
+        const s = pct ? (stat.stddev * 100).toFixed(0) : stat.stddev.toFixed(1);
+        return m + suffix + " ± " + s + suffix;
+      }
+
+      function deltaClass(val) {
+        if (!val) return "";
+        const n = parseFloat(val);
+        if (n > 0) return "benchmark-delta-positive";
+        if (n < 0) return "benchmark-delta-negative";
+        return "";
+      }
+
+      // Discover config names dynamically (everything except "delta")
+      const configs = Object.keys(summary).filter(k => k !== "delta");
+      const configA = configs[0] || "config_a";
+      const configB = configs[1] || "config_b";
+      const labelA = configA.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      const labelB = configB.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      const a = summary[configA] || {};
+      const b = summary[configB] || {};
+      const delta = summary.delta || {};
+      // With a single configuration there is nothing to compare: only its column is shown
+      const compare = cells => configs.length >= 2 ? cells : "";
+
+      html += "<thead><tr><th>Metric</th><th>" + escapeHtml(labelA) + "</th>" + compare("<th>" + escapeHtml(labelB) + "</th><th>Delta</th>") + "</tr></thead>";
+      html += "<tbody>";
+
+      html += "<tr><td><strong>Pass Rate</strong></td>";
+      html += "<td>" + fmtStat(a.pass_rate, true) + "</td>";
+      html += compare("<td>" + fmtStat(b.pass_rate, true) + "</td>");
+      html += compare('<td class="' + deltaClass(delta.pass_rate) + '">' + escapeHtml(delta.pass_rate || "—") + "</td>") + "</tr>";
+
+      // Time (only show row if data exists)
+      if (a.time_seconds || b.time_seconds) {
+        html += "<tr><td><strong>Time (s)</strong></td>";
+        html += "<td>" + fmtStat(a.time_seconds, false) + "</td>";
+        html += compare("<td>" + fmtStat(b.time_seconds, false) + "</td>");
+        html += compare('<td class="' + deltaClass(delta.time_seconds) + '">' + escapeHtml(delta.time_seconds ? delta.time_seconds + "s" : "—") + "</td>") + "</tr>";
+      }
+
+      // Tokens (only show row if data exists)
+      if (a.tokens || b.tokens) {
+        html += "<tr><td><strong>Tokens</strong></td>";
+        html += "<td>" + fmtStat(a.tokens, false) + "</td>";
+        html += compare("<td>" + fmtStat(b.tokens, false) + "</td>");
+        html += compare('<td class="' + deltaClass(delta.tokens) + '">' + escapeHtml(delta.tokens || "—") + "</td>") + "</tr>";
+      }
+
+      html += "</tbody></table>";
+
+      // Per-eval breakdown (if runs data available)
+      const runs = data.runs || [];
+      if (runs.length > 0) {
+        // Numeric ids first, then ids that are names
+        const rank = id => typeof id === "number" ? 0 : 1;
+        const evalIds = [...new Set(runs.map(r => r.eval_id))].sort((a, b) =>
+          rank(a) - rank(b) || (rank(a) ? String(a).localeCompare(String(b)) : a - b));
+
+        html += "<h3 style='font-family: Poppins, sans-serif; margin-bottom: 0.75rem;'>Per-Eval Breakdown</h3>";
+
+        const hasTime = runs.some(r => r.result && r.result.time_seconds != null);
+        const hasErrors = runs.some(r => r.result && r.result.errors > 0);
+
+        for (const evalId of evalIds) {
+          const evalRuns = runs.filter(r => r.eval_id === evalId);
+          const evalName = evalRuns[0] && evalRuns[0].eval_name ? evalRuns[0].eval_name : "Eval " + evalId;
+
+          html += "<h4 style='font-family: Poppins, sans-serif; margin: 1rem 0 0.5rem; color: var(--text);'>" + escapeHtml(evalName) + "</h4>";
+          html += '<table class="benchmark-table">';
+          html += "<thead><tr><th>Config</th><th>Run</th><th>Pass Rate</th>";
+          if (hasTime) html += "<th>Time (s)</th>";
+          if (hasErrors) html += "<th>Crashes During Execution</th>";
+          html += "</tr></thead>";
+          html += "<tbody>";
+
+          // Group by config and render with average rows
+          const configGroups = [...new Set(evalRuns.map(r => r.configuration))];
+          for (let ci = 0; ci < configGroups.length; ci++) {
+            const config = configGroups[ci];
+            const configRuns = evalRuns.filter(r => r.configuration === config);
+            if (configRuns.length === 0) continue;
+
+            const rowClass = ci === 0 ? "benchmark-row-with" : "benchmark-row-without";
+            const configLabel = escapeHtml(config.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase()));
+
+            for (const run of configRuns) {
+              const r = run.result || {};
+              const prClass = r.pass_rate >= 0.8 ? "benchmark-delta-positive" : r.pass_rate < 0.5 ? "benchmark-delta-negative" : "";
+              html += '<tr class="' + rowClass + '">';
+              html += "<td>" + configLabel + "</td>";
+              html += "<td>" + escapeHtml(run.run_number) + "</td>";
+              html += '<td class="' + prClass + '">' + ((r.pass_rate || 0) * 100).toFixed(0) + "% (" + escapeHtml(r.passed || 0) + "/" + escapeHtml(r.total || 0) + ")</td>";
+              if (hasTime) html += "<td>" + (r.time_seconds != null ? r.time_seconds.toFixed(1) : "—") + "</td>";
+              if (hasErrors) html += "<td>" + escapeHtml(r.errors || 0) + "</td>";
+              html += "</tr>";
+            }
+
+            // Average row
+            const rates = configRuns.map(r => (r.result || {}).pass_rate || 0);
+            const avgRate = rates.reduce((a, b) => a + b, 0) / rates.length;
+            const avgPrClass = avgRate >= 0.8 ? "benchmark-delta-positive" : avgRate < 0.5 ? "benchmark-delta-negative" : "";
+            html += '<tr class="benchmark-row-avg ' + rowClass + '">';
+            html += "<td>" + configLabel + "</td>";
+            html += "<td>Avg</td>";
+            html += '<td class="' + avgPrClass + '">' + (avgRate * 100).toFixed(0) + "%</td>";
+            if (hasTime) {
+              const times = configRuns.map(r => (r.result || {}).time_seconds).filter(t => t != null);
+              html += "<td>" + (times.length ? (times.reduce((a, b) => a + b, 0) / times.length).toFixed(1) : "—") + "</td>";
+            }
+            if (hasErrors) html += "<td></td>";
+            html += "</tr>";
+          }
+          html += "</tbody></table>";
+
+          // Per-assertion detail for this eval
+          const runsWithExpectations = {};
+          for (const config of configGroups) {
+            runsWithExpectations[config] = evalRuns.filter(r => r.configuration === config && r.expectations && r.expectations.length > 0);
+          }
+          const hasAnyExpectations = Object.values(runsWithExpectations).some(runs => runs.length > 0);
+          if (hasAnyExpectations) {
+            // Collect all unique assertion texts across all configs
+            const allAssertions = [];
+            const seen = new Set();
+            for (const config of configGroups) {
+              for (const run of runsWithExpectations[config]) {
+                for (const exp of (run.expectations || [])) {
+                  if (!seen.has(exp.text)) {
+                    seen.add(exp.text);
+                    allAssertions.push(exp.text);
+                  }
+                }
+              }
+            }
+
+            html += '<table class="benchmark-table" style="margin-top: 0.5rem;">';
+            html += "<thead><tr><th>Assertion</th>";
+            for (const config of configGroups) {
+              const label = config.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+              html += "<th>" + escapeHtml(label) + "</th>";
+            }
+            html += "</tr></thead><tbody>";
+
+            for (const assertionText of allAssertions) {
+              html += "<tr><td>" + escapeHtml(assertionText) + "</td>";
+
+              for (const config of configGroups) {
+                html += "<td>";
+                for (const run of runsWithExpectations[config]) {
+                  const exp = (run.expectations || []).find(e => e.text === assertionText);
+                  if (exp) {
+                    const cls = exp.passed ? "benchmark-delta-positive" : "benchmark-delta-negative";
+                    const icon = exp.passed ? "\u2713" : "\u2717";
+                    html += '<span class="' + cls + '" title="Run ' + escapeHtml(run.run_number) + ': ' + escapeHtml(exp.evidence || "") + '">' + icon + "</span> ";
+                  } else {
+                    html += "— ";
+                  }
+                }
+                html += "</td>";
+              }
+              html += "</tr>";
+            }
+            html += "</tbody></table>";
+          }
+        }
+      }
+
+      // Notes
+      if (notes.length > 0) {
+        html += '<div class="benchmark-notes">';
+        html += "<h3>Analysis Notes</h3>";
+        html += "<ul>";
+        for (const note of notes) {
+          html += "<li>" + escapeHtml(note) + "</li>";
+        }
+        html += "</ul></div>";
+      }
+
+      container.innerHTML = html;
+    }
+
+    // ---- Start ----
+    init();
+    renderBenchmark();
+  </script>
+</body>
+</html>

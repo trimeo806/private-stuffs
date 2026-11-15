@@ -1,0 +1,8 @@
+---
+tags: [skill-creator]
+max_turns: 20
+timeout_seconds: 600
+allowed_tools: [Read, Glob, Grep, Skill, Write, Edit, Bash]
+---
+
+can you write a PR description for what the agent did on this branch? heres what happened: copilot added retry to uploadToS3 in storage/upload.ts, 3 attempts, exponential backoff with jitter. I changed max delay from 30s to 5s because the upload dialog times out at 10s anyway. it also wanted to retry on 403, I removed that, 403 is a permissions problem and retrying just delays the error. it also renamed a bunch of vars in that file, I reverted those to keep the diff small.

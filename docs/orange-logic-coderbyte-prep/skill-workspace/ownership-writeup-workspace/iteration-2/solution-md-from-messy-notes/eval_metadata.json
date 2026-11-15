@@ -1,0 +1,11 @@
+{
+  "eval_name": "solution-md-from-messy-notes",
+  "prompt": "ok ~6 min left before section 2. write my SOLUTION.md from these notes, max 250 words, save it as SOLUTION.md\n\nnotes:\n- task: thumbnail service, make 3 sizes (small 150, medium 600, large 1200) for uploaded images, skip non-images\n- first prompt: gave agent thumbnail.ts + the task text, asked for a plan only, no code\n- plan said use sharp, resize all 3 in parallel w Promise.all. kept\n- agent then wanted to upscale imgs smaller than the target size -> rejected. 200px img blown up to 1200 looks blurry + wastes storage. added withoutEnlargement: true\n- agent wrapped sharp in try/catch that swallowed errors and returned [] -> changed it, now throws UnsupportedImageError so caller can mark the asset failed\n- tests: png 2000px -> 3 thumbs, 100px gif -> no upscale, pdf -> skipped, corrupted jpg -> UnsupportedImageError. 4/4 pass\n- tradeoff: Promise.all faster but ~3x memory peak, fine with the 20mb upload limit\n- didnt get to: webp output, HEIC (sharp needs libheif)",
+  "assertions": [
+    "SOLUTION.md is written to disk and `wc -w SOLUTION.md` on the raw file, markdown symbols included, prints at most 250.",
+    "SOLUTION.md names the rejected suggestion to upscale images smaller than the target size and gives the reason from the notes (blurry result and/or wasted storage).",
+    "SOLUTION.md claims no event absent from the notes: no tests beyond the four listed (2000px png, 100px gif, pdf, corrupted jpg), no benchmark or measurement, and WebP output or HEIC support is not described as done.",
+    "SOLUTION.md has a known-limits section that names WebP output and HEIC support as not done.",
+    "The response reports a word count for SOLUTION.md and that count is within 2 of `wc -w SOLUTION.md` on the raw file; no reported count, or an estimate further off, fails."
+  ]
+}

@@ -1,0 +1,10 @@
+---
+tags: [skill-creator]
+max_turns: 25
+timeout_seconds: 600
+allowed_tools: [Read, Glob, Grep, Skill, Write, Edit, Bash]
+---
+
+I'm on task 2 of the Coderbyte assessment (TASK.md). I asked the AI panel to make duplicate checksums case-insensitive, it said "Done, duplicate detection is now case-insensitive and I tidied up the validation", I clicked accept, and now the build is broken. The diff I accepted is in agent-edit.diff. What went wrong? I need to write a rejection in the prompt log, so tell me exactly what's wrong before anything gets changed. .NET 8 + xUnit.
+
+Input files: TASK.md, agent-edit.diff, src/Uploads/DuplicateFileException.cs, src/Uploads/StoredFile.cs, src/Uploads/UploadService.cs, src/Uploads/Uploads.csproj, tests/Uploads.Tests/UploadServiceTests.cs, tests/Uploads.Tests/Uploads.Tests.csproj

@@ -1,0 +1,10 @@
+{
+  "eval_name": "python-takehome-repo-in-folder",
+  "prompt": "Got a take-home for a backend role, 2 hour limit, started the clock a few minutes ago. The repo is in the current folder and the brief is in TASK.md. Before I let the AI loose on it: where should I start and how should I split my time?\n\nInput files: TASK.md, pyproject.toml, src/inventory/__init__.py, src/inventory/models.py, src/inventory/importer.py, tests/test_importer.py, data/movements.csv",
+  "assertions": [
+    "Before presenting the plan, the trace shows the agent reading TASK.md, src/inventory/importer.py and tests/test_importer.py.",
+    "The assumptions point out that import_movements must keep returning a list of Movement while skipped rows must still be counted, and they pick one specific way to make the skipped count available to summarize.",
+    "The edge cases include a trailing blank line, a non-integer quantity such as 2.5, and SKUs that differ only by case, each with an expected behaviour.",
+    "The plan's minutes total no more than 120 and a cut line is stated, and the trace shows no file under src/ or tests/ created or edited."
+  ]
+}

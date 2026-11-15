@@ -1,0 +1,11 @@
+schema_version: "1.1"
+name: csharp-coderbyte-bugfix-and-feature
+expected_outcome: |
+  A recon of the two tasks with no implementation code: a one-sentence goal, a numbered
+  requirements checklist marked explicit or implied (including keeping existing public
+  signatures), assumptions with chosen defaults (for example the exception or return value
+  for a missing tag and for no fitting rendition), a file map from the given tree, edge cases
+  such as merging a tag into itself, a missing source tag, an asset already carrying both
+  tags and no rendition narrow enough, a step plan that fits about 55 minutes of Section 1
+  with a cut line and Section 2 time left over, and a ready-to-paste first prompt for the
+  in-IDE agent scoped to one step.

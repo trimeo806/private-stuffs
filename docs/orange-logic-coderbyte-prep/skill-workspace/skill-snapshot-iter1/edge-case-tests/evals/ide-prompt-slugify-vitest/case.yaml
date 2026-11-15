@@ -1,0 +1,13 @@
+schema_version: "1.1"
+name: ide-prompt-slugify-vitest
+expected_outcome: |
+  The run reads TASK.md, package.json and the existing test, detects Vitest, and returns
+  one paste-ready prompt for the in-IDE assistant. The prompt names slugifyFileName,
+  src/slugify.ts and src/slugify.test.ts, asks for an edge-case table (input, expected,
+  why) before any test code, lists concrete file-name cases (empty or whitespace-only,
+  symbols only, uppercase extension, accented letters, multiple dots, leading dot,
+  repeated separators), asks for parametrized tests named by behavior in one file, and
+  forbids changing src/slugify.ts or bending expectations to the current output. The run
+  itself does not edit src/slugify.ts.
+context:
+  scaffold_script: place-files.sh

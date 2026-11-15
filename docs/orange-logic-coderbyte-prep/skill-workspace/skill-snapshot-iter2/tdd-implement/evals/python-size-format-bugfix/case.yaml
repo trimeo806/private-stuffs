@@ -1,0 +1,13 @@
+schema_version: "1.1"
+name: python-size-format-bugfix
+expected_outcome: |
+  The run executes pytest before changing sizes.py and sees test_formats_one_megabyte fail
+  with "1024.0 KB". It reproduces the cause with a new behavior-named test at the lowest
+  boundary of the same rule, such as format_size(1024) expecting "1.0 KB", and sees that
+  fail too. It names the root cause: the loop condition size > 1024 skips the exact
+  boundary at every unit. It fixes the comparison (size >= 1024) instead of special-casing
+  1048576 or "MB", leaves the four existing tests and their assertions untouched, adds no
+  dependency, and ends with a green pytest run and a short report of the test added red to
+  green, the root cause and any open risk.
+context:
+  scaffold_script: place-files.sh

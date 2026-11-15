@@ -1,0 +1,20 @@
+--- a/src/Dam.Core/Assets/AssetRepository.cs
++++ b/src/Dam.Core/Assets/AssetRepository.cs
+@@ -15,6 +15,7 @@
+ 
+     public void Save(Asset asset)
+     {
++        asset.Checksum = asset.Checksum.ToLower();
+         _assets[asset.Id] = asset;
+     }
+ }
+--- a/src/Dam.Core/Assets/DuplicateDetector.cs
++++ b/src/Dam.Core/Assets/DuplicateDetector.cs
+@@ -11,6 +11,6 @@
+ 
+     public bool IsDuplicate(string checksum)
+     {
+-        return _repository.All().Any(a => a.Checksum == checksum);
++        return _repository.All().Any(a => a.Checksum == checksum.ToLower());
+     }
+ }

@@ -1,0 +1,54 @@
+{
+  "expectations": [
+    {
+      "text": "New tests are written for pytest under the tests folder, and at least one test uses pytest.mark.parametrize; no unittest.TestCase class or new test dependency is introduced",
+      "passed": true,
+      "evidence": "New tests added to tests/test_storage_report.py (original kept) with @pytest.mark.parametrize('name', ['Makefile', '.gitignore', 'notes.']). No unittest.TestCase; pyproject.toml unchanged (no new dependency). Re-ran in scratch copy: 2 failed, 12 passed, matching the response."
+    },
+    {
+      "text": "The tests include extensions that differ only in case (for example \"a.JPG\" and \"b.jpg\") expecting one lowercase group, and two extensions with equal totals expecting them ordered by extension ascending",
+      "passed": true,
+      "evidence": "test_merges_extensions_case_insensitively_and_reports_lowercase: A.JPG/b.jpg/c.Jpg -> [('jpg', 16)]; test_breaks_total_ties_by_extension_ascending: zip/csv/md all 10 -> csv, md, zip."
+    },
+    {
+      "text": "The final response reports that summarize_by_extension does not merge mixed-case extensions as a bug in storage_report.py, and storage_report.py is not modified during the run",
+      "passed": true,
+      "evidence": "Response: 'Extensions are not compared case-insensitively. A.JPG, b.jpg and c.Jpg come back as three separate rows' under '## Findings (bugs in storage_report.py)'; 'I did not touch storage_report.py.' diff -rq against evals/python-storage-report-pytest/files shows storage_report.py identical; mtime equals the input copy time (18:52:41)."
+    },
+    {
+      "text": "A test asserts that a negative size raises ValueError using pytest.raises",
+      "passed": true,
+      "evidence": "test_raises_value_error_for_size_just_below_zero: 'with pytest.raises(ValueError): summarize_by_extension([{\"name\": \"a.txt\", \"size\": -1}])'."
+    },
+    {
+      "text": "The response contains an edge-case table in which every row has an input, an expected result, a reason naming the bug that row would catch, and a source marking it as stated in README.md or assumed, and every row marked as from the README matches what README.md actually says",
+      "passed": false,
+      "evidence": "Table columns are '# | Case | Input | Expected | Source | Result': rows have input, expected and source but no reason naming the bug each row would catch."
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 1,
+    "total": 5,
+    "pass_rate": 0.8
+  },
+  "timing": {
+    "executor_duration_seconds": 53.1,
+    "total_duration_seconds": 53.1
+  },
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "reason": "Assertions 1-4 are non-discriminating: all 6 runs (old and new skill) pass them. Only assertion 5 (reason + source per row) separates the configs."
+      },
+      {
+        "assertion": "The response contains an edge-case table in which every row has an input, an expected result, a reason naming the bug that row would catch, and a source marking it as stated in README.md or assumed, and every row marked as from the README matches what README.md actually says",
+        "reason": "Several with_skill rows marked 'spec' rely on an inference the README does not spell out: (none) sorting before letters in a tie (run-1 row 10, run-3 row 9) and '.env.local'/'.config.json' extensions. They are consistent with the README's literal rules, so graded as matching; say whether derived-but-unstated expectations should be marked 'assumed'."
+      },
+      {
+        "reason": "No assertion covers the second real bug (trailing dot 'notes.' reported as '' instead of '(none)'). All 6 runs found it, so it would not discriminate now, but it is a key outcome."
+      }
+    ],
+    "overall": "with_skill 5/5 in every run, old_skill 4/5 in every run; the difference is entirely the table's reason column."
+  }
+}

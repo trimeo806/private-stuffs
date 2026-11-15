@@ -1,0 +1,801 @@
+{
+  "metadata": {
+    "skill_name": "tdd-implement",
+    "skill_path": "<path/to/skill>",
+    "executor_model": "<model-name>",
+    "analyzer_model": "<model-name>",
+    "timestamp": "2026-11-14T12:06:40Z",
+    "evals_run": [
+      "csharp-tag-merge-xunit",
+      "python-size-format-bugfix",
+      "typescript-quick-hack-stays-simple"
+    ],
+    "runs_per_configuration": 3
+  },
+  "runs": [
+    {
+      "eval_id": "csharp-tag-merge-xunit",
+      "eval_name": "csharp-tag-merge-xunit",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.8,
+        "passed": 4,
+        "failed": 1,
+        "total": 5,
+        "time_seconds": 428.6,
+        "tokens": 123346,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The trace shows a test that calls MergeTags being written and run with a failing result (for example NotImplementedException) before any edit replaces the NotImplementedException body of MergeTags in TagService.cs.",
+          "passed": true,
+          "evidence": "response.md table: 'MergeTags_retags_every_source_asset_with_the_target_and_returns_the_count' red because 'stub threw NotImplementedException'. Red-before-green evidence is self-reported in response.md (no transcript was saved)."
+        },
+        {
+          "text": "The tag-list rewriting logic is in a separate function or static method that takes the tags and returns a new collection without calling the repository, and MergeTags is the only code that calls the repository Save method.",
+          "passed": true,
+          "evidence": "private static List<string> MergeTagList(IReadOnlyList<string> tags, string source, string target) builds and returns a new list without touching the repository; _repository.Save is called only in the MergeTags loop (AddTag's pre-existing Save excepted, see eval_feedback)."
+        },
+        {
+          "text": "The final TagService.cs still declares public int MergeTags(string sourceTag, string targetTag), the two existing tests in TagServiceTests.cs are unchanged, and no PackageReference is added to either csproj file.",
+          "passed": true,
+          "evidence": "TagService.cs still declares 'public int MergeTags(string sourceTag, string targetTag)'; diff -r against the input shows both csproj files identical (no PackageReference added) and the two AddTag tests unchanged (new tests only appended / in a new file)."
+        },
+        {
+          "text": "The last dotnet test run in the trace reports zero failed tests, and the final response names the tests added, says they went from red to green, and states where the data mutation (the repository save) happens.",
+          "passed": true,
+          "evidence": "Response: 'dotnet test tests/AssetLibrary.Tests -> 11 passed, 0 failed'; table 'Tests (red -> green)' names all 4 new tests; 'Mutation lives in: the single Save loop in MergeTags.' Grader re-run: 11 passed, 0 failed."
+        },
+        {
+          "text": "Among the new tests, at least one calls the extracted tag-rewriting function directly without a repository, and at least one calls MergeTags through TagService backed by InMemoryAssetRepository and asserts the stored tags; every new test method name describes a behavior and contains no ticket, task, step or spec ID.",
+          "passed": false,
+          "evidence": "Fails on the first clause: the extracted MergeTagList is private static and no new test calls it directly; every new test goes through TagService + InMemoryAssetRepository (that clause and the behavior-name clause are satisfied, e.g. 'MergeTags_matches_the_source_tag_in_any_case')."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "csharp-tag-merge-xunit",
+      "eval_name": "csharp-tag-merge-xunit",
+      "configuration": "with_skill",
+      "run_number": 2,
+      "result": {
+        "pass_rate": 0.8,
+        "passed": 4,
+        "failed": 1,
+        "total": 5,
+        "time_seconds": 433.8,
+        "tokens": 118186,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The trace shows a test that calls MergeTags being written and run with a failing result (for example NotImplementedException) before any edit replaces the NotImplementedException body of MergeTags in TagService.cs.",
+          "passed": true,
+          "evidence": "response.md table: 'MergeTags_moves_tagged_assets_to_the_target_tag_and_counts_only_those' failed with 'NotImplementedException from the stub'. Red-before-green evidence is self-reported in response.md (no transcript was saved)."
+        },
+        {
+          "text": "The tag-list rewriting logic is in a separate function or static method that takes the tags and returns a new collection without calling the repository, and MergeTags is the only code that calls the repository Save method.",
+          "passed": true,
+          "evidence": "private static List<string>? MergeTagList(IReadOnlyList<string> tags, ...) returns a new list (or null when the source tag is absent) with no repository access; MergeTags is the only merge code that calls _repository.Save."
+        },
+        {
+          "text": "The final TagService.cs still declares public int MergeTags(string sourceTag, string targetTag), the two existing tests in TagServiceTests.cs are unchanged, and no PackageReference is added to either csproj file.",
+          "passed": true,
+          "evidence": "TagService.cs still declares 'public int MergeTags(string sourceTag, string targetTag)'; diff -r against the input shows both csproj files identical (no PackageReference added) and the two AddTag tests unchanged (new tests only appended / in a new file)."
+        },
+        {
+          "text": "The last dotnet test run in the trace reports zero failed tests, and the final response names the tests added, says they went from red to green, and states where the data mutation (the repository save) happens.",
+          "passed": true,
+          "evidence": "Response: '11 passed, 0 failed'; table 'Tests (each one failed before its change and passes now)' names all 6 new tests; 'Mutation: only MergeTags saves anything.' Grader re-run: 11 passed."
+        },
+        {
+          "text": "Among the new tests, at least one calls the extracted tag-rewriting function directly without a repository, and at least one calls MergeTags through TagService backed by InMemoryAssetRepository and asserts the stored tags; every new test method name describes a behavior and contains no ticket, task, step or spec ID.",
+          "passed": false,
+          "evidence": "Fails on the first clause: the extracted MergeTagList is private static and no new test calls it directly; every new test goes through TagService + InMemoryAssetRepository (that clause and the behavior-name clause are satisfied, e.g. 'MergeTags_matches_the_source_tag_in_any_case')."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "csharp-tag-merge-xunit",
+      "eval_name": "csharp-tag-merge-xunit",
+      "configuration": "with_skill",
+      "run_number": 3,
+      "result": {
+        "pass_rate": 0.8,
+        "passed": 4,
+        "failed": 1,
+        "total": 5,
+        "time_seconds": 435.5,
+        "tokens": 119773,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The trace shows a test that calls MergeTags being written and run with a failing result (for example NotImplementedException) before any edit replaces the NotImplementedException body of MergeTags in TagService.cs.",
+          "passed": true,
+          "evidence": "response.md: 'I built it test-first in four red-to-green loops'; table row 1 red because 'NotImplementedException from the stub'. Red-before-green evidence is self-reported in response.md (no transcript was saved)."
+        },
+        {
+          "text": "The tag-list rewriting logic is in a separate function or static method that takes the tags and returns a new collection without calling the repository, and MergeTags is the only code that calls the repository Save method.",
+          "passed": true,
+          "evidence": "private static List<string> MergeTagList(IReadOnlyList<string> tags, string source, string target) returns a new list; 'MergeTagList takes a list and returns a new one'; Save only called in MergeTags among the merge code."
+        },
+        {
+          "text": "The final TagService.cs still declares public int MergeTags(string sourceTag, string targetTag), the two existing tests in TagServiceTests.cs are unchanged, and no PackageReference is added to either csproj file.",
+          "passed": true,
+          "evidence": "TagService.cs still declares 'public int MergeTags(string sourceTag, string targetTag)'; diff -r against the input shows both csproj files identical (no PackageReference added) and the two AddTag tests unchanged (new tests only appended / in a new file)."
+        },
+        {
+          "text": "The last dotnet test run in the trace reports zero failed tests, and the final response names the tests added, says they went from red to green, and states where the data mutation (the repository save) happens.",
+          "passed": true,
+          "evidence": "Response: '14 passed, 0 failed'; red->green table names all 7 new tests; 'Mutation: the only writes are the Save calls in MergeTags.' Grader re-run: 14 passed."
+        },
+        {
+          "text": "Among the new tests, at least one calls the extracted tag-rewriting function directly without a repository, and at least one calls MergeTags through TagService backed by InMemoryAssetRepository and asserts the stored tags; every new test method name describes a behavior and contains no ticket, task, step or spec ID.",
+          "passed": false,
+          "evidence": "Fails on the first clause: the extracted MergeTagList is private static and no new test calls it directly; every new test goes through TagService + InMemoryAssetRepository (that clause and the behavior-name clause are satisfied, e.g. 'MergeTags_matches_the_source_tag_in_any_case'). The response itself notes: 'MergeTagList is private, so the unit-level cases go through the public method.'"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "python-size-format-bugfix",
+      "eval_name": "python-size-format-bugfix",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 53.1,
+        "tokens": 100283,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Before any edit to sizes.py, the trace shows a pytest run in which a test fails because a size at an exact unit boundary is formatted in the smaller unit (such as \"1024.0 KB\" or \"1024 B\").",
+          "passed": true,
+          "evidence": "response.md: 'Before the fix: 4 passed, 3 failed' and the table row for test_formats_one_megabyte: \"'1024.0 KB' != '1.0 MB', the reported symptom\"; new test red with \"'1024 B' != '1.0 KB'\". Red-before-green evidence is self-reported in response.md (no transcript was saved)."
+        },
+        {
+          "text": "A new test is added for an exact boundary other than 1048576 bytes (for example 1024 bytes expecting \"1.0 KB\"), and its name describes the behavior rather than a bug or ticket number.",
+          "passed": true,
+          "evidence": "Added test_formats_exactly_one_kilobyte_as_kilobytes (format_size(1024) == \"1.0 KB\"), plus test_formats_exactly_one_gigabyte_as_gigabytes and test_formats_one_byte_below_a_kilobyte_in_bytes. Names describe behavior, no ticket IDs."
+        },
+        {
+          "text": "The fix in sizes.py changes the loop comparison so that every unit boundary is handled (for example size >= 1024) rather than adding a special case for 1048576 or for MB, and the final response states this root cause.",
+          "passed": true,
+          "evidence": "Diff of sizes.py: 'while size > 1024' -> 'while size >= 1024' only; no MB special case. Response: 'This was a general rule bug, not something specific to 1 MB ... Using >= fixes every unit boundary.'"
+        },
+        {
+          "text": "The four original test functions in tests/test_sizes.py keep their names and assertions, no dependency is added to pyproject.toml, and the last pytest run in the trace passes with no failures.",
+          "passed": true,
+          "evidence": "Diff shows the 4 original tests untouched (only appended), pyproject.toml identical to input. Response: 'After the fix: 7 passed, 0 failed.' Grader re-run on a temp copy: 7 passed."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "python-size-format-bugfix",
+      "eval_name": "python-size-format-bugfix",
+      "configuration": "with_skill",
+      "run_number": 2,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 42.8,
+        "tokens": 93592,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Before any edit to sizes.py, the trace shows a pytest run in which a test fails because a size at an exact unit boundary is formatted in the smaller unit (such as \"1024.0 KB\" or \"1024 B\").",
+          "passed": true,
+          "evidence": "response.md: 'I added three ... and ran them before the fix to confirm they failed'; table: test_formats_one_megabyte 'Failed before the fix with '1024.0 KB''; new 1 KB test failed with ''1024 B''. Red-before-green evidence is self-reported in response.md (no transcript was saved)."
+        },
+        {
+          "text": "A new test is added for an exact boundary other than 1048576 bytes (for example 1024 bytes expecting \"1.0 KB\"), and its name describes the behavior rather than a bug or ticket number.",
+          "passed": true,
+          "evidence": "Added test_formats_exactly_one_kilobyte_as_kilobytes (format_size(1024) == \"1.0 KB\") and a 1 GB test; behavior names, no ticket IDs."
+        },
+        {
+          "text": "The fix in sizes.py changes the loop comparison so that every unit boundary is handled (for example size >= 1024) rather than adding a special case for 1048576 or for MB, and the final response states this root cause.",
+          "passed": true,
+          "evidence": "Diff: 'while round(size, 1) >= 1024 and unit < len(UNITS) - 1:' - a general change to the loop comparison, no MB special case. Response states root cause: 'moved to the next unit only when the size was strictly greater than 1024'. Note: also changes rounding behaviour for sizes just under a boundary (1048575 -> '1.0 MB'), beyond the reported bug."
+        },
+        {
+          "text": "The four original test functions in tests/test_sizes.py keep their names and assertions, no dependency is added to pyproject.toml, and the last pytest run in the trace passes with no failures.",
+          "passed": true,
+          "evidence": "Original 4 tests unchanged in diff, pyproject.toml identical. Response: 'the rest of the suite (7 passed)'. Grader re-run: 7 passed."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "python-size-format-bugfix",
+      "eval_name": "python-size-format-bugfix",
+      "configuration": "with_skill",
+      "run_number": 3,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 45.7,
+        "tokens": 94957,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Before any edit to sizes.py, the trace shows a pytest run in which a test fails because a size at an exact unit boundary is formatted in the smaller unit (such as \"1024.0 KB\" or \"1024 B\").",
+          "passed": true,
+          "evidence": "response.md: 'Before the fix: 3 passed, 1 failed (the reported test).' and table: test_formats_one_megabyte 'returned '1024.0 KB' instead of '1.0 MB''; then 'After adding the two new tests: 3 passed, 3 failed'. Red-before-green evidence is self-reported in response.md (no transcript was saved)."
+        },
+        {
+          "text": "A new test is added for an exact boundary other than 1048576 bytes (for example 1024 bytes expecting \"1.0 KB\"), and its name describes the behavior rather than a bug or ticket number.",
+          "passed": true,
+          "evidence": "Added test_formats_exactly_one_kilobyte_in_kilobytes (format_size(1024) == \"1.0 KB\") and test_formats_exactly_one_gigabyte_in_gigabytes; behavior names."
+        },
+        {
+          "text": "The fix in sizes.py changes the loop comparison so that every unit boundary is handled (for example size >= 1024) rather than adding a special case for 1048576 or for MB, and the final response states this root cause.",
+          "passed": true,
+          "evidence": "Diff: 'size > 1024' -> 'size >= 1024'. Response: 'It broke every exact unit boundary ... The fix is to the comparison itself, so it covers all of these inputs, not only 1 MB.'"
+        },
+        {
+          "text": "The four original test functions in tests/test_sizes.py keep their names and assertions, no dependency is added to pyproject.toml, and the last pytest run in the trace passes with no failures.",
+          "passed": true,
+          "evidence": "Original tests unchanged, pyproject.toml identical. Response: 'After the fix: 6 passed, 0 failed.' Grader re-run: 6 passed."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "typescript-quick-hack-stays-simple",
+      "eval_name": "typescript-quick-hack-stays-simple",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 61.1,
+        "tokens": 99636,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The trace shows a new test for a public asset being served from https://cdn.example.com added to src/assetUrl.test.ts and run with a failing result before src/assetUrl.ts is edited.",
+          "passed": true,
+          "evidence": "response.md: 'I wrote the test first and watched it fail' and table: 'serves public assets from the cdn ...' -> 'failed (red): expected https://cdn.example.com/assets/a3/brand%20guide.pdf, got https://app.example.com/...'. Red-before-green evidence is self-reported in response.md (no transcript was saved)."
+        },
+        {
+          "text": "The change introduces no new interface, class, strategy or factory, no new source or config file, and no environment variable; the CDN behavior is a conditional plus at most a constant or a small function inside src/assetUrl.ts.",
+          "passed": true,
+          "evidence": "Diff of src/assetUrl.ts: adds 'const PUBLIC_ASSET_CDN_URL = \"https://cdn.example.com\"' and a ternary on asset.visibility === \"public\". No new type, file, config or env var."
+        },
+        {
+          "text": "The exported buildAssetUrl(asset: Asset, baseUrl: string): string signature is unchanged, the two existing tests are unchanged, and package.json has the same dependencies as before.",
+          "passed": true,
+          "evidence": "Signature 'export function buildAssetUrl(asset: Asset, baseUrl: string): string' unchanged; diff of test file only appends after the two existing tests; package.json identical to input."
+        },
+        {
+          "text": "The trace shows a vitest run after the change in which all tests pass, and the final response reports that result rather than claiming success without a run.",
+          "passed": true,
+          "evidence": "Response reports the post-change run: 'npx vitest run gives 4 passed, 0 failed'. Grader re-run of vitest with these sources: 4 passed."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "typescript-quick-hack-stays-simple",
+      "eval_name": "typescript-quick-hack-stays-simple",
+      "configuration": "with_skill",
+      "run_number": 2,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 63.2,
+        "tokens": 97514,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The trace shows a new test for a public asset being served from https://cdn.example.com added to src/assetUrl.test.ts and run with a failing result before src/assetUrl.ts is edited.",
+          "passed": true,
+          "evidence": "response.md table 'Tests (red -> green)': 'serves public assets from the cdn ...' red because 'expected https://cdn.example.com/assets/a3/banner.png, got https://app.example.com/assets/a3/banner.png'. Red-before-green evidence is self-reported in response.md (no transcript was saved)."
+        },
+        {
+          "text": "The change introduces no new interface, class, strategy or factory, no new source or config file, and no environment variable; the CDN behavior is a conditional plus at most a constant or a small function inside src/assetUrl.ts.",
+          "passed": true,
+          "evidence": "Diff of src/assetUrl.ts: adds 'const CDN_BASE_URL = \"https://cdn.example.com\"' and a ternary on asset.visibility === \"public\". No new type, file, config or env var."
+        },
+        {
+          "text": "The exported buildAssetUrl(asset: Asset, baseUrl: string): string signature is unchanged, the two existing tests are unchanged, and package.json has the same dependencies as before.",
+          "passed": true,
+          "evidence": "Signature 'export function buildAssetUrl(asset: Asset, baseUrl: string): string' unchanged; diff of test file only appends after the two existing tests; package.json identical to input."
+        },
+        {
+          "text": "The trace shows a vitest run after the change in which all tests pass, and the final response reports that result rather than claiming success without a run.",
+          "passed": true,
+          "evidence": "Response reports the post-change run: 'npx vitest run -> 4 passed, 0 failed'. Grader re-run of vitest with these sources: 4 passed."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "typescript-quick-hack-stays-simple",
+      "eval_name": "typescript-quick-hack-stays-simple",
+      "configuration": "with_skill",
+      "run_number": 3,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 396.7,
+        "tokens": 99485,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The trace shows a new test for a public asset being served from https://cdn.example.com added to src/assetUrl.test.ts and run with a failing result before src/assetUrl.ts is edited.",
+          "passed": true,
+          "evidence": "response.md table: 'serves public assets from the cdn instead of the app base url' red because 'expected https://cdn.example.com/assets/a3/team%20photo.jpg, received https://app.example.com/assets/a3/team%20photo.jpg'. Red-before-green evidence is self-reported in response.md (no transcript was saved)."
+        },
+        {
+          "text": "The change introduces no new interface, class, strategy or factory, no new source or config file, and no environment variable; the CDN behavior is a conditional plus at most a constant or a small function inside src/assetUrl.ts.",
+          "passed": true,
+          "evidence": "Diff of src/assetUrl.ts: adds 'const CDN_BASE_URL = \"https://cdn.example.com\"' and a ternary on asset.visibility === \"public\". No new type, file, config or env var."
+        },
+        {
+          "text": "The exported buildAssetUrl(asset: Asset, baseUrl: string): string signature is unchanged, the two existing tests are unchanged, and package.json has the same dependencies as before.",
+          "passed": true,
+          "evidence": "Signature 'export function buildAssetUrl(asset: Asset, baseUrl: string): string' unchanged; diff of test file only appends after the two existing tests; package.json identical to input."
+        },
+        {
+          "text": "The trace shows a vitest run after the change in which all tests pass, and the final response reports that result rather than claiming success without a run.",
+          "passed": true,
+          "evidence": "Response reports the post-change run: 'npx vitest run: 3 passed, 0 failed'. Grader re-run of vitest with these sources: 3 passed."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "csharp-tag-merge-xunit",
+      "eval_name": "csharp-tag-merge-xunit",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.4,
+        "passed": 2,
+        "failed": 3,
+        "total": 5,
+        "time_seconds": 400.1,
+        "tokens": 97429,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The trace shows a test that calls MergeTags being written and run with a failing result (for example NotImplementedException) before any edit replaces the NotImplementedException body of MergeTags in TagService.cs.",
+          "passed": true,
+          "evidence": "response.md: 'I wrote the tests first and watched them fail on NotImplementedException, then wrote the code.' Red-before-green evidence is self-reported in response.md (no transcript was saved)."
+        },
+        {
+          "text": "The tag-list rewriting logic is in a separate function or static method that takes the tags and returns a new collection without calling the repository, and MergeTags is the only code that calls the repository Save method.",
+          "passed": false,
+          "evidence": "No separate function: the tag rewriting is inline in the MergeTags loop body (only a private IsSameTag comparer was added). It also mutates the loaded asset in place (asset.Tags[sourceIndex] = target; asset.Tags.RemoveAll(...))."
+        },
+        {
+          "text": "The final TagService.cs still declares public int MergeTags(string sourceTag, string targetTag), the two existing tests in TagServiceTests.cs are unchanged, and no PackageReference is added to either csproj file.",
+          "passed": true,
+          "evidence": "TagService.cs still declares 'public int MergeTags(string sourceTag, string targetTag)'; diff -r against the input shows both csproj files identical (no PackageReference added) and the two AddTag tests unchanged (new tests only appended / in a new file). (New tests appended to TagServiceTests.cs without a blank separator line; existing tests untouched.)"
+        },
+        {
+          "text": "The last dotnet test run in the trace reports zero failed tests, and the final response names the tests added, says they went from red to green, and states where the data mutation (the repository save) happens.",
+          "passed": false,
+          "evidence": "Last run passes ('passes all 16 tests'; grader re-run: 16 passed) and red->green is claimed, but the response lists tests only as prose descriptions ('The source is replaced in place.') rather than naming them, and never states where the save/mutation happens beyond 'The asset is saved.'"
+        },
+        {
+          "text": "Among the new tests, at least one calls the extracted tag-rewriting function directly without a repository, and at least one calls MergeTags through TagService backed by InMemoryAssetRepository and asserts the stored tags; every new test method name describes a behavior and contains no ticket, task, step or spec ID.",
+          "passed": false,
+          "evidence": "No tag-rewriting function was extracted, so no test calls one directly. All new tests go through TagService + InMemoryAssetRepository and have behavior names, but the first clause fails."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "csharp-tag-merge-xunit",
+      "eval_name": "csharp-tag-merge-xunit",
+      "configuration": "without_skill",
+      "run_number": 2,
+      "result": {
+        "pass_rate": 0.4,
+        "passed": 2,
+        "failed": 3,
+        "total": 5,
+        "time_seconds": 404.5,
+        "tokens": 96196,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The trace shows a test that calls MergeTags being written and run with a failing result (for example NotImplementedException) before any edit replaces the NotImplementedException body of MergeTags in TagService.cs.",
+          "passed": true,
+          "evidence": "response.md: 'I wrote the new tests first and watched them fail on NotImplementedException, then wrote the code.' Red-before-green evidence is self-reported in response.md (no transcript was saved)."
+        },
+        {
+          "text": "The tag-list rewriting logic is in a separate function or static method that takes the tags and returns a new collection without calling the repository, and MergeTags is the only code that calls the repository Save method.",
+          "passed": false,
+          "evidence": "No separate function: the tag rewriting is inline in the MergeTags loop body (only a private IsSameTag comparer was added). Merged list built inline then copied into asset.Tags (Clear/AddRange) before Save."
+        },
+        {
+          "text": "The final TagService.cs still declares public int MergeTags(string sourceTag, string targetTag), the two existing tests in TagServiceTests.cs are unchanged, and no PackageReference is added to either csproj file.",
+          "passed": true,
+          "evidence": "TagService.cs still declares 'public int MergeTags(string sourceTag, string targetTag)'; diff -r against the input shows both csproj files identical (no PackageReference added) and the two AddTag tests unchanged (new tests only appended / in a new file). Tests added in a new file MergeTagsTests.cs."
+        },
+        {
+          "text": "The last dotnet test run in the trace reports zero failed tests, and the final response names the tests added, says they went from red to green, and states where the data mutation (the repository save) happens.",
+          "passed": false,
+          "evidence": "Last run passes ('All 16 tests pass'; grader re-run: 16 passed), red-first claimed, but tests are described as topics ('replacing the source tag') not named, and the response does not state where the repository save/mutation happens beyond 'Each changed asset is saved once'."
+        },
+        {
+          "text": "Among the new tests, at least one calls the extracted tag-rewriting function directly without a repository, and at least one calls MergeTags through TagService backed by InMemoryAssetRepository and asserts the stored tags; every new test method name describes a behavior and contains no ticket, task, step or spec ID.",
+          "passed": false,
+          "evidence": "No tag-rewriting function was extracted, so no test calls one directly. All new tests go through TagService + InMemoryAssetRepository and have behavior names, but the first clause fails."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "csharp-tag-merge-xunit",
+      "eval_name": "csharp-tag-merge-xunit",
+      "configuration": "without_skill",
+      "run_number": 3,
+      "result": {
+        "pass_rate": 0.2,
+        "passed": 1,
+        "failed": 4,
+        "total": 5,
+        "time_seconds": 403.6,
+        "tokens": 98394,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The trace shows a test that calls MergeTags being written and run with a failing result (for example NotImplementedException) before any edit replaces the NotImplementedException body of MergeTags in TagService.cs.",
+          "passed": false,
+          "evidence": "response.md does not mention writing tests first or seeing any failure; it only reports 'all 17 tests pass'."
+        },
+        {
+          "text": "The tag-list rewriting logic is in a separate function or static method that takes the tags and returns a new collection without calling the repository, and MergeTags is the only code that calls the repository Save method.",
+          "passed": false,
+          "evidence": "No separate function: the tag rewriting is inline in the MergeTags loop body (only a private IsSameTag comparer was added). Mutates loaded asset.Tags in place."
+        },
+        {
+          "text": "The final TagService.cs still declares public int MergeTags(string sourceTag, string targetTag), the two existing tests in TagServiceTests.cs are unchanged, and no PackageReference is added to either csproj file.",
+          "passed": true,
+          "evidence": "TagService.cs still declares 'public int MergeTags(string sourceTag, string targetTag)'; diff -r against the input shows both csproj files identical (no PackageReference added) and the two AddTag tests unchanged (new tests only appended / in a new file). Tests added in a new file MergeTagsTests.cs."
+        },
+        {
+          "text": "The last dotnet test run in the trace reports zero failed tests, and the final response names the tests added, says they went from red to green, and states where the data mutation (the repository save) happens.",
+          "passed": false,
+          "evidence": "Last run passes ('all 17 tests pass'; grader re-run: 17 passed) but no red->green statement, tests are described not named, and no statement of where the save happens beyond 'The asset is saved and counted.'"
+        },
+        {
+          "text": "Among the new tests, at least one calls the extracted tag-rewriting function directly without a repository, and at least one calls MergeTags through TagService backed by InMemoryAssetRepository and asserts the stored tags; every new test method name describes a behavior and contains no ticket, task, step or spec ID.",
+          "passed": false,
+          "evidence": "No tag-rewriting function was extracted, so no test calls one directly. All new tests go through TagService + InMemoryAssetRepository and have behavior names, but the first clause fails. Note test names like 'Replaces_the_source_tag_with_the_target_tag' are behavior names."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "python-size-format-bugfix",
+      "eval_name": "python-size-format-bugfix",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 36.4,
+        "tokens": 89823,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Before any edit to sizes.py, the trace shows a pytest run in which a test fails because a size at an exact unit boundary is formatted in the smaller unit (such as \"1024.0 KB\" or \"1024 B\").",
+          "passed": true,
+          "evidence": "response.md: '`test_formats_one_megabyte` was red and is now green. I added `test_formats_exactly_one_kilobyte_as_kilobytes` ... It failed before the fix and passes after it.' Cause section: 'A file of exactly 1 MB ... reached 1024.0 KB'. Weakest evidence of the case (no run counts or failure output quoted). Red-before-green evidence is self-reported in response.md (no transcript was saved)."
+        },
+        {
+          "text": "A new test is added for an exact boundary other than 1048576 bytes (for example 1024 bytes expecting \"1.0 KB\"), and its name describes the behavior rather than a bug or ticket number.",
+          "passed": true,
+          "evidence": "Added test_formats_exactly_one_kilobyte_as_kilobytes: format_size(1024) == \"1.0 KB\"; behavior name."
+        },
+        {
+          "text": "The fix in sizes.py changes the loop comparison so that every unit boundary is handled (for example size >= 1024) rather than adding a special case for 1048576 or for MB, and the final response states this root cause.",
+          "passed": true,
+          "evidence": "Diff: 'size > 1024' -> 'size >= 1024'. Response: 'only moved up a unit when the size was strictly greater than 1024 ... The same bug made exactly 1024 bytes show as \"1024 B\"'."
+        },
+        {
+          "text": "The four original test functions in tests/test_sizes.py keep their names and assertions, no dependency is added to pyproject.toml, and the last pytest run in the trace passes with no failures.",
+          "passed": true,
+          "evidence": "New test inserted between existing ones but the 4 originals keep names/assertions; pyproject.toml identical. Response: 'All 5 tests pass now'. Grader re-run: 5 passed."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "python-size-format-bugfix",
+      "eval_name": "python-size-format-bugfix",
+      "configuration": "without_skill",
+      "run_number": 2,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 38.8,
+        "tokens": 88931,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Before any edit to sizes.py, the trace shows a pytest run in which a test fails because a size at an exact unit boundary is formatted in the smaller unit (such as \"1024.0 KB\" or \"1024 B\").",
+          "passed": true,
+          "evidence": "response.md: 'Before the fix, it failed for 1 KB, 1 GB and 1 TB along with your test.' Cause: '1 MB showed as \"1024.0 KB\"'. Red-before-green evidence is self-reported in response.md (no transcript was saved)."
+        },
+        {
+          "text": "A new test is added for an exact boundary other than 1048576 bytes (for example 1024 bytes expecting \"1.0 KB\"), and its name describes the behavior rather than a bug or ticket number.",
+          "passed": true,
+          "evidence": "Added parametrized test_switches_unit_at_exact_powers_of_1024 with (1024, \"1.0 KB\"), (1024**3, \"1.0 GB\"), (1024**4, \"1.0 TB\"); behavior name."
+        },
+        {
+          "text": "The fix in sizes.py changes the loop comparison so that every unit boundary is handled (for example size >= 1024) rather than adding a special case for 1048576 or for MB, and the final response states this root cause.",
+          "passed": true,
+          "evidence": "Diff: 'size > 1024' -> 'size >= 1024'. Response: 'A value of exactly 1024 in any unit stayed where it was ... 1 KB, 1 GB and 1 TB had the same problem.'"
+        },
+        {
+          "text": "The four original test functions in tests/test_sizes.py keep their names and assertions, no dependency is added to pyproject.toml, and the last pytest run in the trace passes with no failures.",
+          "passed": true,
+          "evidence": "Originals unchanged, pyproject.toml identical. Response: 'the whole suite passes (8 tests)'. Grader re-run: 8 passed."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "python-size-format-bugfix",
+      "eval_name": "python-size-format-bugfix",
+      "configuration": "without_skill",
+      "run_number": 3,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 390.6,
+        "tokens": 91789,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Before any edit to sizes.py, the trace shows a pytest run in which a test fails because a size at an exact unit boundary is formatted in the smaller unit (such as \"1024.0 KB\" or \"1024 B\").",
+          "passed": true,
+          "evidence": "response.md: 'The first one failed before the fix' with 'test_formats_one_kilobyte: 1024 now gives \"1.0 KB\" (it used to give \"1024 B\")'. Red-before-green evidence is self-reported in response.md (no transcript was saved)."
+        },
+        {
+          "text": "A new test is added for an exact boundary other than 1048576 bytes (for example 1024 bytes expecting \"1.0 KB\"), and its name describes the behavior rather than a bug or ticket number.",
+          "passed": true,
+          "evidence": "Added test_formats_one_kilobyte: format_size(1024) == \"1.0 KB\"; name describes behavior."
+        },
+        {
+          "text": "The fix in sizes.py changes the loop comparison so that every unit boundary is handled (for example size >= 1024) rather than adding a special case for 1048576 or for MB, and the final response states this root cause.",
+          "passed": true,
+          "evidence": "Diff: 'size > 1024' -> 'size >= 1024'. Response: 'the loop only moved up a unit when size > 1024. So a value of exactly 1024 stayed in the lower unit'."
+        },
+        {
+          "text": "The four original test functions in tests/test_sizes.py keep their names and assertions, no dependency is added to pyproject.toml, and the last pytest run in the trace passes with no failures.",
+          "passed": true,
+          "evidence": "Originals unchanged, pyproject.toml identical. Response: 'All 6 tests pass'. Grader re-run: 6 passed."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "typescript-quick-hack-stays-simple",
+      "eval_name": "typescript-quick-hack-stays-simple",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.75,
+        "passed": 3,
+        "failed": 1,
+        "total": 4,
+        "time_seconds": 43.5,
+        "tokens": 90999,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The trace shows a new test for a public asset being served from https://cdn.example.com added to src/assetUrl.test.ts and run with a failing result before src/assetUrl.ts is edited.",
+          "passed": false,
+          "evidence": "response.md never reports running the new public-asset test before editing src/assetUrl.ts or seeing it fail; it only reports the final passing run. No transcript to show otherwise."
+        },
+        {
+          "text": "The change introduces no new interface, class, strategy or factory, no new source or config file, and no environment variable; the CDN behavior is a conditional plus at most a constant or a small function inside src/assetUrl.ts.",
+          "passed": true,
+          "evidence": "Diff of src/assetUrl.ts: adds 'const PUBLIC_CDN_URL = \"https://cdn.example.com\"' and a ternary on asset.visibility === \"public\". No new type, file, config or env var."
+        },
+        {
+          "text": "The exported buildAssetUrl(asset: Asset, baseUrl: string): string signature is unchanged, the two existing tests are unchanged, and package.json has the same dependencies as before.",
+          "passed": true,
+          "evidence": "Signature 'export function buildAssetUrl(asset: Asset, baseUrl: string): string' unchanged; diff of test file only appends after the two existing tests; package.json identical to input."
+        },
+        {
+          "text": "The trace shows a vitest run after the change in which all tests pass, and the final response reports that result rather than claiming success without a run.",
+          "passed": true,
+          "evidence": "Response reports the post-change run: 'npx vitest run passes: 3/3'. Grader re-run of vitest with these sources: 3 passed."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "typescript-quick-hack-stays-simple",
+      "eval_name": "typescript-quick-hack-stays-simple",
+      "configuration": "without_skill",
+      "run_number": 2,
+      "result": {
+        "pass_rate": 0.75,
+        "passed": 3,
+        "failed": 1,
+        "total": 4,
+        "time_seconds": 38.2,
+        "tokens": 88037,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The trace shows a new test for a public asset being served from https://cdn.example.com added to src/assetUrl.test.ts and run with a failing result before src/assetUrl.ts is edited.",
+          "passed": false,
+          "evidence": "response.md never reports running the new public-asset test before editing src/assetUrl.ts or seeing it fail; it only reports the final passing run. No transcript to show otherwise."
+        },
+        {
+          "text": "The change introduces no new interface, class, strategy or factory, no new source or config file, and no environment variable; the CDN behavior is a conditional plus at most a constant or a small function inside src/assetUrl.ts.",
+          "passed": true,
+          "evidence": "Diff of src/assetUrl.ts: adds 'const PUBLIC_CDN_URL = \"https://cdn.example.com\"' and a ternary on asset.visibility === \"public\". No new type, file, config or env var."
+        },
+        {
+          "text": "The exported buildAssetUrl(asset: Asset, baseUrl: string): string signature is unchanged, the two existing tests are unchanged, and package.json has the same dependencies as before.",
+          "passed": true,
+          "evidence": "Signature 'export function buildAssetUrl(asset: Asset, baseUrl: string): string' unchanged; diff of test file only appends after the two existing tests; package.json identical to input."
+        },
+        {
+          "text": "The trace shows a vitest run after the change in which all tests pass, and the final response reports that result rather than claiming success without a run.",
+          "passed": true,
+          "evidence": "Response reports the post-change run: 'npx vitest run passes all 3 tests'. Grader re-run of vitest with these sources: 3 passed."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "typescript-quick-hack-stays-simple",
+      "eval_name": "typescript-quick-hack-stays-simple",
+      "configuration": "without_skill",
+      "run_number": 3,
+      "result": {
+        "pass_rate": 0.75,
+        "passed": 3,
+        "failed": 1,
+        "total": 4,
+        "time_seconds": 346.3,
+        "tokens": 91471,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The trace shows a new test for a public asset being served from https://cdn.example.com added to src/assetUrl.test.ts and run with a failing result before src/assetUrl.ts is edited.",
+          "passed": false,
+          "evidence": "response.md never reports running the new public-asset test before editing src/assetUrl.ts or seeing it fail; it only reports the final passing run. No transcript to show otherwise."
+        },
+        {
+          "text": "The change introduces no new interface, class, strategy or factory, no new source or config file, and no environment variable; the CDN behavior is a conditional plus at most a constant or a small function inside src/assetUrl.ts.",
+          "passed": true,
+          "evidence": "Diff of src/assetUrl.ts: adds 'const CDN_BASE_URL = \"https://cdn.example.com\"' and a ternary on asset.visibility === \"public\". No new type, file, config or env var."
+        },
+        {
+          "text": "The exported buildAssetUrl(asset: Asset, baseUrl: string): string signature is unchanged, the two existing tests are unchanged, and package.json has the same dependencies as before.",
+          "passed": true,
+          "evidence": "Signature 'export function buildAssetUrl(asset: Asset, baseUrl: string): string' unchanged; diff of test file only appends after the two existing tests; package.json identical to input."
+        },
+        {
+          "text": "The trace shows a vitest run after the change in which all tests pass, and the final response reports that result rather than claiming success without a run.",
+          "passed": true,
+          "evidence": "Response reports the post-change run: 'npx vitest run: 3/3 passing'. Grader re-run of vitest with these sources: 3 passed."
+        }
+      ],
+      "notes": []
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {
+        "mean": 0.9333,
+        "stddev": 0.1,
+        "min": 0.8,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 217.8333,
+        "stddev": 195.6772,
+        "min": 42.8,
+        "max": 435.5
+      },
+      "tokens": {
+        "mean": 105196.8889,
+        "stddev": 11709.0845,
+        "min": 93592,
+        "max": 123346
+      }
+    },
+    "without_skill": {
+      "pass_rate": {
+        "mean": 0.6944,
+        "stddev": 0.2973,
+        "min": 0.2,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 233.5556,
+        "stddev": 185.1801,
+        "min": 36.4,
+        "max": 404.5
+      },
+      "tokens": {
+        "mean": 92563.2222,
+        "stddev": 3812.7835,
+        "min": 88037,
+        "max": 98394
+      }
+    },
+    "delta": {
+      "pass_rate": "+0.24",
+      "time_seconds": "-15.7",
+      "tokens": "+12634"
+    }
+  },
+  "notes": [
+    "With skill 93% vs no skill 69%. With skill extracts pure tag-merge function and saves new copies; without mutates loaded asset in place.",
+    "C# assertion 5 fails in all 6 runs: needs a direct unit test of the extracted function but every run kept it private. Skill should say expose internal/public pure function for direct tests, or relax assertion.",
+    "python case non-discriminating; red-before-green evidence is self-reported (no transcripts)."
+  ]
+}

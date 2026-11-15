@@ -1,0 +1,10 @@
+{
+  "eval_name": "python-storage-report-pytest",
+  "prompt": "summarize_by_extension in storage_report.py is done and the one test passes. The spec is in README.md. Harden this before I submit: write the edge case tests the graders would probably run.\n\nInput files: README.md, pyproject.toml, storage_report.py, tests/test_storage_report.py",
+  "assertions": [
+    "New tests are written for pytest under the tests folder, and at least one test uses pytest.mark.parametrize; no unittest.TestCase class or new test dependency is introduced",
+    "The tests include extensions that differ only in case (for example \"a.JPG\" and \"b.jpg\") expecting one lowercase group, and two extensions with equal totals expecting them ordered by extension ascending",
+    "The final response reports that summarize_by_extension does not merge mixed-case extensions as a bug in storage_report.py, and storage_report.py is not modified during the run",
+    "A test asserts that a negative size raises ValueError using pytest.raises"
+  ]
+}

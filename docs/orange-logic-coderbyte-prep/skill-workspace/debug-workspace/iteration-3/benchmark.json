@@ -1,0 +1,405 @@
+{
+  "metadata": {
+    "skill_name": "debug",
+    "skill_path": "<path/to/skill>",
+    "executor_model": "<model-name>",
+    "analyzer_model": "<model-name>",
+    "timestamp": "2026-11-14T14:19:54Z",
+    "evals_run": [
+      "csharp-build-break-after-agent-edit",
+      "csharp-red-tests-shared-cause",
+      "csharp-symptom-ticket-share-link-clock"
+    ],
+    "runs_per_configuration": 1
+  },
+  "runs": [
+    {
+      "eval_id": "csharp-build-break-after-agent-edit",
+      "eval_name": "csharp-build-break-after-agent-edit",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 7,
+        "failed": 0,
+        "total": 7,
+        "time_seconds": 49.6,
+        "tokens": 94315,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The trace shows dotnet build or dotnet test being run, and the response cites error CS0117 for string.IsNullOrBlank from that output.",
+          "passed": true,
+          "evidence": "dotnet test -> CS0117 at (9,20),(10,20)."
+        },
+        {
+          "text": "The response states that string.IsNullOrBlank does not exist in .NET and that the original string.IsNullOrWhiteSpace must be restored.",
+          "passed": true,
+          "evidence": "Row 1: invented API, restore IsNullOrWhiteSpace."
+        },
+        {
+          "text": "The response identifies the change of the sizeBytes parameter from long to int as a contract break that breaks the test passing 3_000_000_000L and the over-2-GB requirement, and says to restore long rather than edit the tests.",
+          "passed": true,
+          "evidence": "Row 2: int vs long at :7, CS1503 on scratch copy, restore long, do not edit tests."
+        },
+        {
+          "text": "The response says the string.Equals(..., StringComparison.OrdinalIgnoreCase) checksum comparison is the correct part of the edit and should be kept.",
+          "passed": true,
+          "evidence": "Rejection text and trap say keep OrdinalIgnoreCase line 13."
+        },
+        {
+          "text": "At the end of the run, UploadService.cs and UploadServiceTests.cs are unchanged from the originals.",
+          "passed": true,
+          "evidence": "diff -rq: no repo changes."
+        },
+        {
+          "text": "The response ends with a paste-ready rejection or fix prompt for the agent that names both problems (the nonexistent API and the signature change) and what to keep.",
+          "passed": true,
+          "evidence": "Reply ends with fix prompt 2; prompts 1-2 plus rejection name both problems and keep line 13."
+        },
+        {
+          "text": "The final reply to the user is under 600 words, so it can be read quickly during a timed assessment.",
+          "passed": true,
+          "evidence": "413 words."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "csharp-red-tests-shared-cause",
+      "eval_name": "csharp-red-tests-shared-cause",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 8,
+        "failed": 0,
+        "total": 8,
+        "time_seconds": 46.5,
+        "tokens": 95595,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The trace shows dotnet test being run before the diagnosis is given, and the response names the four failing tests from that real output.",
+          "passed": true,
+          "evidence": "dotnet test Failed 4 Passed 4; table names all four tests."
+        },
+        {
+          "text": "The response attributes GetPage_FirstPage_ReturnsNewestFirst and GetPage_SecondPage_ReturnsNextNewest to one shared cause: the second OrderBy(a => a.Id) in AssetCatalog.GetPage discarding the UploadedAt sort, with ThenBy as the fix direction.",
+          "passed": true,
+          "evidence": "Row 1: both ordering tests, line 20 OrderBy should be ThenBy."
+        },
+        {
+          "text": "The response identifies integer division (_assets.Count / pageSize) as the cause of GetPage_TotalPages_RoundsUp, showing 5 items with page size 2 gives 2 instead of 3.",
+          "passed": true,
+          "evidence": "Row 2: line 28 integer division, 5/2 -> 2 vs 3."
+        },
+        {
+          "text": "The response identifies _assets.Max on an empty list throwing InvalidOperationException (Sequence contains no elements) as the cause of GetSummary_EmptyCatalog_IsAllZero.",
+          "passed": true,
+          "evidence": "Row 3: line 35 Max throws Sequence contains no elements."
+        },
+        {
+          "text": "At the end of the run, AssetCatalog.cs and AssetCatalogTests.cs are unchanged from the originals: no fix was applied.",
+          "passed": true,
+          "evidence": "diff -rq: no repo changes."
+        },
+        {
+          "text": "The response ends with a paste-ready prompt for the in-IDE agent that names the cause with file and line and says what must stay unchanged (signatures, existing tests).",
+          "passed": true,
+          "evidence": "Reply ends with prompt 3; prompts name file:line and what stays unchanged."
+        },
+        {
+          "text": "The final reply to the user is under 600 words, so it can be read quickly during a timed assessment.",
+          "passed": true,
+          "evidence": "472 words."
+        },
+        {
+          "text": "The reply gives a separate fix prompt for each of the three root causes instead of one prompt that bundles all fixes together.",
+          "passed": true,
+          "evidence": "Three numbered prompts, one per cause."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "csharp-symptom-ticket-share-link-clock",
+      "eval_name": "csharp-symptom-ticket-share-link-clock",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 7,
+        "failed": 0,
+        "total": 7,
+        "time_seconds": 55.9,
+        "tokens": 95822,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The response restates the ticket as at least one concrete case of input -> actual vs expected (for example a 1 hour link checked right after creation on a UTC+7 machine is invalid but should be valid).",
+          "passed": true,
+          "evidence": "1h link: invalid at creation in HCMC, valid after expiry in Seattle; expected valid until creation+1h UTC."
+        },
+        {
+          "text": "The response identifies ShareLinkService.IsValid comparing DateTime.Now with ExpiresAtUtc, instead of the injected clock's UtcNow, as the root cause, with file and line.",
+          "passed": true,
+          "evidence": "ShareLinkService.cs:26 DateTime.Now vs ExpiresAtUtc, ignores IClock."
+        },
+        {
+          "text": "The response explains both the Ho Chi Minh City symptom (links invalid immediately) and the Seattle symptom (links valid for hours after expiry) as the same local-time offset cause.",
+          "passed": true,
+          "evidence": "UTC+7 makes links under 7h look expired; UTC-8 adds 8h: same cause."
+        },
+        {
+          "text": "The trace shows a test or scratch program being run that demonstrates the wrong IsValid result, rather than the cause being asserted only from reading code.",
+          "passed": true,
+          "evidence": "TZ probes under Asia/Saigon and America/Los_Angeles plus 3 red FakeClock tests run."
+        },
+        {
+          "text": "The response flags ActiveLinksFor as having the same DateTime.Now bug.",
+          "passed": true,
+          "evidence": "Same bug at :31 ActiveLinksFor."
+        },
+        {
+          "text": "At the end of the run, ShareLinkService.cs and the four original tests in ShareLinkServiceTests.cs are unchanged (new test code is allowed).",
+          "passed": true,
+          "evidence": "Source unchanged; original tests intact, 3 tests appended."
+        },
+        {
+          "text": "The final reply to the user is under 600 words, so it can be read quickly during a timed assessment.",
+          "passed": true,
+          "evidence": "338 words."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "csharp-build-break-after-agent-edit",
+      "eval_name": "csharp-build-break-after-agent-edit",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.71,
+        "passed": 5,
+        "failed": 2,
+        "total": 7,
+        "time_seconds": 62.8,
+        "tokens": 94745,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The trace shows dotnet build or dotnet test being run, and the response cites error CS0117 for string.IsNullOrBlank from that output.",
+          "passed": true,
+          "evidence": "Ran dotnet build, cites CS0117 output."
+        },
+        {
+          "text": "The response states that string.IsNullOrBlank does not exist in .NET and that the original string.IsNullOrWhiteSpace must be restored.",
+          "passed": true,
+          "evidence": "States IsNullOrBlank does not exist, change back to IsNullOrWhiteSpace."
+        },
+        {
+          "text": "The response identifies the change of the sizeBytes parameter from long to int as a contract break that breaks the test passing 3_000_000_000L and the over-2-GB requirement, and says to restore long rather than edit the tests.",
+          "passed": true,
+          "evidence": "Point 2: long->int breaks signature rule and >2GB, CS1503 shown, restore long."
+        },
+        {
+          "text": "The response says the string.Equals(..., StringComparison.OrdinalIgnoreCase) checksum comparison is the correct part of the edit and should be kept.",
+          "passed": true,
+          "evidence": "Point 3: OrdinalIgnoreCase line correct, keep."
+        },
+        {
+          "text": "At the end of the run, UploadService.cs and UploadServiceTests.cs are unchanged from the originals.",
+          "passed": true,
+          "evidence": "diff -rq: no repo changes."
+        },
+        {
+          "text": "The response ends with a paste-ready rejection or fix prompt for the agent that names both problems (the nonexistent API and the signature change) and what to keep.",
+          "passed": false,
+          "evidence": "Paste-ready rejection note names both problems but the reply ends with a suggested-fix list and go-ahead question, not the prompt."
+        },
+        {
+          "text": "The final reply to the user is under 600 words, so it can be read quickly during a timed assessment.",
+          "passed": false,
+          "evidence": "641 words."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "csharp-red-tests-shared-cause",
+      "eval_name": "csharp-red-tests-shared-cause",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.62,
+        "passed": 5,
+        "failed": 3,
+        "total": 8,
+        "time_seconds": 44.6,
+        "tokens": 94333,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The trace shows dotnet test being run before the diagnosis is given, and the response names the four failing tests from that real output.",
+          "passed": true,
+          "evidence": "Ran dotnet test, 4 failed 4 passed, failures listed by name."
+        },
+        {
+          "text": "The response attributes GetPage_FirstPage_ReturnsNewestFirst and GetPage_SecondPage_ReturnsNextNewest to one shared cause: the second OrderBy(a => a.Id) in AssetCatalog.GetPage discarding the UploadedAt sort, with ThenBy as the fix direction.",
+          "passed": true,
+          "evidence": "Cause A groups both ordering tests, recommends ThenBy."
+        },
+        {
+          "text": "The response identifies integer division (_assets.Count / pageSize) as the cause of GetPage_TotalPages_RoundsUp, showing 5 items with page size 2 gives 2 instead of 3.",
+          "passed": true,
+          "evidence": "Cause B: line 28 integer division, 5/2=2 vs 3."
+        },
+        {
+          "text": "The response identifies _assets.Max on an empty list throwing InvalidOperationException (Sequence contains no elements) as the cause of GetSummary_EmptyCatalog_IsAllZero.",
+          "passed": true,
+          "evidence": "Cause C: line 35 Max on empty throws InvalidOperationException."
+        },
+        {
+          "text": "At the end of the run, AssetCatalog.cs and AssetCatalogTests.cs are unchanged from the originals: no fix was applied.",
+          "passed": true,
+          "evidence": "diff -rq: no repo changes."
+        },
+        {
+          "text": "The response ends with a paste-ready prompt for the in-IDE agent that names the cause with file and line and says what must stay unchanged (signatures, existing tests).",
+          "passed": false,
+          "evidence": "Prompt names the file and code to change but no line numbers, and the reply ends with follow-up text, not the prompt."
+        },
+        {
+          "text": "The final reply to the user is under 600 words, so it can be read quickly during a timed assessment.",
+          "passed": false,
+          "evidence": "633 words."
+        },
+        {
+          "text": "The reply gives a separate fix prompt for each of the three root causes instead of one prompt that bundles all fixes together.",
+          "passed": false,
+          "evidence": "One prompt bundles all three fixes as a numbered list."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "csharp-symptom-ticket-share-link-clock",
+      "eval_name": "csharp-symptom-ticket-share-link-clock",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 7,
+        "failed": 0,
+        "total": 7,
+        "time_seconds": 44.1,
+        "tokens": 91851,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The response restates the ticket as at least one concrete case of input -> actual vs expected (for example a 1 hour link checked right after creation on a UTC+7 machine is invalid but should be valid).",
+          "passed": true,
+          "evidence": "States a link with lifetime under 7h looks expired at creation in UTC+7; 1h link valid ~9h in UTC-8."
+        },
+        {
+          "text": "The response identifies ShareLinkService.IsValid comparing DateTime.Now with ExpiresAtUtc, instead of the injected clock's UtcNow, as the root cause, with file and line.",
+          "passed": true,
+          "evidence": "Names :26 DateTime.Now < ExpiresAtUtc, should be _clock.UtcNow."
+        },
+        {
+          "text": "The response explains both the Ho Chi Minh City symptom (links invalid immediately) and the Seattle symptom (links valid for hours after expiry) as the same local-time offset cause.",
+          "passed": true,
+          "evidence": "Explains both reports via DateTime comparison ignoring Kind."
+        },
+        {
+          "text": "The trace shows a test or scratch program being run that demonstrates the wrong IsValid result, rather than the cause being asserted only from reading code.",
+          "passed": true,
+          "evidence": "Added 3 FakeClock tests, dotnet test 3 failed 4 passed."
+        },
+        {
+          "text": "The response flags ActiveLinksFor as having the same DateTime.Now bug.",
+          "passed": true,
+          "evidence": "Names :31 ActiveLinksFor."
+        },
+        {
+          "text": "At the end of the run, ShareLinkService.cs and the four original tests in ShareLinkServiceTests.cs are unchanged (new test code is allowed).",
+          "passed": true,
+          "evidence": "ShareLinkService.cs unchanged; original tests unchanged, 3 tests appended."
+        },
+        {
+          "text": "The final reply to the user is under 600 words, so it can be read quickly during a timed assessment.",
+          "passed": true,
+          "evidence": "348 words."
+        }
+      ],
+      "notes": []
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {
+        "mean": 1.0,
+        "stddev": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 50.6667,
+        "stddev": 4.7899,
+        "min": 46.5,
+        "max": 55.9
+      },
+      "tokens": {
+        "mean": 95244.0,
+        "stddev": 812.5042,
+        "min": 94315,
+        "max": 95822
+      }
+    },
+    "without_skill": {
+      "pass_rate": {
+        "mean": 0.7767,
+        "stddev": 0.1986,
+        "min": 0.62,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 50.5,
+        "stddev": 10.655,
+        "min": 44.1,
+        "max": 62.8
+      },
+      "tokens": {
+        "mean": 93643.0,
+        "stddev": 1565.5299,
+        "min": 91851,
+        "max": 94745
+      }
+    },
+    "delta": {
+      "pass_rate": "+0.22",
+      "time_seconds": "+0.2",
+      "tokens": "+1601"
+    }
+  },
+  "notes": [
+    "Baseline reused from iteration-1 (no-skill config unchanged).",
+    "End-with-prompt fix confirmed: 3/3 replies end on the last fix prompt; iteration-2 missed 2/3.",
+    "With-skill now 100% on all 22 checks; time 66s -> 51s; replies 338-472 words.",
+    "Remaining baseline misses are format and length only; both configs find every root cause. Skill value = short, per-cause, trap-aware output, not better diagnosis.",
+    "One run per config: 1-2 check swings are within noise."
+  ]
+}

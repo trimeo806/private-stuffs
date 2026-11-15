@@ -1,0 +1,13 @@
+{
+  "eval_name": "csharp-build-break-after-agent-edit",
+  "prompt": "I'm on task 2 of the Coderbyte assessment (TASK.md). I asked the AI panel to make duplicate checksums case-insensitive, it said \"Done, duplicate detection is now case-insensitive and I tidied up the validation\", I clicked accept, and now the build is broken. The diff I accepted is in agent-edit.diff. What went wrong? I need to write a rejection in the prompt log, so tell me exactly what's wrong before anything gets changed. .NET 8 + xUnit.",
+  "assertions": [
+    "The trace shows dotnet build or dotnet test being run, and the response cites error CS0117 for string.IsNullOrBlank from that output.",
+    "The response states that string.IsNullOrBlank does not exist in .NET and that the original string.IsNullOrWhiteSpace must be restored.",
+    "The response identifies the change of the sizeBytes parameter from long to int as a contract break that breaks the test passing 3_000_000_000L and the over-2-GB requirement, and says to restore long rather than edit the tests.",
+    "The response says the string.Equals(..., StringComparison.OrdinalIgnoreCase) checksum comparison is the correct part of the edit and should be kept.",
+    "At the end of the run, UploadService.cs and UploadServiceTests.cs are unchanged from the originals.",
+    "The response ends with a paste-ready rejection or fix prompt for the agent that names both problems (the nonexistent API and the signature change) and what to keep.",
+    "The final reply to the user is under 600 words, so it can be read quickly during a timed assessment."
+  ]
+}

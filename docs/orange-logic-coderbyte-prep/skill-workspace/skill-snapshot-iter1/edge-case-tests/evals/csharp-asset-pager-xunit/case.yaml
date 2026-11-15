@@ -1,0 +1,14 @@
+schema_version: "1.1"
+name: csharp-asset-pager-xunit
+expected_outcome: |
+  The run detects xUnit from AssetLibrary.Tests.csproj and adds tests to that project
+  (AssetPagerTests.cs or a new file beside it), using [Theory] with [InlineData] or
+  [MemberData] for cases that differ only in data. It shows an edge-case table with
+  input, expected and why. The cases cover page and pageSize below 1 and pageSize above
+  100 (ArgumentOutOfRangeException), null assets (ArgumentNullException), empty input,
+  a partial last page, a page past the end, and name ties broken by Id. It reports that
+  TotalPages uses floor division and is wrong when the count is not a multiple of
+  pageSize, ideally also that (page - 1) * pageSize overflows for a huge page, and it
+  leaves AssetPager.cs unchanged instead of bending tests to the current output.
+context:
+  scaffold_script: place-files.sh

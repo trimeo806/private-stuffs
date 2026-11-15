@@ -1,0 +1,60 @@
+{
+  "expectations": [
+    {
+      "text": "New tests are added inside the AssetLibrary.Tests project using xUnit, with at least one [Theory] that takes its cases from [InlineData] or [MemberData], and no other test framework or package is added",
+      "passed": true,
+      "evidence": "New file AssetLibrary.Tests/AssetPagerEdgeCaseTests.cs uses 'using Xunit;' with [Theory]/[InlineData] (e.g. Total_pages_is_the_ceiling_of_count_over_page_size with seven [InlineData] rows). Only new file vs input; AssetLibrary.Tests.csproj unchanged (no package added). "
+    },
+    {
+      "text": "The tests include a page past the last page that expects empty Items, and an invalid page or pageSize (0, negative, or above 100) that expects ArgumentOutOfRangeException",
+      "passed": true,
+      "evidence": "Returns_empty_items_with_totals_when_page_is_past_the_end: GetPage(MakeAssets(4), 3, 2) -> Assert.Empty(result.Items); Throws_out_of_range_when_page_size_is_outside_one_to_one_hundred asserts ArgumentOutOfRangeException for 0, -1, 101, int.MaxValue; page 0/-1/int.MinValue also covered."
+    },
+    {
+      "text": "The final response reports that TotalPages is computed with integer division and is too low when the asset count is not a multiple of pageSize, as a bug in production code, and AssetPager.cs is not modified during the run",
+      "passed": true,
+      "evidence": "Response: 'Case 5, TotalPages uses floor division. For 5 assets and size 2 it should be 3 but returns 2 ... Cause: AssetLibrary/AssetPager.cs, the line var totalPages = ordered.Count / pageSize;' under '### Suspected bugs'; 'I left the production code unchanged'. diff -rq against evals/csharp-asset-pager-xunit/files shows AssetPager.cs identical; mtime 18:52:41 equals the input copy time."
+    },
+    {
+      "text": "The response contains an edge-case table with an input, an expected result and a reason for each row, and every new test method name describes a behavior rather than a ticket, task or case number",
+      "passed": true,
+      "evidence": "Table columns '# | Case | Input | Expected | Why it matters | Source', 13 rows each with a reason. Test names are behavioral: Second_page_continues_after_the_first_in_sort_order, Returns_empty_page_with_zero_totals_for_an_empty_list, Breaks_name_ties_by_id_ascending_including_case_variants. No ticket/case numbers in names."
+    },
+    {
+      "text": "The tests include a very large page number (int.MaxValue or near it) with a pageSize above 1 that expects empty Items, and the final response reports the (page - 1) * pageSize overflow in AssetPager.cs as a suspected bug rather than leaving it only as an untested or uncovered note",
+      "passed": true,
+      "evidence": "Test Returns_empty_items_when_page_is_so_large_the_offset_overflows with [InlineData(int.MaxValue, 2)], [InlineData(int.MaxValue, 100)] asserts Assert.Empty(result.Items). Response: 'Case 8, the skip offset overflows. page = int.MaxValue, pageSize = 100 should return empty Items but returns the first 5 assets. Cause: ... .Skip((page - 1) * pageSize).' under Suspected bugs. Re-ran in scratch copy: Failed 8, Passed 20, Total 28, matching the response."
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 0,
+    "total": 5,
+    "pass_rate": 1.0
+  },
+  "timing": {
+    "executor_duration_seconds": 81.1,
+    "total_duration_seconds": 81.1
+  },
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "New tests are added inside the AssetLibrary.Tests project using xUnit, with at least one [Theory] that takes its cases from [InlineData] or [MemberData], and no other test framework or package is added",
+        "reason": "Non-discriminating: all 6 runs (old and new skill) pass. It also does not distinguish adding a new file from rewriting the existing AssetPagerTests.cs (old_skill runs rewrote it, keeping the original test)."
+      },
+      {
+        "assertion": "The tests include a page past the last page that expects empty Items, and an invalid page or pageSize (0, negative, or above 100) that expects ArgumentOutOfRangeException",
+        "reason": "Non-discriminating: all 6 runs pass."
+      },
+      {
+        "assertion": "The final response reports that TotalPages is computed with integer division and is too low when the asset count is not a multiple of pageSize, as a bug in production code, and AssetPager.cs is not modified during the run",
+        "reason": "Non-discriminating: all 6 runs find and report the TotalPages bug."
+      },
+      {
+        "assertion": "The response contains an edge-case table with an input, an expected result and a reason for each row, and every new test method name describes a behavior rather than a ticket, task or case number",
+        "reason": "Discriminates only via the 'reason' column (old_skill tables have Case/Input/Expected/Source, no reason). The test-naming half passed in every run; consider splitting it so the two halves are visible separately."
+      }
+    ],
+    "overall": "Only assertions 4 and 5 separate the configs (with_skill 5/5, old_skill 3/5). Assertion 5 is the meaningful one: old_skill run-1 noticed the overflow but left it as an untested note."
+  }
+}

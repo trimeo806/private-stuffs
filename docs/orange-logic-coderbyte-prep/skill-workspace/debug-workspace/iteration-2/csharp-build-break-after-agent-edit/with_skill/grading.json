@@ -1,0 +1,45 @@
+{
+  "expectations": [
+    {
+      "text": "The trace shows dotnet build or dotnet test being run, and the response cites error CS0117 for string.IsNullOrBlank from that output.",
+      "passed": true,
+      "evidence": "dotnet test -> 2x CS0117 IsNullOrBlank at :9,:10."
+    },
+    {
+      "text": "The response states that string.IsNullOrBlank does not exist in .NET and that the original string.IsNullOrWhiteSpace must be restored.",
+      "passed": true,
+      "evidence": "Row 1: hallucinated API, restore IsNullOrWhiteSpace."
+    },
+    {
+      "text": "The response identifies the change of the sizeBytes parameter from long to int as a contract break that breaks the test passing 3_000_000_000L and the over-2-GB requirement, and says to restore long rather than edit the tests.",
+      "passed": true,
+      "evidence": "Row 2: int narrowed from long, CS1503 at tests 41/42 shown on scratch copy; prompt 2 restores long, no test edits."
+    },
+    {
+      "text": "The response says the string.Equals(..., StringComparison.OrdinalIgnoreCase) checksum comparison is the correct part of the edit and should be kept.",
+      "passed": true,
+      "evidence": "States line 13 OrdinalIgnoreCase duplicate fix works, proven with scratch test."
+    },
+    {
+      "text": "At the end of the run, UploadService.cs and UploadServiceTests.cs are unchanged from the originals.",
+      "passed": true,
+      "evidence": "diff -rq: no repo changes."
+    },
+    {
+      "text": "The response ends with a paste-ready rejection or fix prompt for the agent that names both problems (the nonexistent API and the signature change) and what to keep.",
+      "passed": false,
+      "evidence": "Rejection paragraph at top and two fix prompts, but the reply ends with a trailing paragraph after prompt 2."
+    },
+    {
+      "text": "The final reply to the user is under 600 words, so it can be read quickly during a timed assessment.",
+      "passed": true,
+      "evidence": "457 words."
+    }
+  ],
+  "summary": {
+    "passed": 6,
+    "failed": 1,
+    "total": 7,
+    "pass_rate": 0.86
+  }
+}

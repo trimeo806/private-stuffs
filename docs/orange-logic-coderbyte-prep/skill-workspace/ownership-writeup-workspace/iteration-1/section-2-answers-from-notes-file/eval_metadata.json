@@ -1,0 +1,10 @@
+{
+  "eval_name": "section-2-answers-from-notes-file",
+  "prompt": "section 2 just started and I cant go back to the code. my notes are in session-notes.md. answer these 3, they want short free-form answers:\n\n1. Describe how you used the AI assistant during the project.\n2. Tell us about a suggestion from the AI that you did not accept. Why not?\n3. What risks do you see in using AI coding agents on a production codebase like ours?\n\nInput files: session-notes.md",
+  "assertions": [
+    "The response gives an answer to each of the three questions, and each answer is between 60 and 120 words.",
+    "The answer to the rejected-suggestion question names the agent splitting lines on commas (line.split(\",\")), gives the quoted comma in a title such as \"Sunset, Bali\" as the reason, and says it was replaced with csv.DictReader or the csv module.",
+    "The answers mention no event absent from session-notes.md: no teammate or code reviewer, no production incident, no tests beyond the four listed, no performance or large-file measurement presented as done.",
+    "The answers are written in the first person, and the risks answer ties at least one named risk to a concrete example from the notes (for example the comma split or the silently skipped bad-date rows)."
+  ]
+}

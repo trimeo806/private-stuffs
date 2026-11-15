@@ -1,0 +1,11 @@
+{
+  "eval_name": "csharp-tag-merge-xunit",
+  "prompt": "Coderbyte AI fluency assessment, section 1. Recon is done and I'm on step 2 of my plan: implement TagService.MergeTags as described in TASK.md. The bugfix step is already finished. I've got about 20 minutes for this step, so write the code now. .NET 8 and xUnit, dotnet test works in this environment.\n\nInput files: TASK.md, src/AssetLibrary/AssetLibrary.csproj, src/AssetLibrary/Models/Asset.cs, src/AssetLibrary/Repositories/IAssetRepository.cs, src/AssetLibrary/Repositories/InMemoryAssetRepository.cs, src/AssetLibrary/Services/TagService.cs, tests/AssetLibrary.Tests/AssetLibrary.Tests.csproj, tests/AssetLibrary.Tests/TagServiceTests.cs",
+  "assertions": [
+    "The trace shows a test that calls MergeTags being written and run with a failing result (for example NotImplementedException) before any edit replaces the NotImplementedException body of MergeTags in TagService.cs.",
+    "The tag-list rewriting logic is in a separate function or static method that takes the tags and returns a new collection without calling the repository, and MergeTags is the only code that calls the repository Save method.",
+    "The final TagService.cs still declares public int MergeTags(string sourceTag, string targetTag), the two existing tests in TagServiceTests.cs are unchanged, and no PackageReference is added to either csproj file.",
+    "The last dotnet test run in the trace reports zero failed tests, and the final response names the tests added, says they went from red to green, and states where the data mutation (the repository save) happens.",
+    "Among the new tests, at least one calls the extracted tag-rewriting function directly without a repository, and at least one calls MergeTags through TagService backed by InMemoryAssetRepository and asserts the stored tags; every new test method name describes a behavior and contains no ticket, task, step or spec ID."
+  ]
+}

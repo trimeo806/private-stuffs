@@ -1,0 +1,10 @@
+schema_version: "1.1"
+name: vague-coderbyte-task-without-tree
+expected_outcome: |
+  The agent does not stall on the missing file tree. It gives a paste-ready first prompt for
+  the Coderbyte in-IDE agent that forbids file edits for now and asks for the restated task,
+  requirements, assumptions, edge cases and a step plan with a time budget. It records the
+  ambiguities of the discount code feature as assumptions with chosen defaults, orders the
+  plan so the failing tests are fixed before the discount feature, asks for the missing
+  inputs (file tree, failing test output) at most once in a single message, and writes no
+  Java code.

@@ -1,0 +1,13 @@
+schema_version: "1.1"
+name: python-storage-report-pytest
+expected_outcome: |
+  The run detects pytest from pyproject.toml and the existing test, and adds tests under
+  tests/ using pytest.mark.parametrize for data-only variations. The edge-case table and
+  tests cover empty input, extensions that differ only in case (".JPG" and ".jpg"),
+  names with no extension, a leading dot (".gitignore") and a trailing dot ("notes."),
+  multiple dots ("archive.tar.gz"), ties on total broken by extension ascending, and a
+  negative size raising ValueError. It reports that mixed-case extensions are not merged
+  (and ideally that a trailing dot yields an empty extension instead of "(none)") as bugs
+  in storage_report.py, without editing storage_report.py or weakening the expectations.
+context:
+  scaffold_script: place-files.sh

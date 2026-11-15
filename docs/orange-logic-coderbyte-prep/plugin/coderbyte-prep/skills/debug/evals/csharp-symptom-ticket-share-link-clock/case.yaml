@@ -1,0 +1,17 @@
+schema_version: "1.1"
+name: csharp-symptom-ticket-share-link-clock
+expected_outcome: |
+  The run turns the ticket into concrete cases (a link created with a 1 hour lifetime is
+  invalid immediately when the server clock is UTC+7, and still valid hours after expiry at
+  UTC-8) and traces them to ShareLinkService.IsValid, which compares DateTime.Now (local time,
+  real clock) with ExpiresAtUtc instead of using the injected IClock's UtcNow. It explains
+  both ticket symptoms as the same cause (the local offset is added or subtracted). It proves
+  the cause with evidence such as a red test using FakeClock (for example a link advanced past
+  expiry still reported valid, or a fresh link reported invalid) or an explicit value trace,
+  not by plausibility alone. It finds the same bug in ActiveLinksFor (DateTime.Now) as blast
+  radius and notes Create and PurgeExpired correctly use the clock. It does not modify
+  ShareLinkService.cs or the four existing tests; a new repro test, if written, is left red
+  and named by behavior. It ends with a fix direction (use _clock.UtcNow in both places, keep
+  signatures) and a paste-ready in-IDE prompt.
+context:
+  scaffold_script: place-files.sh

@@ -1,0 +1,49 @@
+{
+  "expectations": [
+    {
+      "text": "The response gives a paste-ready prompt for the Coderbyte in-IDE AI that tells the agent not to edit or create files yet and asks it for requirements, assumptions, edge cases and a step plan.",
+      "passed": true,
+      "evidence": "First prompt: 'do not edit or create any files yet', then asks for requirements (item 3), assumptions (item 4), edge cases (item 6) and a step plan (item 7)."
+    },
+    {
+      "text": "The response records at least three ambiguities of the discount code feature as assumptions with a chosen default, drawn from: percentage versus fixed amount, stacking several codes, expired or unknown codes, code case sensitivity, rounding, and a discount larger than the order total.",
+      "passed": true,
+      "evidence": "A1 types -> percentage and fixed amount if none modelled; A2 unknown code -> IllegalArgumentException; A4 case -> case-insensitive; A5 rounding -> HALF_UP 2 decimals; A6 bigger than subtotal -> clamp 0; A7 stacking -> one per checkout. Six of the listed ambiguities with defaults."
+    },
+    {
+      "text": "The step plan puts fixing the failing tests in the orders module before implementing discount codes, and leaves at least 20 of the 80 minutes for the written section.",
+      "passed": true,
+      "evidence": "Step 2 'Fix the failing tests' precedes step 3 'Discount model'. Minutes 8+15+15+7+5+5 = 55, heading 'Section 1 ~55 min, leave 20+ for Section 2' (80-55 = 25)."
+    },
+    {
+      "text": "The response asks for missing inputs such as the file tree or the failing test output in no more than one consolidated question, and contains no Java implementation code.",
+      "passed": true,
+      "evidence": "Only user-directed question is the closing 'Is this plan right for your repo? ... paste its answer or the mvn test failure summary here' (the '?' in A1-A8 are assumption labels with answers). No Java code; code blocks are prompts only."
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1.0
+  },
+  "timing": {
+    "executor_duration_seconds": 59.0,
+    "total_duration_seconds": 59.0
+  },
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "reason": "All four assertions pass for both configs, so this case does not discriminate between skill versions."
+      },
+      {
+        "assertion": "The response gives a paste-ready prompt for the Coderbyte in-IDE AI that tells the agent not to edit or create files yet and asks it for requirements, assumptions, edge cases and a step plan.",
+        "reason": "old_skill passes on 'Do NOT write code yet', which is weaker than an explicit no-edit/no-create instruction; if the explicit file wording matters, require it verbatim-ish."
+      },
+      {
+        "reason": "Consider asserting the first prompt forbids editing test files and that the plan's minutes actually sum to <= 60 (old_skill sums to exactly 60, with_skill to 55)."
+      }
+    ],
+    "overall": "Solid but non-discriminating for this pair."
+  }
+}

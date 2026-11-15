@@ -1,0 +1,62 @@
+{
+  "expectations": [
+    {
+      "text": "SOLUTION.md is written to disk and `wc -w SOLUTION.md` on the raw file, markdown symbols included, prints at most 250.",
+      "passed": true,
+      "evidence": "outputs/SOLUTION.md exists; measured `wc -w SOLUTION.md` = 224 (<= 250)."
+    },
+    {
+      "text": "SOLUTION.md names the rejected suggestion to upscale images smaller than the target size and gives the reason from the notes (blurry result and/or wasted storage).",
+      "passed": true,
+      "evidence": "Table row: \"Rejected upscaling images below target size; added `withoutEnlargement: true` | A 200px image upscaled to 1200 looks blurry and wastes storage\"."
+    },
+    {
+      "text": "SOLUTION.md claims no event absent from the notes: no tests beyond the four listed (2000px png, 100px gif, pdf, corrupted jpg), no benchmark or measurement, and WebP output or HEIC support is not described as done.",
+      "passed": true,
+      "evidence": "Verification lists only the four notes tests (4/4 pass) and \"Not verified: [gap: whether the ~3x memory peak was measured]\". WebP/HEIC only as \"No WebP output\", \"No HEIC support\". Minor: table reason \"I reviewed the plan before any code existed\" is not in the notes, but it is not a test, benchmark or WebP/HEIC event and is flagged by the response as the executor's own wording."
+    },
+    {
+      "text": "SOLUTION.md has a known-limits section that names WebP output and HEIC support as not done.",
+      "passed": true,
+      "evidence": "\"## Known limits\" with \"No WebP output -> add it.\" and \"No HEIC support: sharp needs libheif\"."
+    },
+    {
+      "text": "The response reports a word count for SOLUTION.md and that count is within 2 of `wc -w SOLUTION.md` on the raw file; no reported count, or an estimate further off, fails.",
+      "passed": true,
+      "evidence": "Response states \"It is 224 words by `wc -w SOLUTION.md`\"; measured wc -w = 224, difference 0."
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 0,
+    "total": 5,
+    "pass_rate": 1.0
+  },
+  "timing": {
+    "executor_duration_seconds": 56.7,
+    "total_duration_seconds": 56.7
+  },
+  "claims": [
+    {
+      "claim": "'I reviewed the plan before any code existed' (SOLUTION.md table)",
+      "type": "factual",
+      "verified": false,
+      "evidence": "Not in notes; the response itself flags it as its own wording."
+    }
+  ],
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "reason": "All 6 runs (both configs) pass all 5 assertions, so this case does not discriminate between with_skill and old_skill."
+      },
+      {
+        "reason": "No assertion checks invented first-person action claims or authorship in SOLUTION.md (section-2 has one). Observed: old_skill runs write 'Tests: 4 added' and with_skill/run-3 writes 'I reviewed the plan before any code existed', neither in the notes; old_skill responses also claim 'I added nothing' while adding next steps."
+      },
+      {
+        "assertion": "SOLUTION.md claims no event absent from the notes: no tests beyond the four listed (2000px png, 100px gif, pdf, corrupted jpg), no benchmark or measurement, and WebP output or HEIC support is not described as done.",
+        "reason": "Scoped to tests/benchmarks/WebP/HEIC only; it passes outputs that add other unrecorded actions. Consider broadening to any first-person action not in the notes."
+      }
+    ],
+    "overall": "Case is saturated; add an action-claim/authorship assertion to make it discriminating."
+  }
+}

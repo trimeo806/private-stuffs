@@ -1,0 +1,18 @@
+---
+tags: [skill-creator]
+max_turns: 20
+timeout_seconds: 600
+allowed_tools: [Read, Glob, Grep, Skill, Write, Edit, Bash]
+---
+
+ok ~6 min left before section 2. write my SOLUTION.md from these notes, max 250 words, save it as SOLUTION.md
+
+notes:
+- task: thumbnail service, make 3 sizes (small 150, medium 600, large 1200) for uploaded images, skip non-images
+- first prompt: gave agent thumbnail.ts + the task text, asked for a plan only, no code
+- plan said use sharp, resize all 3 in parallel w Promise.all. kept
+- agent then wanted to upscale imgs smaller than the target size -> rejected. 200px img blown up to 1200 looks blurry + wastes storage. added withoutEnlargement: true
+- agent wrapped sharp in try/catch that swallowed errors and returned [] -> changed it, now throws UnsupportedImageError so caller can mark the asset failed
+- tests: png 2000px -> 3 thumbs, 100px gif -> no upscale, pdf -> skipped, corrupted jpg -> UnsupportedImageError. 4/4 pass
+- tradeoff: Promise.all faster but ~3x memory peak, fine with the 20mb upload limit
+- didnt get to: webp output, HEIC (sharp needs libheif)

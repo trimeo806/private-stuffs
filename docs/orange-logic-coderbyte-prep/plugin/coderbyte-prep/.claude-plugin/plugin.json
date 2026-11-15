@@ -1,0 +1,13 @@
+{
+  "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
+  "name": "coderbyte-prep",
+  "version": "0.2.0",
+  "description": "Temporary Coderbyte AI-fluency assessment kit: task recon, root-cause debugging, test-first implementation, AI diff review, edge-case tests, ownership write-up",
+  "author": {
+    "name": "Tri Nguyen",
+    "email": "trimeo806@gmail.com"
+  },
+  "skills": [
+    "./skills"
+  ]
+}
